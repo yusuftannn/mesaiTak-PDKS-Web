@@ -81,7 +81,7 @@ export default function UsersPage() {
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="p-3 text-left">Ad</th>
+              <th className="p-3">Ad</th>
               <th className="p-3">Rol</th>
               <th className="p-3">Şirket</th>
               <th className="p-3">Şube</th>
@@ -90,7 +90,7 @@ export default function UsersPage() {
 
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className="border-t">
+              <tr key={u.id} className="border-t text-center">
                 <td className="p-3 font-medium">{u.name}</td>
 
                 <td className="p-3">

@@ -11,7 +11,7 @@ export default function Topbar() {
       <div className="text-sm text-gray-600">
         {user?.email} • <b>{user?.role}</b>
       </div>
-      <button className="text-sm" onClick={() => auth.signOut()}>
+      <button className="text-sm cursor-pointer" onClick={() => auth.signOut()}>
         Çıkış
       </button>
     </header>
