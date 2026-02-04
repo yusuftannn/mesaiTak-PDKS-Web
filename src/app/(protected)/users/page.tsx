@@ -1,19 +1,24 @@
 "use client";
-
+import { User, Power, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppUser, listUsers, updateUser } from "@/lib/db/users";
 import { listCompanies, Company } from "@/lib/db/companies";
 import { listBranchesByCompany, Branch } from "@/lib/db/branches";
+import CreateUserModal from "./CreateUserModal";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [branches, setBranches] = useState<Record<string, Branch[]>>({});
+  const [showCreate, setShowCreate] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
 
     (async () => {
+      setLoading(true);
+
       const [u, c] = await Promise.all([listUsers(), listCompanies()]);
 
       if (!mounted) return;
@@ -32,6 +37,8 @@ export default function UsersPage() {
           [cid]: data,
         }));
       }
+
+      setLoading(false);
     })();
 
     return () => {
@@ -55,12 +62,22 @@ export default function UsersPage() {
   };
 
   const onChangeCompany = async (userId: string, companyId: string) => {
-    await updateUser(userId, { companyId, branchId: null });
+    await updateUser(userId, {
+      companyId,
+      branchId: null,
+    });
+
     await loadBranches(companyId);
 
     setUsers((prev) =>
       prev.map((u) =>
-        u.id === userId ? { ...u, companyId, branchId: null } : u,
+        u.id === userId
+          ? {
+              ...u,
+              companyId,
+              branchId: null,
+            }
+          : u,
       ),
     );
   };
@@ -73,27 +90,77 @@ export default function UsersPage() {
     );
   };
 
+  const onToggleStatus = async (user: AppUser) => {
+    const next = user.status === "active" ? "passive" : "active";
+
+    if (
+      !confirm(
+        `Kullanıcı ${
+          next === "passive" ? "pasife alınsın mı?" : "aktif edilsin mi?"
+        }`,
+      )
+    )
+      return;
+
+    await updateUser(user.id, { status: next });
+
+    setUsers((prev) =>
+      prev.map((u) => (u.id === user.id ? { ...u, status: next } : u)),
+    );
+  };
+
+  if (loading) {
+    return <div className="p-6">Yükleniyor…</div>;
+  }
+
   return (
     <div className="p-6 space-y-6">
-      <h2 className="text-lg font-semibold">Kullanıcılar</h2>
-
+      <h2 className="text-lg font-semibold flex items-center gap-2">
+        <User size={18} />
+        Kullanıcılar
+      </h2>
+      <button
+        onClick={() => setShowCreate(true)}
+        className="bg-black text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+      >
+        <UserPlus size={16} />
+        Kullanıcı Ekle
+      </button>
       <div className="overflow-auto border rounded-xl">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="p-3">Ad</th>
-              <th className="p-3">Rol</th>
-              <th className="p-3">Şirket</th>
-              <th className="p-3">Şube</th>
+              <th className="p-3 text-left">
+                <div className="flex items-center">Kullanıcı</div>
+              </th>
+
+              <th className="p-3">
+                <div className="flex justify-center items-center">Rol</div>
+              </th>
+
+              <th className="p-3">
+                <div className="flex justify-center items-center">Şirket</div>
+              </th>
+
+              <th className="p-3">
+                <div className="flex justify-center items-center">Şube</div>
+              </th>
+
+              <th className="p-3">
+                <div className="flex justify-center items-center">Durum</div>
+              </th>
             </tr>
           </thead>
 
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className="border-t text-center">
-                <td className="p-3 font-medium">{u.name}</td>
-
+              <tr key={u.id} className="border-t">
                 <td className="p-3">
+                  <div className="font-medium">{u.name}</div>
+                  <div className="text-xs text-gray-500">{u.email}</div>
+                </td>
+
+                <td className="p-3 text-center">
                   {u.role === "manager" ? (
                     <span className="text-xs text-gray-500">manager</span>
                   ) : (
@@ -110,11 +177,12 @@ export default function UsersPage() {
                   )}
                 </td>
 
-                <td className="p-3">
+                <td className="p-3 text-center">
                   <select
                     className="border rounded px-2 py-1"
                     value={u.companyId ?? ""}
                     onChange={(e) => onChangeCompany(u.id, e.target.value)}
+                    disabled={u.status === "passive"}
                   >
                     <option value="">—</option>
                     {companies.map((c) => (
@@ -125,12 +193,13 @@ export default function UsersPage() {
                   </select>
                 </td>
 
-                <td className="p-3">
+                <td className="p-3 text-center">
                   {u.companyId ? (
                     <select
                       className="border rounded px-2 py-1"
                       value={u.branchId ?? ""}
                       onChange={(e) => onChangeBranch(u.id, e.target.value)}
+                      disabled={u.status === "passive"}
                     >
                       <option value="">—</option>
                       {(branches[u.companyId] ?? []).map((b) => (
@@ -143,10 +212,34 @@ export default function UsersPage() {
                     <span className="text-xs text-gray-400">Şirket seç</span>
                   )}
                 </td>
+
+                <td className="p-3 text-center flex justify-center">
+                  <button
+                    onClick={() => onToggleStatus(u)}
+                    className={`text-xs px-3 py-1 rounded gap-1 flex  ${
+                      u.status === "active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    <Power size={12} />
+                    {u.status}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {showCreate && (
+          <CreateUserModal
+            companies={companies}
+            onClose={() => setShowCreate(false)}
+            onCreated={async () => {
+              const data = await listUsers();
+              setUsers(data);
+            }}
+          />
+        )}
       </div>
     </div>
   );

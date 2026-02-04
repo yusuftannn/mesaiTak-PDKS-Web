@@ -22,10 +22,9 @@ export default function RegisterPage() {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-      // 🔥 Firestore user doc (DEFAULT role = employee)
       await setDoc(doc(db, "users", cred.user.uid), {
         name,
-        role: "employee", // ⚠️ manager değil
+        role: "employee", 
         companyId: null,
         branchId: null,
         createdAt: serverTimestamp(),
