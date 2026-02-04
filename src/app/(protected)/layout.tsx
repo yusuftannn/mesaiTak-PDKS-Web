@@ -25,7 +25,6 @@ export default function ProtectedLayout({
       return;
     }
 
-    // Web panel sadece manager
     if (user.role !== "manager") {
       router.replace("/login?forbidden=1");
       return;
