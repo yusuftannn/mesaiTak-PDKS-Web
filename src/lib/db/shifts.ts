@@ -1,6 +1,9 @@
 import { db } from "@/lib/firebase";
 import {
   collection,
+  addDoc,
+  updateDoc,
+  doc,
   getDocs,
   query,
   where,
@@ -38,7 +41,6 @@ export async function listShiftsByDateRange(
 
   return snap.docs.map((d) => {
     const data = d.data() as ShiftDoc;
-
     return {
       id: d.id,
       userId: data.userId,
@@ -47,5 +49,33 @@ export async function listShiftsByDateRange(
       endTime: data.endTime,
       type: data.type,
     };
+  });
+}
+
+export async function createShift(params: {
+  userId: string;
+  date: Date;
+  startTime: string;
+  endTime: string;
+}) {
+  await addDoc(collection(db, "shifts"), {
+    userId: params.userId,
+    date: Timestamp.fromDate(params.date),
+    startTime: params.startTime,
+    endTime: params.endTime,
+    type: "normal",
+    createdAt: Timestamp.now(),
+  });
+}
+
+export async function updateShift(
+  shiftId: string,
+  data: {
+    startTime: string;
+    endTime: string;
+  },
+) {
+  await updateDoc(doc(db, "shifts", shiftId), {
+    ...data,
   });
 }

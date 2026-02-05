@@ -2,10 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { listUsers, AppUser } from "@/lib/db/users";
-import { listShiftsByDateRange, Shift } from "@/lib/db/shifts";
-import { getWeekRange, getDayKey } from "@/lib/utils/week";
+import {
+  listShiftsByDateRange,
+  createShift,
+  updateShift,
+  Shift,
+} from "@/lib/db/shifts";
+import { getWeekRange, getDayKey, DayKey } from "@/lib/utils/week";
+import { getDateForDayKey } from "@/lib/utils/week";
+import ShiftModal from "./ShiftModal";
 
-const DAYS = [
+const DAYS: { key: DayKey; label: string }[] = [
   { key: "mon", label: "Pzt" },
   { key: "tue", label: "Sal" },
   { key: "wed", label: "Çar" },
@@ -25,8 +32,28 @@ export default function ShiftsPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState<{
+    userId: string;
+    date: Date;
+    shift?: Shift;
+  } | null>(null);
+
+  const { monday, sunday } = getWeekRange();
+
+  const load = async () => {
+    setLoading(true);
+    const [u, s] = await Promise.all([
+      listUsers(),
+      listShiftsByDateRange(monday, sunday),
+    ]);
+    setUsers(u);
+    setShifts(s);
+    setLoading(false);
+  };
 
   useEffect(() => {
+    let mounted = true;
+
     (async () => {
       setLoading(true);
 
@@ -37,10 +64,16 @@ export default function ShiftsPage() {
         listShiftsByDateRange(monday, sunday),
       ]);
 
+      if (!mounted) return;
+
       setUsers(u);
       setShifts(s);
       setLoading(false);
     })();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   if (loading) {
@@ -81,20 +114,30 @@ export default function ShiftsPage() {
                       (s) => s.userId === u.id && getDayKey(s.date) === d.key,
                     );
 
-                    if (!shift) {
-                      return (
-                        <td key={d.key} className="p-3 text-gray-400">
-                          —
-                        </td>
-                      );
+                    if (shift) {
+                      total += calcHours(shift.startTime, shift.endTime);
                     }
 
-                    const hours = calcHours(shift.startTime, shift.endTime);
-                    total += hours;
-
                     return (
-                      <td key={d.key} className="p-3">
-                        {shift.startTime} – {shift.endTime}
+                      <td
+                        key={d.key}
+                        className="p-3 cursor-pointer hover:bg-gray-100"
+                        onClick={() =>
+                          setModal({
+                            userId: u.id,
+                            date:
+                              shift?.date ?? getDateForDayKey(monday, d.key),
+                            shift,
+                          })
+                        }
+                      >
+                        {shift ? (
+                          <>
+                            {shift.startTime} – {shift.endTime}
+                          </>
+                        ) : (
+                          <span className="text-gray-400">+</span>
+                        )}
                       </td>
                     );
                   })}
@@ -106,6 +149,38 @@ export default function ShiftsPage() {
           </tbody>
         </table>
       </div>
+
+      {modal && (
+        <ShiftModal
+          open
+          initial={
+            modal.shift
+              ? {
+                  startTime: modal.shift.startTime,
+                  endTime: modal.shift.endTime,
+                }
+              : undefined
+          }
+          onClose={() => setModal(null)}
+          onSave={async (start, end) => {
+            if (modal.shift) {
+              await updateShift(modal.shift.id, {
+                startTime: start,
+                endTime: end,
+              });
+            } else {
+              await createShift({
+                userId: modal.userId,
+                date: modal.date,
+                startTime: start,
+                endTime: end,
+              });
+            }
+
+            await load();
+          }}
+        />
+      )}
     </div>
   );
 }
