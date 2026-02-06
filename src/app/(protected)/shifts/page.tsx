@@ -1,15 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { listUsers, AppUser } from "@/lib/db/users";
 import {
   listShiftsByDateRange,
   createShift,
   updateShift,
+  removeShift,
+  copyWeekShifts,
   Shift,
 } from "@/lib/db/shifts";
-import { getWeekRange, getDayKey, DayKey } from "@/lib/utils/week";
-import { getDateForDayKey } from "@/lib/utils/week";
+import {
+  getWeekRange,
+  getDayKey,
+  DayKey,
+  addWeeks,
+  formatDate,
+  getDateForDayKey,
+} from "@/lib/utils/week";
 import ShiftModal from "./ShiftModal";
 
 const DAYS: { key: DayKey; label: string }[] = [
@@ -32,49 +40,42 @@ export default function ShiftsPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [modal, setModal] = useState<{
     userId: string;
     date: Date;
     shift?: Shift;
   } | null>(null);
 
-  const { monday, sunday } = getWeekRange();
+  const [weekStart, setWeekStart] = useState<Date>(() => getWeekRange().monday);
 
-  const load = async () => {
+  const weekRange = useMemo(() => getWeekRange(weekStart), [weekStart]);
+
+  const load = useCallback(async () => {
     setLoading(true);
+
     const [u, s] = await Promise.all([
       listUsers(),
-      listShiftsByDateRange(monday, sunday),
+      listShiftsByDateRange(weekRange.monday, weekRange.sunday),
     ]);
+
     setUsers(u);
     setShifts(s);
     setLoading(false);
-  };
+  }, [weekRange.monday, weekRange.sunday]);
 
   useEffect(() => {
     let mounted = true;
 
     (async () => {
-      setLoading(true);
-
-      const { monday, sunday } = getWeekRange();
-
-      const [u, s] = await Promise.all([
-        listUsers(),
-        listShiftsByDateRange(monday, sunday),
-      ]);
-
       if (!mounted) return;
-
-      setUsers(u);
-      setShifts(s);
-      setLoading(false);
+      await load();
     })();
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [load]);
 
   if (loading) {
     return <div className="p-6">Yükleniyor…</div>;
@@ -84,17 +85,67 @@ export default function ShiftsPage() {
     <div className="p-6 space-y-6">
       <h2 className="text-lg font-semibold">Haftalık Vardiya Planı</h2>
 
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setWeekStart((d) => addWeeks(d, -1))}
+            className="px-3 py-1 border rounded cursor-pointer hover:bg-gray-100"
+          >
+            ← Önceki
+          </button>
+
+          <div className="font-medium">
+            {formatDate(weekRange.monday)} – {formatDate(weekRange.sunday)}
+          </div>
+
+          <button
+            onClick={() => setWeekStart((d) => addWeeks(d, 1))}
+            className="px-3 py-1 border rounded cursor-pointer hover:bg-gray-100"
+          >
+            Sonraki →
+          </button>
+        </div>
+
+        <button
+          onClick={async () => {
+            if (
+              !confirm(
+                "Bu haftadaki tüm vardiyalar bir sonraki haftaya kopyalansın mı?",
+              )
+            )
+              return;
+
+            await copyWeekShifts(weekRange.monday);
+            setWeekStart((d) => addWeeks(d, 1));
+          }}
+          className="bg-black text-white px-4 py-2 rounded"
+        >
+          Bu haftayı sonraki haftaya kopyala
+        </button>
+      </div>
+
       <div className="overflow-auto border rounded-xl">
         <table className="min-w-full text-sm text-center">
           <thead className="bg-gray-50">
             <tr>
               <th className="p-3">#</th>
               <th className="p-3 text-left">Ad Soyad</th>
-              {DAYS.map((d) => (
-                <th key={d.key} className="p-3">
-                  {d.label}
-                </th>
-              ))}
+
+              {DAYS.map((d) => {
+                const date = getDateForDayKey(weekRange.monday, d.key);
+
+                return (
+                  <th key={d.key} className="p-3">
+                    <div className="flex flex-col items-center leading-tight">
+                      <span>{d.label}</span>
+                      <span className="text-xs text-gray-500">
+                        {formatDate(date)}
+                      </span>
+                    </div>
+                  </th>
+                );
+              })}
+
               <th className="p-3">Toplam</th>
             </tr>
           </thead>
@@ -126,7 +177,8 @@ export default function ShiftsPage() {
                           setModal({
                             userId: u.id,
                             date:
-                              shift?.date ?? getDateForDayKey(monday, d.key),
+                              shift?.date ??
+                              getDateForDayKey(weekRange.monday, d.key),
                             shift,
                           })
                         }
@@ -179,6 +231,14 @@ export default function ShiftsPage() {
 
             await load();
           }}
+          onDelete={
+            modal.shift
+              ? async () => {
+                  await removeShift(modal.shift!.id);
+                  await load();
+                }
+              : undefined
+          }
         />
       )}
     </div>

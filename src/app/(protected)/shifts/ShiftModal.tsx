@@ -10,9 +10,16 @@ type Props = {
   };
   onClose: () => void;
   onSave: (start: string, end: string) => Promise<void>;
+  onDelete?: () => Promise<void>;
 };
 
-export default function ShiftModal({ open, initial, onClose, onSave }: Props) {
+export default function ShiftModal({
+  open,
+  initial,
+  onClose,
+  onSave,
+  onDelete,
+}: Props) {
   const [startTime, setStartTime] = useState(initial?.startTime ?? "09:00");
   const [endTime, setEndTime] = useState(initial?.endTime ?? "18:00");
   const [loading, setLoading] = useState(false);
@@ -51,15 +58,36 @@ export default function ShiftModal({ open, initial, onClose, onSave }: Props) {
           />
         </div>
 
-        <div className="flex justify-end gap-2">
-          <button onClick={onClose}>İptal</button>
-          <button
-            onClick={submit}
-            disabled={loading}
-            className="bg-black text-white px-4 py-2 rounded"
-          >
-            Kaydet
-          </button>
+        <div
+          className={`flex items-center pt-2 ${
+            onDelete ? "justify-between" : "justify-end"
+          }`}
+        >
+          {onDelete && (
+            <button
+              onClick={async () => {
+                if (!confirm("Vardiya silinsin mi?")) return;
+                await onDelete();
+                onClose();
+              }}
+              className="text-red-600 text-sm cursor-pointer hover:underline"
+            >
+              Sil
+            </button>
+          )}
+
+          <div className="flex gap-2">
+            <button onClick={onClose} className="cursor-pointer">
+              İptal
+            </button>
+            <button
+              onClick={submit}
+              disabled={loading}
+              className="bg-black text-white px-4 py-2 rounded cursor-pointer"
+            >
+              Kaydet
+            </button>
+          </div>
         </div>
       </div>
     </div>

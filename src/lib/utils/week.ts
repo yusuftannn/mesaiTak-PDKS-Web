@@ -1,11 +1,4 @@
-export type DayKey =
-  | "mon"
-  | "tue"
-  | "wed"
-  | "thu"
-  | "fri"
-  | "sat"
-  | "sun";
+export type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
 export function getWeekRange(date = new Date()) {
   const d = new Date(date);
@@ -28,10 +21,7 @@ export function getDayKey(date: Date): DayKey {
   ] as DayKey;
 }
 
-export function getDateForDayKey(
-  monday: Date,
-  dayKey: DayKey,
-) {
+export function getDateForDayKey(monday: Date, dayKey: DayKey) {
   const map: Record<DayKey, number> = {
     mon: 0,
     tue: 1,
@@ -47,4 +37,18 @@ export function getDateForDayKey(
   d.setHours(0, 0, 0, 0);
 
   return d;
+}
+
+export function addWeeks(date: Date, amount: number) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + amount * 7);
+  return d;
+}
+
+export function formatDate(date: Date) {
+  return date.toLocaleDateString("tr-TR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
