@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { SHIFT_TYPES, ShiftType } from "@/lib/db/constants/shiftTypes";
+
+type ShiftInitial = {
+  startTime: string;
+  endTime: string;
+  type: ShiftType;
+};
 
 type Props = {
   open: boolean;
-  initial?: {
-    startTime: string;
-    endTime: string;
-  };
+  initial?: ShiftInitial;
   onClose: () => void;
-  onSave: (start: string, end: string) => Promise<void>;
+  onSave: (start: string, end: string, type: ShiftType) => Promise<void>;
   onDelete?: () => Promise<void>;
 };
 
@@ -22,13 +26,14 @@ export default function ShiftModal({
 }: Props) {
   const [startTime, setStartTime] = useState(initial?.startTime ?? "09:00");
   const [endTime, setEndTime] = useState(initial?.endTime ?? "18:00");
+  const [type, setType] = useState<ShiftType>(initial?.type ?? "normal");
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;
 
   const submit = async () => {
     setLoading(true);
-    await onSave(startTime, endTime);
+    await onSave(startTime, endTime, type);
     setLoading(false);
     onClose();
   };
@@ -58,6 +63,21 @@ export default function ShiftModal({
           />
         </div>
 
+        <div className="space-y-1">
+          <label className="text-sm text-gray-600">Vardiya Türü</label>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as ShiftType)}
+            className="w-full border rounded px-3 py-2"
+          >
+            {SHIFT_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div
           className={`flex items-center pt-2 ${
             onDelete ? "justify-between" : "justify-end"
@@ -70,20 +90,18 @@ export default function ShiftModal({
                 await onDelete();
                 onClose();
               }}
-              className="text-red-600 text-sm cursor-pointer hover:underline"
+              className="text-red-600 text-sm hover:underline"
             >
               Sil
             </button>
           )}
 
           <div className="flex gap-2">
-            <button onClick={onClose} className="cursor-pointer">
-              İptal
-            </button>
+            <button onClick={onClose}>İptal</button>
             <button
               onClick={submit}
               disabled={loading}
-              className="bg-black text-white px-4 py-2 rounded cursor-pointer"
+              className="bg-black text-white px-4 py-2 rounded"
             >
               Kaydet
             </button>

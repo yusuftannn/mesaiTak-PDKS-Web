@@ -8,6 +8,8 @@ import {
   updateShift,
   removeShift,
   copyWeekShifts,
+  copyWeekShiftsOverwrite,
+  clearWeekShifts,
   Shift,
 } from "@/lib/db/shifts";
 import {
@@ -106,22 +108,57 @@ export default function ShiftsPage() {
           </button>
         </div>
 
-        <button
-          onClick={async () => {
-            if (
-              !confirm(
-                "Bu haftadaki tüm vardiyalar bir sonraki haftaya kopyalansın mı?",
+        <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap"></div>
+          <button
+            onClick={async () => {
+              if (
+                !confirm(
+                  "Bu haftadaki vardiyalar bir sonraki haftaya kopyalansın mı?",
+                )
               )
-            )
-              return;
+                return;
 
-            await copyWeekShifts(weekRange.monday);
-            setWeekStart((d) => addWeeks(d, 1));
-          }}
-          className="bg-black text-white px-4 py-2 rounded"
-        >
-          Bu haftayı sonraki haftaya kopyala
-        </button>
+              await copyWeekShifts(weekRange.monday);
+              setWeekStart((d) => addWeeks(d, 1));
+            }}
+            className="bg-black text-white px-4 py-2 rounded"
+          >
+            Kopyala
+          </button>
+
+          <button
+            onClick={async () => {
+              if (
+                !confirm(
+                  "Hedef haftadaki TÜM vardiyalar silinip, bu haftaki vardiyalar yazılacak. Emin misiniz?",
+                )
+              )
+                return;
+
+              await copyWeekShiftsOverwrite(weekRange.monday);
+              setWeekStart((d) => addWeeks(d, 1));
+            }}
+            className="bg-red-600 text-white px-4 py-2 rounded"
+          >
+            Üzerine yazarak kopyala
+          </button>
+
+          <button
+            onClick={async () => {
+              if (
+                !confirm("Bu haftadaki tüm vardiyalar silinecek. Emin misiniz?")
+              )
+                return;
+
+              await clearWeekShifts(weekRange.monday);
+              await load();
+            }}
+            className="bg-red-700 text-white px-4 py-2 rounded"
+          >
+            Bu haftayı tamamen temizle
+          </button>
+        </div>
       </div>
 
       <div className="overflow-auto border rounded-xl">
@@ -210,15 +247,17 @@ export default function ShiftsPage() {
               ? {
                   startTime: modal.shift.startTime,
                   endTime: modal.shift.endTime,
+                  type: modal.shift.type,
                 }
               : undefined
           }
           onClose={() => setModal(null)}
-          onSave={async (start, end) => {
+          onSave={async (start, end, type) => {
             if (modal.shift) {
               await updateShift(modal.shift.id, {
                 startTime: start,
                 endTime: end,
+                type,
               });
             } else {
               await createShift({
@@ -226,6 +265,7 @@ export default function ShiftsPage() {
                 date: modal.date,
                 startTime: start,
                 endTime: end,
+                type,
               });
             }
 

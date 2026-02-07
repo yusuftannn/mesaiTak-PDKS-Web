@@ -60,7 +60,7 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full bg-black text-white rounded-lg p-3 disabled:opacity-60"
         >
-          {loading ? "Signing in…" : "Login"}
+          {loading ? "Oturum açılıyor…" : "Giriş Yap"}
         </button>
       </form>
     </div>
