@@ -8,7 +8,8 @@ const nav = [
   { href: "/companies", label: "Şirketler" },
   { href: "/branches", label: "Şubeler" },
   { href: "/users", label: "Kullanıcılar" },
-    { href: "/shifts", label: "Vardiya" },
+  { href: "/shifts", label: "Vardiya" },
+  { href: "/leaves", label: "İzin Talepleri" },
 ];
 
 export default function Sidebar() {
