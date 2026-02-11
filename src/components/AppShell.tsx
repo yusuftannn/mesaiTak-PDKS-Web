@@ -5,11 +5,15 @@ import Topbar from "./Topbar";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex">
+    <div className="h-screen flex overflow-hidden">
+      {/* SIDEBAR */}
       <Sidebar />
-      <div className="flex-1">
+
+      {/* CONTENT */}
+      <div className="flex-1 min-w-0 flex flex-col">
         <Topbar />
-        {children}
+
+        <main className="flex-1 overflow-y-auto p-2">{children}</main>
       </div>
     </div>
   );

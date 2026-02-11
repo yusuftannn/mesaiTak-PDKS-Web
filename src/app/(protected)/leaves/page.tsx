@@ -10,6 +10,7 @@ import {
 } from "@/lib/db/leaves";
 import { listUsers, AppUser } from "@/lib/db/users";
 import { LEAVE_TYPES } from "../../../lib/db/constants/leaveTypes";
+import { useAuthStore } from "../../../lib/auth/auth.store";
 import { LEAVE_STATUS_LABEL } from "../../../lib/db/constants/leaveStatus";
 
 function formatDate(d: Date) {
@@ -20,6 +21,7 @@ export default function LeavesPage() {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
     (async () => {
@@ -67,13 +69,15 @@ export default function LeavesPage() {
                 <td className="p-3 text-center">
                   {LEAVE_STATUS_LABEL[l.status]}
                 </td>
-
                 <td className="p-3 text-center space-x-2">
                   {l.status === "beklemede" && (
                     <>
                       <button
                         onClick={async () => {
-                          await approveLeave(l.id, "MANAGER_ID");
+                          if (!user) return;
+
+                          await approveLeave(l.id, user.uid);
+
                           setLeaves((prev) =>
                             prev.map((x) =>
                               x.id === l.id ? { ...x, status: "onaylandı" } : x,
@@ -87,10 +91,13 @@ export default function LeavesPage() {
 
                       <button
                         onClick={async () => {
+                          if (!user) return;
+
                           const reason = prompt("Red sebebi?");
                           if (!reason) return;
 
-                          await rejectLeave(l.id, "MANAGER_ID", reason);
+                          await rejectLeave(l.id, user.uid, reason);
+
                           setLeaves((prev) =>
                             prev.map((x) =>
                               x.id === l.id

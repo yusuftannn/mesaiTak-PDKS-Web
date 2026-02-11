@@ -10,6 +10,7 @@ const nav = [
   { href: "/users", label: "Kullanıcılar" },
   { href: "/shifts", label: "Vardiya" },
   { href: "/leaves", label: "İzin Talepleri" },
+  { href: "/reports/monthly", label: "Aylık Rapor" },
 ];
 
 export default function Sidebar() {

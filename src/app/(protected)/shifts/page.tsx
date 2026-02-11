@@ -162,8 +162,8 @@ export default function ShiftsPage() {
       </div>
 
       <div className="overflow-auto border rounded-xl">
-        <table className="min-w-full text-sm text-center">
-          <thead className="bg-gray-50">
+        <table className="min-w-full text-sm text-center border-collapse">
+          <thead className="bg-gray-100 text-gray-700">
             <tr>
               <th className="p-3">#</th>
               <th className="p-3 text-left">Ad Soyad</th>
@@ -192,7 +192,7 @@ export default function ShiftsPage() {
               let total = 0;
 
               return (
-                <tr key={u.id} className="border-t">
+                <tr key={u.id} className="border-t hover:bg-blue-50 transition">
                   <td className="p-3">{index + 1}</td>
 
                   <td className="p-3 text-left font-medium">{u.name}</td>
@@ -209,7 +209,13 @@ export default function ShiftsPage() {
                     return (
                       <td
                         key={d.key}
-                        className="p-3 cursor-pointer hover:bg-gray-100"
+                        className={`p-3 cursor-pointer transition
+                          ${
+                            shift
+                              ? "bg-green-50 hover:bg-green-100 text-green-800 font-medium"
+                              : "bg-gray-50 hover:bg-gray-100 text-gray-400"
+                          }
+                        `}
                         onClick={() =>
                           setModal({
                             userId: u.id,
@@ -225,13 +231,17 @@ export default function ShiftsPage() {
                             {shift.startTime} – {shift.endTime}
                           </>
                         ) : (
-                          <span className="text-gray-400">+</span>
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-300 text-gray-400">
+                            +
+                          </span>
                         )}
                       </td>
                     );
                   })}
 
-                  <td className="p-3 font-semibold">{total.toFixed(1)} sa</td>
+                  <td className="p-3 font-bold text-indigo-700 bg-indigo-50">
+                    {total.toFixed(1)} sa
+                  </td>
                 </tr>
               );
             })}
