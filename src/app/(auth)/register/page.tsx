@@ -75,7 +75,7 @@ export default function RegisterPage() {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <button
-          disabled={loading}
+          disabled
           className="w-full bg-black text-white rounded-lg p-3 disabled:opacity-60"
         >
           {loading ? "Creating…" : "Create Account"}

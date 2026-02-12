@@ -1,4 +1,3 @@
-// src/lib/auth/useAuth.ts
 "use client";
 
 import { onAuthStateChanged } from "firebase/auth";
@@ -10,6 +9,7 @@ import { useAuthStore, AuthUserDoc } from "@/lib/auth/auth.store";
 export function useAuthBootstrap() {
   const setUser = useAuthStore((s) => s.setUser);
   const setInitializing = useAuthStore((s) => s.setInitializing);
+  const setAuthError = useAuthStore((s) => s.setAuthError);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
@@ -23,12 +23,25 @@ export function useAuthBootstrap() {
         const snap = await getDoc(ref);
 
         if (!snap.exists()) {
-          // Kullanıcı Auth var ama Firestore user doc yok → güvenlik için çıkış yaptıracağız.
-          setUser(null);
           await auth.signOut();
+          setUser(null);
           return;
         }
+
         const data = snap.data() as Omit<AuthUserDoc, "uid" | "email">;
+
+        if (data.role !== "manager") {
+          setAuthError("unauthorized");
+          await auth.signOut();
+          setUser(null);
+          return;
+        }
+
+        if (data.status !== "active") {
+          await auth.signOut();
+          setUser(null);
+          return;
+        }
 
         setUser({
           uid: fbUser.uid,
@@ -41,5 +54,5 @@ export function useAuthBootstrap() {
     });
 
     return () => unsub();
-  }, [setUser, setInitializing]);
+  }, [setUser, setInitializing, setAuthError]);
 }
