@@ -11,6 +11,11 @@ export default function UsersPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [branches, setBranches] = useState<Record<string, Branch[]>>({});
   const [showCreate, setShowCreate] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterRole, setFilterRole] = useState<"" | AppUser["role"]>("");
+  const [filterStatus, setFilterStatus] = useState<"" | AppUser["status"]>("");
+  const [filterCompany, setFilterCompany] = useState("");
+  const [filterBranch, setFilterBranch] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -113,6 +118,25 @@ export default function UsersPage() {
     return <div className="p-6">Yükleniyor…</div>;
   }
 
+  const filteredUsers = users.filter((u) => {
+    const matchesSearch =
+      u.name.toLowerCase().includes(search.toLowerCase()) ||
+      u.email.toLowerCase().includes(search.toLowerCase());
+
+    const matchesRole = filterRole ? u.role === filterRole : true;
+    const matchesStatus = filterStatus ? u.status === filterStatus : true;
+    const matchesCompany = filterCompany ? u.companyId === filterCompany : true;
+    const matchesBranch = filterBranch ? u.branchId === filterBranch : true;
+
+    return (
+      matchesSearch &&
+      matchesRole &&
+      matchesStatus &&
+      matchesCompany &&
+      matchesBranch
+    );
+  });
+
   return (
     <div className="p-6 space-y-6">
       <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -126,6 +150,88 @@ export default function UsersPage() {
         <UserPlus size={16} />
         Kullanıcı Ekle
       </button>
+
+      <div className="bg-gray-50 p-4 rounded-xl flex flex-wrap gap-3 items-center">
+        <input
+          type="text"
+          placeholder="İsim veya email ara..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="border px-3 py-2 rounded-lg text-sm w-60"
+        />
+
+        <select
+          value={filterRole}
+          onChange={(e) => {
+            const value = e.target.value;
+            setFilterRole(value === "" ? "" : (value as AppUser["role"]));
+          }}
+          className="border px-3 py-2 rounded-lg text-sm"
+        >
+          <option value="">Tüm Roller</option>
+          <option value="employee">employee</option>
+          <option value="admin">admin</option>
+          <option value="manager">manager</option>
+        </select>
+
+        <select
+          value={filterStatus}
+          onChange={(e) => {
+            const value = e.target.value;
+            setFilterStatus(value === "" ? "" : (value as AppUser["status"]));
+          }}
+          className="border px-3 py-2 rounded-lg text-sm"
+        >
+          <option value="">Tüm Durumlar</option>
+          <option value="active">active</option>
+          <option value="passive">passive</option>
+        </select>
+
+        <select
+          value={filterCompany}
+          onChange={(e) => {
+            setFilterCompany(e.target.value);
+            setFilterBranch("");
+          }}
+          className="border px-3 py-2 rounded-lg text-sm"
+        >
+          <option value="">Tüm Şirketler</option>
+          {companies.map((c) => (
+            <option key={c.companyId} value={c.companyId}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+
+        {filterCompany && (
+          <select
+            value={filterBranch}
+            onChange={(e) => setFilterBranch(e.target.value)}
+            className="border px-3 py-2 rounded-lg text-sm"
+          >
+            <option value="">Tüm Şubeler</option>
+            {(branches[filterCompany] ?? []).map((b) => (
+              <option key={b.branchId} value={b.branchId}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        )}
+
+        <button
+          onClick={() => {
+            setSearch("");
+            setFilterRole("");
+            setFilterStatus("");
+            setFilterCompany("");
+            setFilterBranch("");
+          }}
+          className="text-xs px-3 py-2 bg-gray-200 rounded-lg"
+        >
+          Temizle
+        </button>
+      </div>
+
       <div className="overflow-auto border rounded-xl">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
@@ -153,7 +259,7 @@ export default function UsersPage() {
           </thead>
 
           <tbody>
-            {users.map((u) => (
+            {filteredUsers.map((u) => (
               <tr key={u.id} className="border-t">
                 <td className="p-3">
                   <div className="font-medium">{u.name}</div>
