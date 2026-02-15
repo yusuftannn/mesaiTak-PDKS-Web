@@ -78,22 +78,24 @@ export default function CompaniesPage() {
       </div>
     );
   }
-  
-  return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-lg font-semibold">Şirketler</h2>
 
-      <div className="bg-gray-50 p-4 rounded-xl space-y-3 max-w-3xl">
-        <div className="flex flex-wrap gap-3">
+  return (
+    <div className="p-6">
+      <h2 className="text-lg font-semibold mb-6">Şirketler</h2>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl">
+        <div className="bg-white border rounded-xl p-5 shadow-sm space-y-4 h-fit">
+          <h3 className="text-sm font-semibold text-gray-700">Yeni Şirket</h3>
+
           <input
-            className="flex-1 border rounded-lg px-4 py-2"
+            className="w-full border rounded-lg px-4 py-2 text-sm"
             placeholder="Şirket adı"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
 
           <select
-            className="border rounded-lg px-4 py-2"
+            className="w-full border rounded-lg px-4 py-2 text-sm"
             value={country}
             onChange={(e) => setCountry(e.target.value)}
           >
@@ -104,85 +106,87 @@ export default function CompaniesPage() {
 
           <button
             onClick={onCreate}
-            className="bg-black text-white px-6 rounded-lg"
+            className="w-full bg-black text-white py-2 rounded-lg text-sm hover:opacity-90 transition"
           >
-            Ekle
+            Şirket Ekle
           </button>
         </div>
-      </div>
 
-      <div className="bg-gray-50 p-4 rounded-xl flex flex-wrap gap-3 items-center max-w-3xl">
-        <input
-          type="text"
-          placeholder="Şirket ara..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border px-4 py-2 rounded-lg text-sm w-60"
-        />
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white border rounded-xl p-4 shadow-sm flex items-center gap-4">
+            <input
+              type="text"
+              placeholder="Şirket ara..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="border px-4 py-2 rounded-lg text-sm flex-1"
+            />
 
-        <select
-          value={filterCountry}
-          onChange={(e) => setFilterCountry(e.target.value)}
-          className="border px-4 py-2 rounded-lg text-sm"
-        >
-          <option value="">Tüm Ülkeler</option>
-          <option value="TR">Türkiye</option>
-          <option value="US">USA</option>
-          <option value="DE">Germany</option>
-        </select>
-
-        <select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-          className="border px-4 py-2 rounded-lg text-sm"
-        >
-          <option value="asc">A → Z</option>
-          <option value="desc">Z → A</option>
-        </select>
-
-        <button
-          onClick={() => {
-            setSearch("");
-            setFilterCountry("");
-            setSortOrder("asc");
-          }}
-          className="text-xs px-3 py-2 bg-gray-200 rounded-lg"
-        >
-          Temizle
-        </button>
-
-        <div className="ml-auto text-xs text-gray-500">
-          Toplam: {filteredCompanies.length}
-        </div>
-      </div>
-
-      <div className="border rounded-xl divide-y max-w-3xl">
-        {filteredCompanies.length === 0 ? (
-          <div className="p-6 text-sm text-gray-500">
-            Filtreye uygun şirket bulunamadı
-          </div>
-        ) : (
-          filteredCompanies.map((c) => (
-            <div
-              key={c.id}
-              className="p-4 flex items-center justify-between hover:bg-gray-50 transition"
+            <select
+              value={filterCountry}
+              onChange={(e) => setFilterCountry(e.target.value)}
+              className="border px-4 py-2 rounded-lg text-sm"
             >
-              <div>
-                <div className="font-medium">{c.name}</div>
-                <div className="text-xs text-gray-500">
-                  ID: {c.companyId} • Ülke: {c.country}
-                </div>
-              </div>
+              <option value="">Tüm Ülkeler</option>
+              <option value="TR">Türkiye</option>
+              <option value="US">USA</option>
+              <option value="DE">Germany</option>
+            </select>
 
-              <button
-                className="text-red-600 text-sm hover:underline"
-                onClick={() => onRemove(c.companyId)}
-              >
-                Sil
-              </button>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+              className="border px-4 py-2 rounded-lg text-sm"
+            >
+              <option value="asc">A → Z</option>
+              <option value="desc">Z → A</option>
+            </select>
+
+            <button
+              onClick={() => {
+                setSearch("");
+                setFilterCountry("");
+                setSortOrder("asc");
+              }}
+              className="text-xs px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition whitespace-nowrap"
+            >
+              Temizle
+            </button>
+
+            <div className="text-xs text-gray-500 whitespace-nowrap">
+              Toplam: {filteredCompanies.length}
             </div>
-          ))
-        )}
+          </div>
+
+          <div className="bg-white border rounded-xl divide-y shadow-sm">
+            {filteredCompanies.length === 0 ? (
+              <div className="p-6 text-sm text-gray-500">
+                Filtreye uygun şirket bulunamadı
+              </div>
+            ) : (
+              filteredCompanies.map((c) => (
+                <div
+                  key={c.id}
+                  className="p-4 flex items-center justify-between hover:bg-gray-50 transition"
+                >
+                  <div>
+                    <div className="font-medium">{c.name}</div>
+                    <div className="text-xs text-gray-500">
+                      ID: {c.companyId} • Ülke: {c.country}
+                    </div>
+                  </div>
+
+                  <button
+                    className="text-red-600 text-sm hover:underline"
+                    onClick={() => onRemove(c.companyId)}
+                  >
+                    Sil
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -2,40 +2,110 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+
+import {
+  LayoutDashboard,
+  Building2,
+  MapPin,
+  Users,
+  Clock,
+  CalendarCheck,
+  FileText,
+  Calendar,
+  ClipboardList,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 const nav = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/companies", label: "Şirketler" },
-  { href: "/branches", label: "Şubeler" },
-  { href: "/users", label: "Kullanıcılar" },
-  { href: "/shifts", label: "Vardiya" },
-  { href: "/leaves", label: "İzin Talepleri" },
-  { href: "/reports/monthly", label: "Aylık Rapor" },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/companies", label: "Şirketler", icon: Building2 },
+  { href: "/branches", label: "Şubeler", icon: MapPin },
+  { href: "/users", label: "Kullanıcılar", icon: Users },
+  { href: "/shifts", label: "Vardiya", icon: Clock },
+  { href: "/leaves", label: "İzin Talepleri", icon: CalendarCheck },
+];
+
+const reportItems = [
+  { href: "/reports/monthly", label: "Aylık Rapor", icon: Calendar },
+  { href: "/reports/puantaj", label: "Detaylı Puantaj", icon: ClipboardList },
 ];
 
 export default function Sidebar() {
   const path = usePathname();
+  const [manualOpen, setManualOpen] = useState(false);
+
+  const isReportRoute = path.startsWith("/reports");
+  const openReports = isReportRoute || manualOpen;
 
   return (
     <aside className="w-64 border-r p-4">
-      <div className="font-semibold">MesaiTak</div>
+      <div className="font-semibold text-lg">MesaiTak</div>
       <div className="text-xs text-gray-500">Manager Panel</div>
 
       <nav className="mt-6 space-y-1">
         {nav.map((x) => {
           const active = path.startsWith(x.href);
+          const Icon = x.icon;
+
           return (
             <Link
               key={x.href}
               href={x.href}
-              className={`block rounded-lg px-3 py-2 ${
-                active ? "bg-black text-white" : "hover:bg-gray-100"
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 transition ${
+                active
+                  ? "bg-black text-white"
+                  : "text-gray-700 hover:bg-gray-100"
               }`}
             >
+              <Icon size={18} />
               {x.label}
             </Link>
           );
         })}
+
+        <div>
+          <button
+            onClick={() => setManualOpen(!manualOpen)}
+            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 transition ${
+              isReportRoute
+                ? "bg-black text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <FileText size={18} />
+              Raporlar
+            </div>
+
+            {openReports ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+
+          {openReports && (
+            <div className="ml-4 mt-1 space-y-1">
+              {reportItems.map((r) => {
+                const active = path === r.href;
+                const Icon = r.icon;
+
+                return (
+                  <Link
+                    key={r.href}
+                    href={r.href}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                      active
+                        ? "bg-black text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon size={16} />
+                    {r.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </nav>
     </aside>
   );
