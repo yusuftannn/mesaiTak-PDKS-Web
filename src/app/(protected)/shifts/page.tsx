@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listUsers, AppUser } from "@/lib/db/users";
 import {
   listShiftsByDateRange,
@@ -21,6 +21,7 @@ import {
   getDateForDayKey,
 } from "@/lib/utils/week";
 import ShiftModal from "./ShiftModal";
+import { TDocumentDefinitions } from "pdfmake/interfaces";
 
 const DAYS: { key: DayKey; label: string }[] = [
   { key: "mon", label: "Pzt" },
@@ -32,7 +33,7 @@ const DAYS: { key: DayKey; label: string }[] = [
   { key: "sun", label: "Paz" },
 ];
 
-function calcHours(start: string, end: string) {
+function calcHours(start: string, end: string): number {
   const [sh, sm] = start.split(":").map(Number);
   const [eh, em] = end.split(":").map(Number);
   return eh + em / 60 - (sh + sm / 60);
@@ -41,7 +42,7 @@ function calcHours(start: string, end: string) {
 export default function ShiftsPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const [modal, setModal] = useState<{
     userId: string;
@@ -53,7 +54,46 @@ export default function ShiftsPage() {
 
   const weekRange = useMemo(() => getWeekRange(weekStart), [weekStart]);
 
-  const load = useCallback(async () => {
+  type VfsType = Record<string, string>;
+
+  function extractVfs(module: unknown): VfsType {
+    if (typeof module === "object" && module !== null && "default" in module) {
+      const def = (module as { default: unknown }).default;
+
+      if (typeof def === "object" && def !== null && "pdfMake" in def) {
+        const pdfMakeObj = (def as { pdfMake: unknown }).pdfMake;
+
+        if (
+          typeof pdfMakeObj === "object" &&
+          pdfMakeObj !== null &&
+          "vfs" in pdfMakeObj
+        ) {
+          return (pdfMakeObj as { vfs: VfsType }).vfs;
+        }
+      }
+
+      if (typeof def === "object" && def !== null) {
+        return def as VfsType;
+      }
+    }
+
+    throw new Error("VFS yapısı çözümlenemedi");
+  }
+
+  const loadPdfMake = async () => {
+    const pdfMakeModule = await import("pdfmake/build/pdfmake");
+    const pdfFontsModule = await import("pdfmake/build/vfs_fonts");
+
+    const pdfMakeInstance = pdfMakeModule.default;
+
+    const vfs = extractVfs(pdfFontsModule);
+
+    pdfMakeInstance.vfs = vfs;
+
+    return pdfMakeInstance;
+  };
+
+  const load = async (): Promise<void> => {
     setLoading(true);
 
     const [u, s] = await Promise.all([
@@ -64,20 +104,79 @@ export default function ShiftsPage() {
     setUsers(u);
     setShifts(s);
     setLoading(false);
-  }, [weekRange.monday, weekRange.sunday]);
+  };
 
   useEffect(() => {
-    let mounted = true;
+    let active = true;
 
-    (async () => {
-      if (!mounted) return;
-      await load();
-    })();
+    const fetchData = async (): Promise<void> => {
+      const [u, s] = await Promise.all([
+        listUsers(),
+        listShiftsByDateRange(weekRange.monday, weekRange.sunday),
+      ]);
+
+      if (!active) return;
+
+      setUsers(u);
+      setShifts(s);
+      setLoading(false);
+    };
+
+    fetchData();
 
     return () => {
-      mounted = false;
+      active = false;
     };
-  }, [load]);
+  }, [weekRange.monday, weekRange.sunday]);
+
+  const handleExportPdf = async (): Promise<void> => {
+    const pdfMakeInstance = await loadPdfMake();
+
+    const body: (string | number)[][] = [];
+
+    body.push(["#", "Ad Soyad", ...DAYS.map((d) => d.label), "Toplam (saat)"]);
+
+    users.forEach((u, index) => {
+      let total = 0;
+      const row: (string | number)[] = [];
+
+      row.push(index + 1);
+      row.push(u.name);
+
+      DAYS.forEach((d) => {
+        const shift = shifts.find(
+          (s) => s.userId === u.id && getDayKey(s.date) === d.key,
+        );
+
+        if (shift) {
+          total += calcHours(shift.startTime, shift.endTime);
+          row.push(`${shift.startTime} - ${shift.endTime}`);
+        } else {
+          row.push("-");
+        }
+      });
+
+      row.push(total.toFixed(1));
+      body.push(row);
+    });
+
+    const docDefinition: TDocumentDefinitions = {
+      pageOrientation: "landscape",
+      pageSize: "A4",
+      content: [
+        {
+          table: {
+            headerRows: 1,
+            body,
+          },
+        },
+      ],
+    };
+
+    pdfMakeInstance
+      .createPdf(docDefinition)
+      .download(`mesaitak-haftalik-${formatDate(weekRange.monday)}.pdf`);
+  };
 
   if (loading) {
     return <div className="p-6">Yükleniyor…</div>;
@@ -291,6 +390,13 @@ export default function ShiftsPage() {
           }
         />
       )}
+
+      <button
+        onClick={handleExportPdf}
+        className="bg-indigo-600 text-white px-4 py-2 rounded"
+      >
+        PDF İndir
+      </button>
     </div>
   );
 }
