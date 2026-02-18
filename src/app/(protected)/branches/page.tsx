@@ -7,11 +7,14 @@ import {
   listBranchesByCompany,
   createBranch,
   removeBranch,
+  updateBranch,
 } from "@/lib/db/branches";
 
 export default function BranchesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [companyId, setCompanyId] = useState<string>("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
   const [branches, setBranches] = useState<Branch[]>([]);
   const [branchName, setBranchName] = useState("");
   const [search, setSearch] = useState("");
@@ -85,6 +88,18 @@ export default function BranchesPage() {
 
     const data = await listBranchesByCompany(companyId);
     setBranches(data);
+  };
+
+  const onUpdate = async (branchId: string) => {
+    if (!editingName.trim()) return;
+
+    await updateBranch(branchId, editingName.trim());
+
+    const data = await listBranchesByCompany(companyId);
+    setBranches(data);
+
+    setEditingId(null);
+    setEditingName("");
   };
 
   const filteredBranches = branches
@@ -182,19 +197,63 @@ export default function BranchesPage() {
                     key={b.branchId}
                     className="p-4 flex items-center justify-between hover:bg-gray-50 transition"
                   >
-                    <div>
-                      <div className="font-medium">{b.name}</div>
-                      <div className="text-xs text-gray-500">
-                        ID: {b.branchId}
-                      </div>
+                    <div className="flex-1">
+                      {editingId === b.branchId ? (
+                        <input
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          className="border px-3 py-1 rounded-lg text-sm w-full"
+                        />
+                      ) : (
+                        <>
+                          <div className="font-medium">{b.name}</div>
+                          <div className="text-xs text-gray-500">
+                            ID: {b.branchId}
+                          </div>
+                        </>
+                      )}
                     </div>
 
-                    <button
-                      className="text-red-600 text-sm hover:underline"
-                      onClick={() => onRemove(b.branchId)}
-                    >
-                      Sil
-                    </button>
+                    <div className="flex items-center gap-4">
+                      {editingId === b.branchId ? (
+                        <>
+                          <button
+                            onClick={() => onUpdate(b.branchId)}
+                            className="text-green-600 text-sm hover:underline"
+                          >
+                            Kaydet
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingId(null);
+                              setEditingName("");
+                            }}
+                            className="text-gray-500 text-sm hover:underline"
+                          >
+                            İptal
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditingId(b.branchId);
+                              setEditingName(b.name);
+                            }}
+                            className="text-blue-600 text-sm hover:underline"
+                          >
+                            Düzenle
+                          </button>
+
+                          <button
+                            className="text-red-600 text-sm hover:underline"
+                            onClick={() => onRemove(b.branchId)}
+                          >
+                            Sil
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))
               )}
