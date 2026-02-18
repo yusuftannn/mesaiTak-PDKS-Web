@@ -12,10 +12,9 @@ import {
 } from "firebase/firestore";
 import { v4 as uuid } from "uuid";
 
-
 export type Company = {
   id: string;
-  companyId: string; 
+  companyId: string;
   name: string;
   country: string;
   createdAt: Date | null;
@@ -29,7 +28,6 @@ type CompanyDoc = {
     toDate: () => Date;
   };
 };
-
 
 export async function listCompanies(): Promise<Company[]> {
   const q = query(collection(db, "companies"), orderBy("createdAt", "desc"));
@@ -62,9 +60,15 @@ export async function createCompany(name: string, country: string) {
 
 export async function updateCompany(
   companyId: string,
-  data: Partial<Pick<Company, "name" | "country">>,
+  data: { name: string; country: string },
 ) {
-  await updateDoc(doc(db, "companies", companyId), data);
+  const ref = doc(db, "companies", companyId);
+
+  await updateDoc(ref, {
+    name: data.name,
+    country: data.country,
+    updatedAt: new Date(),
+  });
 }
 
 export async function removeCompany(companyId: string) {

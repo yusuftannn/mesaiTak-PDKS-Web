@@ -6,12 +6,14 @@ import {
   createCompany,
   listCompanies,
   removeCompany,
+  updateCompany,
 } from "@/lib/db/companies";
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [name, setName] = useState("");
   const [country, setCountry] = useState("TR");
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [search, setSearch] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -54,6 +56,23 @@ export default function CompaniesPage() {
     setCompanies(data);
   };
 
+  const onUpdate = async () => {
+    if (!editingCompany) return;
+    if (!name.trim()) return;
+
+    await updateCompany(editingCompany.companyId, {
+      name: name.trim(),
+      country,
+    });
+
+    setEditingCompany(null);
+    setName("");
+    setCountry("TR");
+
+    const data = await listCompanies();
+    setCompanies(data);
+  };
+
   const filteredCompanies = companies
     .filter((c) => {
       const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
@@ -85,7 +104,9 @@ export default function CompaniesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl">
         <div className="bg-white border rounded-xl p-5 shadow-sm space-y-4 h-fit">
-          <h3 className="text-sm font-semibold text-gray-700">Yeni Şirket</h3>
+          <h3 className="text-sm font-semibold text-gray-700">
+            {editingCompany ? "Şirket Güncelle" : "Yeni Şirket"}
+          </h3>
 
           <input
             className="w-full border rounded-lg px-4 py-2 text-sm"
@@ -105,11 +126,23 @@ export default function CompaniesPage() {
           </select>
 
           <button
-            onClick={onCreate}
+            onClick={editingCompany ? onUpdate : onCreate}
             className="w-full bg-black text-white py-2 rounded-lg text-sm hover:opacity-90 transition"
           >
-            Şirket Ekle
+            {editingCompany ? "Güncelle" : "Şirket Ekle"}
           </button>
+          {editingCompany && (
+            <button
+              onClick={() => {
+                setEditingCompany(null);
+                setName("");
+                setCountry("TR");
+              }}
+              className="w-full bg-gray-200 text-sm py-2 rounded-lg hover:bg-gray-300 transition"
+            >
+              İptal
+            </button>
+          )}
         </div>
 
         <div className="lg:col-span-2 space-y-4">
@@ -176,12 +209,25 @@ export default function CompaniesPage() {
                     </div>
                   </div>
 
-                  <button
-                    className="text-red-600 text-sm hover:underline"
-                    onClick={() => onRemove(c.companyId)}
-                  >
-                    Sil
-                  </button>
+                  <div className="flex items-center gap-4">
+                    <button
+                      className="text-blue-600 text-sm hover:underline"
+                      onClick={() => {
+                        setEditingCompany(c);
+                        setName(c.name);
+                        setCountry(c.country);
+                      }}
+                    >
+                      Düzenle
+                    </button>
+
+                    <button
+                      className="text-red-600 text-sm hover:underline"
+                      onClick={() => onRemove(c.companyId)}
+                    >
+                      Sil
+                    </button>
+                  </div>
                 </div>
               ))
             )}
