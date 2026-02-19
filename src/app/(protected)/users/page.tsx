@@ -1,10 +1,11 @@
 "use client";
-import { Power, UserPlus } from "lucide-react";
+import { Power, UserPlus, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppUser, listUsers, updateUser } from "@/lib/db/users";
 import { listCompanies, Company } from "@/lib/db/companies";
 import { listBranchesByCompany, Branch } from "@/lib/db/branches";
 import CreateUserModal from "./CreateUserModal";
+import EditUserModal from "./EditUserModal";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -12,6 +13,7 @@ export default function UsersPage() {
   const [branches, setBranches] = useState<Record<string, Branch[]>>({});
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState("");
+  const [editingUser, setEditingUser] = useState<AppUser | null>(null);
   const [filterRole, setFilterRole] = useState<"" | AppUser["role"]>("");
   const [filterStatus, setFilterStatus] = useState<"" | AppUser["status"]>("");
   const [filterCompany, setFilterCompany] = useState("");
@@ -140,17 +142,17 @@ export default function UsersPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6 max-w-7xl">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          Kullanıcılar
-        </h2>
+        <h2 className="text-lg font-semibold">Kullanıcılar</h2>
 
-        <button
-          onClick={() => setShowCreate(true)}
-          className="bg-black text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:opacity-90 transition"
-        >
-          <UserPlus size={16} />
-          Kullanıcı Ekle
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowCreate(true)}
+            className="bg-black text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:opacity-90 transition"
+          >
+            <UserPlus size={16} />
+            Kullanıcı Ekle
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4 max-w-7xl">
@@ -248,6 +250,7 @@ export default function UsersPage() {
                 <th className="p-3 text-center">Şirket</th>
                 <th className="p-3 text-center">Şube</th>
                 <th className="p-3 text-center">Durum</th>
+                <th className="p-3 text-center">İşlem</th>
               </tr>
             </thead>
 
@@ -315,7 +318,7 @@ export default function UsersPage() {
                   <td className="p-3 text-center">
                     <button
                       onClick={() => onToggleStatus(u)}
-                      className={`text-xs px-3 py-1 rounded flex items-center gap-1 justify-center ${
+                      className={`mx-auto text-xs px-3 py-1 rounded flex items-center gap-1 justify-center ${
                         u.status === "active"
                           ? "bg-green-100 text-green-700"
                           : "bg-gray-200 text-gray-600"
@@ -323,6 +326,15 @@ export default function UsersPage() {
                     >
                       <Power size={12} />
                       {u.status}
+                    </button>
+                  </td>
+
+                  <td className="p-3 text-center">
+                    <button
+                      onClick={() => setEditingUser(u)}
+                      className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                    >
+                      <Pencil size={16} />
                     </button>
                   </td>
                 </tr>
@@ -343,6 +355,18 @@ export default function UsersPage() {
           companies={companies}
           onClose={() => setShowCreate(false)}
           onCreated={async () => {
+            const data = await listUsers();
+            setUsers(data);
+          }}
+        />
+      )}
+
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          companies={companies}
+          onClose={() => setEditingUser(null)}
+          onUpdated={async () => {
             const data = await listUsers();
             setUsers(data);
           }}

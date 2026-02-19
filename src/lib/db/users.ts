@@ -15,7 +15,7 @@ export type UserStatus = "active" | "passive";
 
 export type AppUser = {
   id: string;
-  uid: string; 
+  uid: string;
   name: string;
   email: string;
   phone?: string;
@@ -74,7 +74,10 @@ export async function createUser(params: {
 export async function updateUser(
   userId: string,
   data: Partial<
-    Pick<AppUser, "role" | "companyId" | "branchId" | "status" | "phone">
+    Pick<
+      AppUser,
+      "role" | "companyId" | "branchId" | "status" | "phone" | "name"
+    >
   >,
 ) {
   await updateDoc(doc(db, "users", userId), {
