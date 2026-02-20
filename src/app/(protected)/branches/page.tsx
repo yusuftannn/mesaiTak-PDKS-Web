@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { listCompanies, Company } from "@/lib/db/companies";
+import { useToastStore } from "@/lib/ui/toast.store";
 import {
   Branch,
   listBranchesByCompany,
@@ -20,6 +21,7 @@ export default function BranchesPage() {
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [loading, setLoading] = useState(false);
+  const showToast = useToastStore((s) => s.showToast);
 
   useEffect(() => {
     let mounted = true;
@@ -69,37 +71,96 @@ export default function BranchesPage() {
     return () => {
       mounted = false;
     };
-  }, [companyId]);
+  }, [companyId, showToast]);
 
   const onCreate = async () => {
-    if (!branchName.trim() || !companyId) return;
+    if (!branchName.trim() || !companyId) {
+      showToast({
+        type: "info",
+        title: "Eksik Bilgi",
+        message: "Şube adı boş olamaz.",
+      });
+      return;
+    }
 
-    await createBranch(companyId, branchName.trim());
-    setBranchName("");
+    try {
+      await createBranch(companyId, branchName.trim());
+      setBranchName("");
 
-    const data = await listBranchesByCompany(companyId);
-    setBranches(data);
+      const data = await listBranchesByCompany(companyId);
+      setBranches(data);
+
+      showToast({
+        type: "success",
+        title: "Şube Oluşturuldu",
+        message: "Yeni şube başarıyla eklendi.",
+      });
+    } catch (err) {
+      console.error(err);
+      showToast({
+        type: "error",
+        title: "Hata",
+        message: "Şube eklenirken hata oluştu.",
+      });
+    }
   };
 
   const onRemove = async (branchId: string) => {
     if (!confirm("Şube silinsin mi?")) return;
 
-    await removeBranch(branchId);
+    try {
+      await removeBranch(branchId);
 
-    const data = await listBranchesByCompany(companyId);
-    setBranches(data);
+      const data = await listBranchesByCompany(companyId);
+      setBranches(data);
+
+      showToast({
+        type: "success",
+        title: "Şube Silindi",
+        message: "Şube başarıyla silindi.",
+      });
+    } catch (err) {
+      console.error(err);
+      showToast({
+        type: "error",
+        title: "Hata",
+        message: "Şube silinirken hata oluştu.",
+      });
+    }
   };
 
   const onUpdate = async (branchId: string) => {
-    if (!editingName.trim()) return;
+    if (!editingName.trim()) {
+      showToast({
+        type: "info",
+        title: "Eksik Bilgi",
+        message: "Şube adı boş olamaz.",
+      });
+      return;
+    }
 
-    await updateBranch(branchId, editingName.trim());
+    try {
+      await updateBranch(branchId, editingName.trim());
 
-    const data = await listBranchesByCompany(companyId);
-    setBranches(data);
+      const data = await listBranchesByCompany(companyId);
+      setBranches(data);
 
-    setEditingId(null);
-    setEditingName("");
+      setEditingId(null);
+      setEditingName("");
+
+      showToast({
+        type: "success",
+        title: "Güncellendi",
+        message: "Şube adı başarıyla güncellendi.",
+      });
+    } catch (err) {
+      console.error(err);
+      showToast({
+        type: "error",
+        title: "Hata",
+        message: "Güncelleme sırasında hata oluştu.",
+      });
+    }
   };
 
   const filteredBranches = branches

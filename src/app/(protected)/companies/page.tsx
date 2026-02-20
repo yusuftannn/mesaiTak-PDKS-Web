@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToastStore } from "@/lib/ui/toast.store";
 import {
   Company,
   createCompany,
@@ -18,59 +19,129 @@ export default function CompaniesPage() {
   const [filterCountry, setFilterCountry] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [loading, setLoading] = useState(true);
+  const showToast = useToastStore((s) => s.showToast);
 
   useEffect(() => {
     let mounted = true;
 
     (async () => {
-      setLoading(true);
-      const data = await listCompanies();
-      if (mounted) {
-        setCompanies(data);
-        setLoading(false);
+      try {
+        setLoading(true);
+        const data = await listCompanies();
+        if (mounted) setCompanies(data);
+      } catch (err) {
+        console.error(err);
+        showToast({
+          type: "error",
+          title: "Veri Hatası",
+          message: "Şirketler yüklenemedi.",
+        });
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [showToast]);
 
   const onCreate = async () => {
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      showToast({
+        type: "info",
+        title: "Eksik Bilgi",
+        message: "Şirket adı boş olamaz.",
+      });
+      return;
+    }
 
-    await createCompany(name.trim(), country);
-    setName("");
-    setCountry("TR");
+    try {
+      await createCompany(name.trim(), country);
 
-    const data = await listCompanies();
-    setCompanies(data);
+      showToast({
+        type: "success",
+        title: "Şirket Oluşturuldu",
+        message: "Yeni şirket başarıyla eklendi.",
+      });
+
+      setName("");
+      setCountry("TR");
+
+      const data = await listCompanies();
+      setCompanies(data);
+    } catch (err) {
+      console.error(err);
+      showToast({
+        type: "error",
+        title: "Hata",
+        message: "Şirket eklenirken hata oluştu.",
+      });
+    }
   };
 
   const onRemove = async (companyId: string) => {
     if (!confirm("Şirket silinsin mi?")) return;
 
-    await removeCompany(companyId);
+    try {
+      await removeCompany(companyId);
 
-    const data = await listCompanies();
-    setCompanies(data);
+      showToast({
+        type: "success",
+        title: "Şirket Silindi",
+        message: "Şirket başarıyla silindi.",
+      });
+
+      const data = await listCompanies();
+      setCompanies(data);
+    } catch (err) {
+      console.error(err);
+      showToast({
+        type: "error",
+        title: "Hata",
+        message: "Şirket silinirken hata oluştu.",
+      });
+    }
   };
 
   const onUpdate = async () => {
     if (!editingCompany) return;
-    if (!name.trim()) return;
 
-    await updateCompany(editingCompany.companyId, {
-      name: name.trim(),
-      country,
-    });
+    if (!name.trim()) {
+      showToast({
+        type: "info",
+        title: "Eksik Bilgi",
+        message: "Şirket adı boş olamaz.",
+      });
+      return;
+    }
 
-    setEditingCompany(null);
-    setName("");
-    setCountry("TR");
+    try {
+      await updateCompany(editingCompany.companyId, {
+        name: name.trim(),
+        country,
+      });
 
-    const data = await listCompanies();
-    setCompanies(data);
+      showToast({
+        type: "success",
+        title: "Güncellendi",
+        message: "Şirket başarıyla güncellendi.",
+      });
+
+      setEditingCompany(null);
+      setName("");
+      setCountry("TR");
+
+      const data = await listCompanies();
+      setCompanies(data);
+    } catch (err) {
+      console.error(err);
+      showToast({
+        type: "error",
+        title: "Hata",
+        message: "Güncelleme sırasında hata oluştu.",
+      });
+    }
   };
 
   const filteredCompanies = companies

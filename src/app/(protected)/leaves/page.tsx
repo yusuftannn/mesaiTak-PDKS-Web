@@ -8,6 +8,7 @@ import {
   rejectLeave,
   deleteLeave,
 } from "@/lib/db/leaves";
+import { useToastStore } from "@/lib/ui/toast.store";
 import { listUsers, AppUser } from "@/lib/db/users";
 import { LEAVE_TYPES } from "../../../lib/db/constants/leaveTypes";
 import { useAuthStore } from "../../../lib/auth/auth.store";
@@ -26,15 +27,35 @@ export default function LeavesPage() {
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [loading, setLoading] = useState(true);
   const user = useAuthStore((s) => s.user);
+  const showToast = useToastStore((s) => s.showToast);
 
   useEffect(() => {
+    let mounted = true;
+
     (async () => {
-      const [l, u] = await Promise.all([listLeaves(), listUsers()]);
-      setLeaves(l);
-      setUsers(u);
-      setLoading(false);
+      try {
+        const [l, u] = await Promise.all([listLeaves(), listUsers()]);
+
+        if (!mounted) return;
+
+        setLeaves(l);
+        setUsers(u);
+      } catch (err) {
+        console.error(err);
+        showToast({
+          type: "error",
+          title: "Veri Hatası",
+          message: "İzin talepleri yüklenemedi.",
+        });
+      } finally {
+        if (mounted) setLoading(false);
+      }
     })();
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, [showToast]);
 
   const getUserName = (userId: string) =>
     users.find((u) => u.id === userId)?.name ?? "—";
@@ -177,15 +198,30 @@ export default function LeavesPage() {
                           onClick={async () => {
                             if (!user) return;
 
-                            await approveLeave(l.id, user.uid);
+                            try {
+                              await approveLeave(l.id, user.uid);
 
-                            setLeaves((prev) =>
-                              prev.map((x) =>
-                                x.id === l.id
-                                  ? { ...x, status: "onaylandı" }
-                                  : x,
-                              ),
-                            );
+                              setLeaves((prev) =>
+                                prev.map((x) =>
+                                  x.id === l.id
+                                    ? { ...x, status: "onaylandı" }
+                                    : x,
+                                ),
+                              );
+
+                              showToast({
+                                type: "success",
+                                title: "Onaylandı",
+                                message: "İzin talebi onaylandı.",
+                              });
+                            } catch (err) {
+                              console.error(err);
+                              showToast({
+                                type: "error",
+                                title: "Hata",
+                                message: "Onaylama sırasında hata oluştu.",
+                              });
+                            }
                           }}
                           className="text-green-600 hover:underline"
                         >
@@ -199,19 +235,34 @@ export default function LeavesPage() {
                             const reason = prompt("Red sebebi?");
                             if (!reason) return;
 
-                            await rejectLeave(l.id, user.uid, reason);
+                            try {
+                              await rejectLeave(l.id, user.uid, reason);
 
-                            setLeaves((prev) =>
-                              prev.map((x) =>
-                                x.id === l.id
-                                  ? {
-                                      ...x,
-                                      status: "reddedildi",
-                                      rejectReason: reason,
-                                    }
-                                  : x,
-                              ),
-                            );
+                              setLeaves((prev) =>
+                                prev.map((x) =>
+                                  x.id === l.id
+                                    ? {
+                                        ...x,
+                                        status: "reddedildi",
+                                        rejectReason: reason,
+                                      }
+                                    : x,
+                                ),
+                              );
+
+                              showToast({
+                                type: "success",
+                                title: "Reddedildi",
+                                message: "İzin talebi reddedildi.",
+                              });
+                            } catch (err) {
+                              console.error(err);
+                              showToast({
+                                type: "error",
+                                title: "Hata",
+                                message: "Reddetme sırasında hata oluştu.",
+                              });
+                            }
                           }}
                           className="text-red-600 hover:underline"
                         >
@@ -226,10 +277,26 @@ export default function LeavesPage() {
                         onClick={async () => {
                           if (!confirm("Bu izin silinsin mi?")) return;
 
-                          await deleteLeave(l.id);
-                          setLeaves((prev) =>
-                            prev.filter((x) => x.id !== l.id),
-                          );
+                          try {
+                            await deleteLeave(l.id);
+
+                            setLeaves((prev) =>
+                              prev.filter((x) => x.id !== l.id),
+                            );
+
+                            showToast({
+                              type: "success",
+                              title: "Silindi",
+                              message: "İzin talebi silindi.",
+                            });
+                          } catch (err) {
+                            console.error(err);
+                            showToast({
+                              type: "error",
+                              title: "Hata",
+                              message: "Silme sırasında hata oluştu.",
+                            });
+                          }
                         }}
                         className="text-gray-500 hover:text-red-600 ml-2"
                       >
