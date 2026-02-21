@@ -17,6 +17,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import Button from "./ui/Button";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -66,13 +67,12 @@ export default function Sidebar() {
         })}
 
         <div>
-          <button
+          <Button
+            variant={isReportRoute ? "primary" : "ghost"}
+            size="md"
+            fullWidth
             onClick={() => setManualOpen(!manualOpen)}
-            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 transition ${
-              isReportRoute
-                ? "bg-black text-white"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
+            className="justify-start"
           >
             <div className="flex items-center gap-3">
               <FileText size={18} />
@@ -80,7 +80,7 @@ export default function Sidebar() {
             </div>
 
             {openReports ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
+          </Button>
 
           {openReports && (
             <div className="ml-4 mt-1 space-y-1">

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useToastStore, ToastItem as ToastType } from "@/lib/ui/toast.store";
 import { CheckCircle, XCircle, Info, X } from "lucide-react";
+import Button from "@/components/ui/Button";
 
 export default function ToastItem({ toast }: { toast: ToastType }) {
   const removeToast = useToastStore((s) => s.removeToast);
@@ -47,9 +48,14 @@ export default function ToastItem({ toast }: { toast: ToastType }) {
           )}
         </div>
 
-        <button onClick={() => removeToast(toast.id)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => removeToast(toast.id)}
+          className="p-1! rounded-md! text-gray-400 hover:text-gray-700"
+        >
           <X size={16} className="text-gray-400 hover:text-gray-700" />
-        </button>
+        </Button>
       </div>
 
       <div className="absolute bottom-0 left-0 h-1 w-full bg-gray-200">

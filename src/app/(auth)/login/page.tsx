@@ -9,6 +9,7 @@ import { auth } from "@/lib/firebase";
 import { mapFirebaseError } from "@/lib/auth/firebaseError";
 import { useToastStore } from "@/lib/ui/toast.store";
 import { useAuthStore } from "@/lib/auth/auth.store";
+import Button from "@/components/ui/Button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,9 +26,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!initializing && user) {
+      showToast({
+        type: "success",
+        title: "Giriş Başarılı",
+        message: "Başarıyla giriş yapıldı.",
+      });
       router.replace("/dashboard");
     }
-  }, [user, initializing, router]);
+  }, [user, initializing, router, showToast]);
 
   useEffect(() => {
     if (authError === "unauthorized") {
@@ -96,7 +102,7 @@ export default function LoginPage() {
 
         <input
           className="w-full border rounded-lg p-3"
-          placeholder="Email"
+          placeholder="E-posta adresiniz"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -104,19 +110,15 @@ export default function LoginPage() {
 
         <input
           className="w-full border rounded-lg p-3"
-          placeholder="Password"
+          placeholder="Şifreniz"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-black text-white rounded-lg p-3 disabled:opacity-60"
-        >
+        <Button type="submit" fullWidth loading={loading} disabled={loading}>
           {loading ? "Oturum açılıyor…" : "Giriş Yap"}
-        </button>
+        </Button>
       </form>
     </div>
   );

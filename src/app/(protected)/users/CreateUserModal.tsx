@@ -26,6 +26,7 @@ export default function CreateUserModal({
   const [companyId, setCompanyId] = useState<string>("");
   const [branchId, setBranchId] = useState<string>("");
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [country, setCountry] = useState("Turkiye");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +57,7 @@ export default function CreateUserModal({
         role,
         companyId: companyId || null,
         branchId: branchId || null,
-        country: "Turkiye",
+        country: country || "Turkiye",
       });
 
       onCreated();
@@ -104,6 +105,13 @@ export default function CreateUserModal({
           placeholder="Telefon"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+        />
+
+        <input
+          className="border rounded p-2 w-full"
+          placeholder="Ülke"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
         />
 
         <select

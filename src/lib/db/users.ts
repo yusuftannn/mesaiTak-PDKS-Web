@@ -76,7 +76,13 @@ export async function updateUser(
   data: Partial<
     Pick<
       AppUser,
-      "role" | "companyId" | "branchId" | "status" | "phone" | "name"
+      | "role"
+      | "companyId"
+      | "branchId"
+      | "status"
+      | "phone"
+      | "name"
+      | "country"
     >
   >,
 ) {

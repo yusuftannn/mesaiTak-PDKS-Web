@@ -25,6 +25,7 @@ export default function EditUserModal({
   const [companyId, setCompanyId] = useState(user.companyId ?? "");
   const [branchId, setBranchId] = useState(user.branchId ?? "");
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [country, setCountry] = useState(user.country ?? "Turkiye");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function EditUserModal({
       await updateUser(user.id, {
         name,
         phone,
+        country: country || "Turkiye",
         role,
         companyId: companyId || null,
         branchId: branchId || null,
@@ -72,6 +74,13 @@ export default function EditUserModal({
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="Telefon"
+        />
+
+        <input
+          className="border rounded p-2 w-full"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          placeholder="Ülke"
         />
 
         <select
