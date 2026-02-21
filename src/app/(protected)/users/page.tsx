@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AppUser, listUsers, updateUser } from "@/lib/db/users";
 import { listCompanies, Company } from "@/lib/db/companies";
 import { listBranchesByCompany, Branch } from "@/lib/db/branches";
+import Button from "@/components/ui/Button";
 import CreateUserModal from "./CreateUserModal";
 import EditUserModal from "./EditUserModal";
 
@@ -145,13 +146,13 @@ export default function UsersPage() {
         <h2 className="text-lg font-semibold">Kullanıcılar</h2>
 
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={() => setShowCreate(true)}
-            className="bg-black text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:opacity-90 transition"
+            className="flex items-center gap-2"
+            icon={<UserPlus size={16} />}
           >
-            <UserPlus size={16} />
             Kullanıcı Ekle
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -223,7 +224,9 @@ export default function UsersPage() {
             </select>
           )}
 
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => {
               setSearch("");
               setFilterRole("");
@@ -231,10 +234,9 @@ export default function UsersPage() {
               setFilterCompany("");
               setFilterBranch("");
             }}
-            className="text-xs px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition whitespace-nowrap"
           >
             Temizle
-          </button>
+          </Button>
 
           <div className="text-xs text-gray-500 whitespace-nowrap">
             Toplam: {filteredUsers.length}
@@ -316,26 +318,29 @@ export default function UsersPage() {
                   </td>
 
                   <td className="p-3 text-center">
-                    <button
-                      onClick={() => onToggleStatus(u)}
-                      className={`mx-auto text-xs px-3 py-1 rounded flex items-center gap-1 justify-center ${
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      icon={<Power size={12} />}
+                      className={`mx-auto flex items-center gap-1 justify-center ${
                         u.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-200 text-gray-600"
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                       }`}
+                      onClick={() => onToggleStatus(u)}
                     >
-                      <Power size={12} />
                       {u.status}
-                    </button>
+                    </Button>
                   </td>
 
                   <td className="p-3 text-center">
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={<Pencil size={16} />}
+                      className="mx-auto flex items-center gap-1 justify-center"
                       onClick={() => setEditingUser(u)}
-                      className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
-                    >
-                      <Pencil size={16} />
-                    </button>
+                    />
                   </td>
                 </tr>
               ))}

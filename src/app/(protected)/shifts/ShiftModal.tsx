@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { SHIFT_TYPES, ShiftType } from "@/lib/db/constants/shiftTypes";
-
+import Button from "@/components/ui/Button";
 type ShiftInitial = {
   startTime: string;
   endTime: string;
@@ -84,27 +84,31 @@ export default function ShiftModal({
           }`}
         >
           {onDelete && (
-            <button
+            <Button
+              variant="danger"
+              size="sm"
               onClick={async () => {
                 if (!confirm("Vardiya silinsin mi?")) return;
                 await onDelete();
                 onClose();
               }}
-              className="text-red-600 text-sm hover:underline"
             >
               Sil
-            </button>
+            </Button>
           )}
 
           <div className="flex gap-2">
-            <button onClick={onClose}>İptal</button>
-            <button
+            <Button variant="secondary" size="sm" onClick={onClose}>
+              İptal
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={submit}
-              disabled={loading}
-              className="bg-black text-white px-4 py-2 rounded"
+              loading={loading}
             >
               Kaydet
-            </button>
+            </Button>
           </div>
         </div>
       </div>

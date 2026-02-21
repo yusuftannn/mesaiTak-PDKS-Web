@@ -7,6 +7,8 @@ import {
   AttendanceDoc,
   LeaveDoc,
 } from "../../../../lib/db/constants/reportTypes";
+import Button from "@/components/ui/Button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 function getDaysInMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -79,23 +81,23 @@ export default function MonthlyReportPage() {
           </h2>
 
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<ChevronLeft size={16} />}
               onClick={() =>
                 setDate(new Date(date.getFullYear(), date.getMonth() - 1, 1))
               }
-              className="px-4 py-2 border rounded-lg hover:bg-gray-100 text-sm"
-            >
-              ← Önceki
-            </button>
+            />
 
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<ChevronRight size={16} />}
               onClick={() =>
                 setDate(new Date(date.getFullYear(), date.getMonth() + 1, 1))
               }
-              className="px-4 py-2 border rounded-lg hover:bg-gray-100 text-sm"
-            >
-              Sonraki →
-            </button>
+            />
           </div>
         </div>
 

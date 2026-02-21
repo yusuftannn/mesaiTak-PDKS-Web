@@ -5,6 +5,7 @@ import { createUser } from "@/lib/db/users";
 import { Company } from "@/lib/db/companies";
 import { Branch } from "@/lib/db/branches";
 import { listBranchesByCompany } from "@/lib/db/branches";
+import Button from "@/components/ui/Button";
 
 type Props = {
   companies: Company[];
@@ -40,7 +41,7 @@ export default function CreateUserModal({
 
   const onSubmit = async () => {
     if (!name || !email || !password) {
-      alert("Zorunlu alanlar boş");
+      setError("Zorunlu alanlar boş");
       return;
     }
 
@@ -143,16 +144,12 @@ export default function CreateUserModal({
         )}
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-4 py-2 text-sm">
+          <Button variant="secondary" size="sm" onClick={onClose}>
             İptal
-          </button>
-          <button
-            onClick={onSubmit}
-            disabled={loading}
-            className="bg-black text-white px-4 py-2 rounded text-sm"
-          >
-            {loading ? "Kaydediliyor…" : "Oluştur"}
-          </button>
+          </Button>
+          <Button size="sm" loading={loading} onClick={onSubmit}>
+            Oluştur
+          </Button>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { listUsers, AppUser } from "@/lib/db/users";
+import Button from "@/components/ui/Button";
 import {
   listShiftsByDateRange,
   createShift,
@@ -22,6 +23,7 @@ import {
 } from "@/lib/utils/week";
 import ShiftModal from "./ShiftModal";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
+import { FileDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 const DAYS: { key: DayKey; label: string }[] = [
   { key: "mon", label: "Pzt" },
@@ -188,28 +190,28 @@ export default function ShiftsPage() {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<ChevronLeft size={16} />}
             onClick={() => setWeekStart((d) => addWeeks(d, -1))}
-            className="px-3 py-1 border rounded cursor-pointer hover:bg-gray-100"
-          >
-            ← Önceki
-          </button>
+          />
 
           <div className="font-medium">
             {formatDate(weekRange.monday)} – {formatDate(weekRange.sunday)}
           </div>
 
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<ChevronRight size={16} />}
             onClick={() => setWeekStart((d) => addWeeks(d, 1))}
-            className="px-3 py-1 border rounded cursor-pointer hover:bg-gray-100"
-          >
-            Sonraki →
-          </button>
+          />
         </div>
 
         <div className="flex gap-2">
           <div className="flex gap-2 flex-wrap"></div>
-          <button
+          <Button
             onClick={async () => {
               if (
                 !confirm(
@@ -221,12 +223,12 @@ export default function ShiftsPage() {
               await copyWeekShifts(weekRange.monday);
               setWeekStart((d) => addWeeks(d, 1));
             }}
-            className="bg-black text-white px-4 py-2 rounded"
           >
             Kopyala
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="danger"
             onClick={async () => {
               if (
                 !confirm(
@@ -238,12 +240,12 @@ export default function ShiftsPage() {
               await copyWeekShiftsOverwrite(weekRange.monday);
               setWeekStart((d) => addWeeks(d, 1));
             }}
-            className="bg-red-600 text-white px-4 py-2 rounded"
           >
             Üzerine yazarak kopyala
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="danger"
             onClick={async () => {
               if (
                 !confirm("Bu haftadaki tüm vardiyalar silinecek. Emin misiniz?")
@@ -253,10 +255,9 @@ export default function ShiftsPage() {
               await clearWeekShifts(weekRange.monday);
               await load();
             }}
-            className="bg-red-700 text-white px-4 py-2 rounded"
           >
             Bu haftayı tamamen temizle
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -391,12 +392,13 @@ export default function ShiftsPage() {
         />
       )}
 
-      <button
+      <Button
+        variant="success"
+        icon={<FileDown size={16} />}
         onClick={handleExportPdf}
-        className="bg-indigo-600 text-white px-4 py-2 rounded"
       >
         PDF İndir
-      </button>
+      </Button>
     </div>
   );
 }

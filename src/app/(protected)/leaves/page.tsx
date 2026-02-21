@@ -8,6 +8,7 @@ import {
   rejectLeave,
   deleteLeave,
 } from "@/lib/db/leaves";
+import Button from "@/components/ui/Button";
 import { useToastStore } from "@/lib/ui/toast.store";
 import { listUsers, AppUser } from "@/lib/db/users";
 import { LEAVE_TYPES } from "../../../lib/db/constants/leaveTypes";
@@ -132,17 +133,18 @@ export default function LeavesPage() {
             <option value="asc">Eski → Yeni</option>
           </select>
 
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => {
               setSearch("");
               setFilterStatus("");
               setFilterType("");
               setSortOrder("desc");
             }}
-            className="text-xs px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition whitespace-nowrap"
           >
             Temizle
-          </button>
+          </Button>
 
           <div className="ml-auto text-xs text-gray-500 flex items-center gap-4 whitespace-nowrap">
             <span>
@@ -191,118 +193,126 @@ export default function LeavesPage() {
                     </span>
                   </td>
 
-                  <td className="p-3 text-center space-x-2">
-                    {l.status === "beklemede" && (
-                      <>
-                        <button
+                  <td className="p-3">
+                    <div className="flex items-center justify-center gap-2">
+                      {l.status === "beklemede" && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-green-600 hover:text-green-700"
+                            onClick={async () => {
+                              if (!user) return;
+
+                              try {
+                                await approveLeave(l.id, user.uid);
+
+                                setLeaves((prev) =>
+                                  prev.map((x) =>
+                                    x.id === l.id
+                                      ? { ...x, status: "onaylandı" }
+                                      : x,
+                                  ),
+                                );
+
+                                showToast({
+                                  type: "success",
+                                  title: "Onaylandı",
+                                  message: "İzin talebi onaylandı.",
+                                });
+                              } catch (err) {
+                                console.error(err);
+                                showToast({
+                                  type: "error",
+                                  title: "Hata",
+                                  message: "Onaylama sırasında hata oluştu.",
+                                });
+                              }
+                            }}
+                          >
+                            Onayla
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={async () => {
+                              if (!user) return;
+
+                              const reason = prompt("Red sebebi?");
+                              if (!reason) return;
+
+                              try {
+                                await rejectLeave(l.id, user.uid, reason);
+
+                                setLeaves((prev) =>
+                                  prev.map((x) =>
+                                    x.id === l.id
+                                      ? {
+                                          ...x,
+                                          status: "reddedildi",
+                                          rejectReason: reason,
+                                        }
+                                      : x,
+                                  ),
+                                );
+
+                                showToast({
+                                  type: "success",
+                                  title: "Reddedildi",
+                                  message: "İzin talebi reddedildi.",
+                                });
+                              } catch (err) {
+                                console.error(err);
+                                showToast({
+                                  type: "error",
+                                  title: "Hata",
+                                  message: "Reddetme sırasında hata oluştu.",
+                                });
+                              }
+                            }}
+                          >
+                            Reddet
+                          </Button>
+                        </>
+                      )}
+
+                      {(l.status === "beklemede" ||
+                        l.status === "reddedildi") && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-500 hover:text-red-600"
                           onClick={async () => {
-                            if (!user) return;
+                            if (!confirm("Bu izin silinsin mi?")) return;
 
                             try {
-                              await approveLeave(l.id, user.uid);
+                              await deleteLeave(l.id);
 
                               setLeaves((prev) =>
-                                prev.map((x) =>
-                                  x.id === l.id
-                                    ? { ...x, status: "onaylandı" }
-                                    : x,
-                                ),
+                                prev.filter((x) => x.id !== l.id),
                               );
 
                               showToast({
                                 type: "success",
-                                title: "Onaylandı",
-                                message: "İzin talebi onaylandı.",
+                                title: "Silindi",
+                                message: "İzin talebi silindi.",
                               });
                             } catch (err) {
                               console.error(err);
                               showToast({
                                 type: "error",
                                 title: "Hata",
-                                message: "Onaylama sırasında hata oluştu.",
+                                message: "Silme sırasında hata oluştu.",
                               });
                             }
                           }}
-                          className="text-green-600 hover:underline"
                         >
-                          Onayla
-                        </button>
-
-                        <button
-                          onClick={async () => {
-                            if (!user) return;
-
-                            const reason = prompt("Red sebebi?");
-                            if (!reason) return;
-
-                            try {
-                              await rejectLeave(l.id, user.uid, reason);
-
-                              setLeaves((prev) =>
-                                prev.map((x) =>
-                                  x.id === l.id
-                                    ? {
-                                        ...x,
-                                        status: "reddedildi",
-                                        rejectReason: reason,
-                                      }
-                                    : x,
-                                ),
-                              );
-
-                              showToast({
-                                type: "success",
-                                title: "Reddedildi",
-                                message: "İzin talebi reddedildi.",
-                              });
-                            } catch (err) {
-                              console.error(err);
-                              showToast({
-                                type: "error",
-                                title: "Hata",
-                                message: "Reddetme sırasında hata oluştu.",
-                              });
-                            }
-                          }}
-                          className="text-red-600 hover:underline"
-                        >
-                          Reddet
-                        </button>
-                      </>
-                    )}
-
-                    {(l.status === "beklemede" ||
-                      l.status === "reddedildi") && (
-                      <button
-                        onClick={async () => {
-                          if (!confirm("Bu izin silinsin mi?")) return;
-
-                          try {
-                            await deleteLeave(l.id);
-
-                            setLeaves((prev) =>
-                              prev.filter((x) => x.id !== l.id),
-                            );
-
-                            showToast({
-                              type: "success",
-                              title: "Silindi",
-                              message: "İzin talebi silindi.",
-                            });
-                          } catch (err) {
-                            console.error(err);
-                            showToast({
-                              type: "error",
-                              title: "Hata",
-                              message: "Silme sırasında hata oluştu.",
-                            });
-                          }
-                        }}
-                        className="text-gray-500 hover:text-red-600 ml-2"
-                      >
-                        Sil
-                      </button>
-                    )}
+                          Sil
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -10,6 +10,7 @@ import {
   removeBranch,
   updateBranch,
 } from "@/lib/db/branches";
+import Button from "@/components/ui/Button";
 
 export default function BranchesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -202,12 +203,9 @@ export default function BranchesPage() {
             onChange={(e) => setBranchName(e.target.value)}
           />
 
-          <button
-            onClick={onCreate}
-            className="w-full bg-black text-white py-2 rounded-lg text-sm hover:opacity-90 transition"
-          >
+          <Button fullWidth onClick={onCreate}>
             Şube Ekle
-          </button>
+          </Button>
         </div>
 
         <div className="lg:col-span-2 space-y-4">
@@ -229,15 +227,16 @@ export default function BranchesPage() {
               <option value="desc">Z → A</option>
             </select>
 
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => {
                 setSearch("");
                 setSortOrder("asc");
               }}
-              className="text-xs px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition whitespace-nowrap"
             >
               Temizle
-            </button>
+            </Button>
 
             <div className="text-xs text-gray-500 whitespace-nowrap">
               Toplam: {filteredBranches.length}
@@ -268,50 +267,52 @@ export default function BranchesPage() {
                       ) : (
                         <>
                           <div className="font-medium">{b.name}</div>
-                          <div className="text-xs text-gray-500">
-                            ID: {b.branchId}
-                          </div>
                         </>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 px-2">
                       {editingId === b.branchId ? (
                         <>
-                          <button
+                          <Button
+                            variant="success"
+                            size="sm"
                             onClick={() => onUpdate(b.branchId)}
-                            className="text-green-600 text-sm hover:underline"
                           >
                             Kaydet
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
                             onClick={() => {
                               setEditingId(null);
                               setEditingName("");
                             }}
-                            className="text-gray-500 text-sm hover:underline"
                           >
                             İptal
-                          </button>
+                          </Button>
                         </>
                       ) : (
                         <>
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 hover:text-blue-700"
                             onClick={() => {
                               setEditingId(b.branchId);
                               setEditingName(b.name);
                             }}
-                            className="text-blue-600 text-sm hover:underline"
                           >
                             Düzenle
-                          </button>
+                          </Button>
 
-                          <button
-                            className="text-red-600 text-sm hover:underline"
+                          <Button
+                            variant="danger"
+                            size="sm"
                             onClick={() => onRemove(b.branchId)}
                           >
                             Sil
-                          </button>
+                          </Button>
                         </>
                       )}
                     </div>

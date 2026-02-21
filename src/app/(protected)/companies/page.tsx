@@ -9,16 +9,21 @@ import {
   removeCompany,
   updateCompany,
 } from "@/lib/db/companies";
+import Button from "@/components/ui/Button";
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [name, setName] = useState("");
   const [country, setCountry] = useState("TR");
-  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [editingCountry, setEditingCountry] = useState("TR");
   const [search, setSearch] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
   const [loading, setLoading] = useState(true);
+
   const showToast = useToastStore((s) => s.showToast);
 
   useEffect(() => {
@@ -46,6 +51,11 @@ export default function CompaniesPage() {
     };
   }, [showToast]);
 
+  const refresh = async () => {
+    const data = await listCompanies();
+    setCompanies(data);
+  };
+
   const onCreate = async () => {
     if (!name.trim()) {
       showToast({
@@ -59,17 +69,16 @@ export default function CompaniesPage() {
     try {
       await createCompany(name.trim(), country);
 
+      setName("");
+      setCountry("TR");
+
+      await refresh();
+
       showToast({
         type: "success",
         title: "Şirket Oluşturuldu",
         message: "Yeni şirket başarıyla eklendi.",
       });
-
-      setName("");
-      setCountry("TR");
-
-      const data = await listCompanies();
-      setCompanies(data);
     } catch (err) {
       console.error(err);
       showToast({
@@ -85,15 +94,13 @@ export default function CompaniesPage() {
 
     try {
       await removeCompany(companyId);
+      await refresh();
 
       showToast({
         type: "success",
         title: "Şirket Silindi",
         message: "Şirket başarıyla silindi.",
       });
-
-      const data = await listCompanies();
-      setCompanies(data);
     } catch (err) {
       console.error(err);
       showToast({
@@ -104,10 +111,8 @@ export default function CompaniesPage() {
     }
   };
 
-  const onUpdate = async () => {
-    if (!editingCompany) return;
-
-    if (!name.trim()) {
+  const onUpdate = async (companyId: string) => {
+    if (!editingName.trim()) {
       showToast({
         type: "info",
         title: "Eksik Bilgi",
@@ -117,23 +122,22 @@ export default function CompaniesPage() {
     }
 
     try {
-      await updateCompany(editingCompany.companyId, {
-        name: name.trim(),
-        country,
+      await updateCompany(companyId, {
+        name: editingName.trim(),
+        country: editingCountry,
       });
+
+      setEditingId(null);
+      setEditingName("");
+      setEditingCountry("TR");
+
+      await refresh();
 
       showToast({
         type: "success",
         title: "Güncellendi",
         message: "Şirket başarıyla güncellendi.",
       });
-
-      setEditingCompany(null);
-      setName("");
-      setCountry("TR");
-
-      const data = await listCompanies();
-      setCompanies(data);
     } catch (err) {
       console.error(err);
       showToast({
@@ -152,20 +156,15 @@ export default function CompaniesPage() {
 
       return matchesSearch && matchesCountry;
     })
-    .sort((a, b) => {
-      if (sortOrder === "asc") {
-        return a.name.localeCompare(b.name);
-      }
-      return b.name.localeCompare(a.name);
-    });
+    .sort((a, b) =>
+      sortOrder === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name),
+    );
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse text-sm text-gray-500">
-          Şirketler yükleniyor...
-        </div>
-      </div>
+      <div className="p-6 text-sm text-gray-500">Şirketler yükleniyor...</div>
     );
   }
 
@@ -175,9 +174,7 @@ export default function CompaniesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl">
         <div className="bg-white border rounded-xl p-5 shadow-sm space-y-4 h-fit">
-          <h3 className="text-sm font-semibold text-gray-700">
-            {editingCompany ? "Şirket Güncelle" : "Yeni Şirket"}
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-700">Yeni Şirket</h3>
 
           <input
             className="w-full border rounded-lg px-4 py-2 text-sm"
@@ -196,24 +193,9 @@ export default function CompaniesPage() {
             <option value="DE">Germany</option>
           </select>
 
-          <button
-            onClick={editingCompany ? onUpdate : onCreate}
-            className="w-full bg-black text-white py-2 rounded-lg text-sm hover:opacity-90 transition"
-          >
-            {editingCompany ? "Güncelle" : "Şirket Ekle"}
-          </button>
-          {editingCompany && (
-            <button
-              onClick={() => {
-                setEditingCompany(null);
-                setName("");
-                setCountry("TR");
-              }}
-              className="w-full bg-gray-200 text-sm py-2 rounded-lg hover:bg-gray-300 transition"
-            >
-              İptal
-            </button>
-          )}
+          <Button fullWidth onClick={onCreate}>
+            Şirket Ekle
+          </Button>
         </div>
 
         <div className="lg:col-span-2 space-y-4">
@@ -246,16 +228,17 @@ export default function CompaniesPage() {
               <option value="desc">Z → A</option>
             </select>
 
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => {
                 setSearch("");
                 setFilterCountry("");
                 setSortOrder("asc");
               }}
-              className="text-xs px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition whitespace-nowrap"
             >
               Temizle
-            </button>
+            </Button>
 
             <div className="text-xs text-gray-500 whitespace-nowrap">
               Toplam: {filteredCompanies.length}
@@ -270,34 +253,85 @@ export default function CompaniesPage() {
             ) : (
               filteredCompanies.map((c) => (
                 <div
-                  key={c.id}
-                  className="p-4 flex items-center justify-between hover:bg-gray-50 transition"
+                  key={c.companyId}
+                  className="p-4 flex items-center justify-between transition"
                 >
-                  <div>
-                    <div className="font-medium">{c.name}</div>
-                    <div className="text-xs text-gray-500">
-                      ID: {c.companyId} • Ülke: {c.country}
-                    </div>
+                  <div className="flex-1">
+                    {editingId === c.companyId ? (
+                      <div className="flex gap-3">
+                        <input
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          className="border px-3 py-2 rounded-lg text-sm flex-1"
+                        />
+
+                        <select
+                          value={editingCountry}
+                          onChange={(e) => setEditingCountry(e.target.value)}
+                          className="border px-3 py-2 rounded-lg text-sm w-32"
+                        >
+                          <option value="TR">TR</option>
+                          <option value="US">US</option>
+                          <option value="DE">DE</option>
+                        </select>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="font-medium">{c.name}</div>
+                        <div className="text-xs text-gray-500">
+                          Ülke: {c.country}
+                        </div>
+                      </>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <button
-                      className="text-blue-600 text-sm hover:underline"
-                      onClick={() => {
-                        setEditingCompany(c);
-                        setName(c.name);
-                        setCountry(c.country);
-                      }}
-                    >
-                      Düzenle
-                    </button>
+                  <div className="flex items-center gap-2 px-2">
+                    {editingId === c.companyId ? (
+                      <>
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={() => onUpdate(c.companyId)}
+                        >
+                          Kaydet
+                        </Button>
 
-                    <button
-                      className="text-red-600 text-sm hover:underline"
-                      onClick={() => onRemove(c.companyId)}
-                    >
-                      Sil
-                    </button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            setEditingId(null);
+                            setEditingName("");
+                            setEditingCountry("TR");
+                          }}
+                        >
+                          İptal
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-blue-600 hover:text-blue-700"
+                          onClick={() => {
+                            setEditingId(c.companyId);
+                            setEditingName(c.name);
+                            setEditingCountry(c.country);
+                          }}
+                        >
+                          Düzenle
+                        </Button>
+
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => onRemove(c.companyId)}
+                        >
+                          Sil
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))

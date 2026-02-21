@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AppUser, updateUser, UserRole } from "@/lib/db/users";
 import { Company } from "@/lib/db/companies";
 import { Branch, listBranchesByCompany } from "@/lib/db/branches";
+import Button from "@/components/ui/Button";
 
 type Props = {
   user: AppUser;
@@ -112,16 +113,13 @@ export default function EditUserModal({
         )}
 
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-4 py-2 text-sm">
+          <Button variant="secondary" size="sm" onClick={onClose}>
             İptal
-          </button>
-          <button
-            onClick={onSubmit}
-            disabled={loading}
-            className="bg-black text-white px-4 py-2 rounded text-sm"
-          >
-            {loading ? "Kaydediliyor…" : "Kaydet"}
-          </button>
+          </Button>
+
+          <Button size="sm" loading={loading} onClick={onSubmit}>
+            Kaydet
+          </Button>
         </div>
       </div>
     </div>
