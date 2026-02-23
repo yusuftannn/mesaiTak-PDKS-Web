@@ -28,7 +28,7 @@ export default function MonthlyReportTable() {
                 Beklenen Gün
               </th>
 
-              <th colSpan={10} className="border p-3 text-center">
+              <th colSpan={11} className="border p-3 text-center">
                 Hesaplanan Gün
               </th>
 
@@ -83,7 +83,7 @@ export default function MonthlyReportTable() {
                   Personel {i}
                 </td>
 
-                {Array.from({ length: 24 }).map((_, idx) => (
+                {Array.from({ length: 25 }).map((_, idx) => (
                   <td key={idx} className="border p-2">
                     0
                   </td>

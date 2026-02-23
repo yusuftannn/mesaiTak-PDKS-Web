@@ -180,6 +180,102 @@ export default function ShiftsPage() {
       .download(`mesaitak-haftalik-${formatDate(weekRange.monday)}.pdf`);
   };
 
+  const handleExportExcel = async (): Promise<void> => {
+    const ExcelJS = (await import("exceljs")).default;
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Vardiya Planı");
+
+    const header = [
+      "#",
+      "Ad Soyad",
+      ...DAYS.map((d) => d.label),
+      "Toplam (saat)",
+    ];
+
+    sheet.addRow(header);
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.alignment = { vertical: "middle", horizontal: "center" };
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFEFEFEF" },
+      };
+      cell.border = {
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+
+    users.forEach((u, index) => {
+      let total = 0;
+
+      const rowData: (string | number)[] = [];
+      rowData.push(index + 1);
+      rowData.push(u.name);
+
+      DAYS.forEach((d) => {
+        const shift = shifts.find(
+          (s) => s.userId === u.id && getDayKey(s.date) === d.key,
+        );
+
+        if (shift) {
+          const hours = calcHours(shift.startTime, shift.endTime);
+          total += hours;
+          rowData.push(`${shift.startTime} - ${shift.endTime}`);
+        } else {
+          rowData.push("-");
+        }
+      });
+
+      rowData.push(Number(total.toFixed(1)));
+
+      const row = sheet.addRow(rowData);
+
+      row.eachCell((cell, colNumber) => {
+        cell.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        if (colNumber === header.length) {
+          cell.font = { bold: true };
+        }
+
+        cell.alignment = { vertical: "middle", horizontal: "center" };
+      });
+    });
+
+    sheet.columns = [
+      { width: 5 },
+      { width: 22 },
+      ...DAYS.map(() => ({ width: 16 })),
+      { width: 15 },
+    ];
+
+    sheet.views = [{ state: "frozen", ySplit: 1 }];
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mesaitak-haftalik-${formatDate(weekRange.monday)}.xlsx`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return <div className="p-6">Yükleniyor…</div>;
   }
@@ -392,13 +488,23 @@ export default function ShiftsPage() {
         />
       )}
 
-      <Button
-        variant="success"
-        icon={<FileDown size={16} />}
-        onClick={handleExportPdf}
-      >
-        PDF İndir
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          variant="success"
+          icon={<FileDown size={16} />}
+          onClick={handleExportPdf}
+        >
+          PDF İndir
+        </Button>
+
+        <Button
+          variant="primary"
+          icon={<FileDown size={16} />}
+          onClick={handleExportExcel}
+        >
+          Excel İndir
+        </Button>
+      </div>
     </div>
   );
 }
