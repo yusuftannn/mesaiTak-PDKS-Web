@@ -1,97 +1,164 @@
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
-
-type BreakItem = {
-  end?: {
-    toDate: () => Date;
-  } | null;
-};
+import {
+  collection,
+  query,
+  where,
+  Timestamp,
+  getDocs,
+  onSnapshot,
+  Unsubscribe,
+} from "firebase/firestore";
+import type { AppUser } from "@/lib/db/users";
 
 type AttendanceDoc = {
   uid: string;
-  date: string;
-  shiftStart: string;
-  shiftEnd: string;
-  checkInAt?: {
-    toDate: () => Date;
-  } | null;
-  checkOutAt?: {
-    toDate: () => Date;
-  } | null;
-  breaks?: BreakItem[];
+  date: string; 
+  checkInAt?: { toDate: () => Date } | null;
+  checkOutAt?: { toDate: () => Date } | null;
+  breaks?: { end?: { toDate: () => Date } | null }[];
+};
+
+type ShiftDoc = {
+  userId: string;
+  date: Timestamp;
+  startTime: string;
+  endTime: string;
+};
+
+export type DashboardUser = AppUser & {
+  shiftStart: string | null;
+  shiftEnd: string | null;
 };
 
 export type DashboardStats = {
-  arrived: number;
-  late: number;
-  working: number;
-  onBreak: number;
-  absent: number;
-  earlyLeave: number;
+  arrived: { count: number; users: DashboardUser[] };
+  late: { count: number; users: DashboardUser[] };
+  working: { count: number; users: DashboardUser[] };
+  onBreak: { count: number; users: DashboardUser[] };
+  absent: { count: number; users: DashboardUser[] };
+  earlyLeave: { count: number; users: DashboardUser[] };
 };
 
 function todayString(): string {
   return new Date().toISOString().split("T")[0];
 }
 
-function parseShiftTime(time: string): Date {
-  const [h, m] = time.split(":").map(Number);
-  const d = new Date();
-  d.setHours(h, m, 0, 0);
-  return d;
+function getDayRange(date: Date) {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
 }
 
-export function subscribeTodayDashboard(
-  totalUsersWithShift: number,
+export async function subscribeTodayDashboard(
+  users: AppUser[],
   onChange: (stats: DashboardStats) => void,
-) {
-  const today = todayString();
+): Promise<Unsubscribe> {
+  const today = new Date();
+  const todayKey = todayString();
+  const { start, end } = getDayRange(today);
 
-  const q = query(collection(db, "attendance"), where("date", "==", today));
+  const shiftQuery = query(
+    collection(db, "shifts"),
+    where("date", ">=", Timestamp.fromDate(start)),
+    where("date", "<=", Timestamp.fromDate(end)),
+  );
 
-  return onSnapshot(q, (snap) => {
-    let arrived = 0;
-    let late = 0;
-    let working = 0;
-    let onBreak = 0;
-    let earlyLeave = 0;
+  const shiftSnap = await getDocs(shiftQuery);
+
+  const shiftMap = new Map<string, ShiftDoc>();
+
+  shiftSnap.docs.forEach((doc) => {
+    const data = doc.data() as ShiftDoc;
+    shiftMap.set(data.userId, data);
+  });
+
+  const attendanceQuery = query(
+    collection(db, "attendance"),
+    where("date", "==", todayKey),
+  );
+
+  return onSnapshot(attendanceQuery, (snap) => {
+    const arrived: DashboardUser[] = [];
+    const late: DashboardUser[] = [];
+    const working: DashboardUser[] = [];
+    const onBreak: DashboardUser[] = [];
+    const earlyLeave: DashboardUser[] = [];
+
+    const presentSet = new Set<string>();
 
     snap.docs.forEach((doc) => {
       const a = doc.data() as AttendanceDoc;
+      const user = users.find((u) => u.uid === a.uid);
+      if (!user) return;
 
-      const checkIn = a.checkInAt?.toDate();
-      const checkOut = a.checkOutAt?.toDate();
+      presentSet.add(user.uid);
 
-      const shiftStart = parseShiftTime(a.shiftStart);
-      const shiftEnd = parseShiftTime(a.shiftEnd);
+      const shift = shiftMap.get(user.uid);
+
+      const enriched: DashboardUser = {
+        ...user,
+        shiftStart: shift?.startTime ?? null,
+        shiftEnd: shift?.endTime ?? null,
+      };
+
+      const checkIn = a.checkInAt?.toDate() ?? null;
+      const checkOut = a.checkOutAt?.toDate() ?? null;
 
       if (checkIn) {
-        arrived++;
-        if (checkIn > shiftStart) late++;
+        arrived.push(enriched);
+
+        if (shift?.startTime) {
+          const [h, m] = shift.startTime.split(":").map(Number);
+          const shiftStart = new Date();
+          shiftStart.setHours(h, m, 0, 0);
+
+          if (checkIn > shiftStart) {
+            late.push(enriched);
+          }
+        }
       }
 
       const activeBreak =
         Array.isArray(a.breaks) && a.breaks.some((b) => !b.end);
 
       if (checkIn && !checkOut) {
-        if (activeBreak) onBreak++;
-        else working++;
+        if (activeBreak) onBreak.push(enriched);
+        else working.push(enriched);
       }
 
-      if (checkOut && checkOut < shiftEnd) {
-        earlyLeave++;
+      if (checkOut && shift?.endTime) {
+        const [h, m] = shift.endTime.split(":").map(Number);
+        const shiftEnd = new Date();
+        shiftEnd.setHours(h, m, 0, 0);
+
+        if (checkOut < shiftEnd) {
+          earlyLeave.push(enriched);
+        }
       }
     });
 
-    const absent = Math.max(totalUsersWithShift - snap.size, 0);
+    const absent: DashboardUser[] = users
+      .filter((u) => !presentSet.has(u.uid))
+      .map((u) => {
+        const shift = shiftMap.get(u.uid);
+        return {
+          ...u,
+          shiftStart: shift?.startTime ?? null,
+          shiftEnd: shift?.endTime ?? null,
+        };
+      });
 
     onChange({
-      arrived,
-      late,
-      working,
-      onBreak,
-      absent,
-      earlyLeave,
+      arrived: { count: arrived.length, users: arrived },
+      late: { count: late.length, users: late },
+      working: { count: working.length, users: working },
+      onBreak: { count: onBreak.length, users: onBreak },
+      absent: { count: absent.length, users: absent },
+      earlyLeave: { count: earlyLeave.length, users: earlyLeave },
     });
   });
 }

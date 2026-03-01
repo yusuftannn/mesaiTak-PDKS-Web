@@ -1,4 +1,5 @@
 "use client";
+
 import {
   UserCheck,
   ClockAlert,
@@ -8,31 +9,47 @@ import {
   LogOut,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { subscribeTodayDashboard, DashboardStats } from "@/lib/db/dashboard";
+import {
+  subscribeTodayDashboard,
+  DashboardStats,
+  DashboardUser,
+} from "@/lib/db/dashboard";
 import { listUsers } from "@/lib/db/users";
 import HolidayPanel from "./HolidayPanel";
+import UserRow from "./UserRow";
+
+const EMPTY_STATS: DashboardStats = {
+  arrived: { count: 0, users: [] },
+  late: { count: 0, users: [] },
+  working: { count: 0, users: [] },
+  onBreak: { count: 0, users: [] },
+  absent: { count: 0, users: [] },
+  earlyLeave: { count: 0, users: [] },
+};
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
     let mounted = true;
 
-    (async () => {
+    const init = async () => {
       setLoading(true);
 
       const users = await listUsers();
       const usersWithShift = users.filter((u) => u.companyId && u.branchId);
 
-      unsubscribe = subscribeTodayDashboard(usersWithShift.length, (data) => {
+      unsubscribe = await subscribeTodayDashboard(usersWithShift, (data) => {
         if (mounted) {
           setStats(data);
           setLoading(false);
         }
       });
-    })();
+    };
+
+    init();
 
     return () => {
       mounted = false;
@@ -40,7 +57,7 @@ export default function DashboardPage() {
     };
   }, []);
 
-  if (loading || !stats) {
+  if (loading) {
     return <div className="p-6">Yükleniyor…</div>;
   }
 
@@ -109,16 +126,24 @@ function Stat({
   color,
 }: {
   label: string;
-  value: number;
+  value: { count: number; users: DashboardUser[] };
   icon: React.ElementType;
   color: string;
 }) {
   return (
     <div
-      className={`relative border-l-4 ${color} bg-white shadow-sm rounded-xl p-6`}
+      className={`relative border-l-4 ${color} bg-white shadow-sm rounded-xl p-6 flex flex-col`}
     >
       <div className="text-sm text-gray-500">{label}</div>
-      <div className="text-4xl font-semibold mt-3">{value}</div>
+      <div className="text-4xl font-semibold mt-3">{value.count}</div>
+
+      {value.users.length > 0 && (
+        <div className="mt-4 max-h-40 overflow-y-auto space-y-3 pr-2 border-t pt-4 border-gray-300">
+          {value.users.map((user) => (
+            <UserRow key={user.id} user={user} />
+          ))}
+        </div>
+      )}
 
       <div className="absolute top-4 right-4 opacity-30">
         <Icon size={28} />
