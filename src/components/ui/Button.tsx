@@ -4,7 +4,8 @@ import React from "react";
 import clsx from "clsx";
 
 type Variant = "primary" | "secondary" | "danger" | "ghost" | "success";
-type Size = "sm" | "md" | "lg";
+type Size = "sm" | "md" | "lg" | "nav";
+type Justify = "center" | "between" | "start";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -13,6 +14,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   icon?: React.ReactNode;
   iconPosition?: "left" | "right";
+  justify?: Justify;
 }
 
 const variantClasses: Record<Variant, string> = {
@@ -27,6 +29,13 @@ const sizeClasses: Record<Size, string> = {
   sm: "px-3 py-1.5 text-xs",
   md: "px-4 py-2 text-sm",
   lg: "px-6 py-3 text-base",
+  nav: "px-3 py-2 text-md",
+};
+
+const justifyClasses: Record<Justify, string> = {
+  center: "justify-center",
+  between: "justify-between",
+  start: "justify-start",
 };
 
 export default function Button({
@@ -37,6 +46,7 @@ export default function Button({
   loading = false,
   icon,
   iconPosition = "left",
+  justify = "center",
   className,
   disabled,
   ...props
@@ -45,7 +55,8 @@ export default function Button({
     <button
       disabled={disabled || loading}
       className={clsx(
-        "rounded-lg font-medium transition flex items-center justify-center gap-2",
+        "rounded-lg font-medium transition flex items-center gap-2",
+        justifyClasses[justify],
         variantClasses[variant],
         sizeClasses[size],
         fullWidth && "w-full",

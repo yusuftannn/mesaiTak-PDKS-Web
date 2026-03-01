@@ -16,6 +16,8 @@ import {
   ClipboardList,
   ChevronDown,
   ChevronUp,
+  Map,
+  List,
 } from "lucide-react";
 import Button from "./ui/Button";
 
@@ -26,7 +28,6 @@ const nav = [
   { href: "/users", label: "Kullanıcılar", icon: Users },
   { href: "/shifts", label: "Vardiya", icon: Clock },
   { href: "/leaves", label: "İzin Talepleri", icon: CalendarCheck },
-  { href: "/locations", label: "Konumlar", icon: MapPin },
 ];
 
 const reportItems = [
@@ -34,12 +35,21 @@ const reportItems = [
   { href: "/reports/puantaj", label: "Detaylı Puantaj", icon: ClipboardList },
 ];
 
+const locationItems = [
+  { href: "/locations/map", label: "Harita Görünümü", icon: Map },
+  { href: "/locations/list", label: "Liste Görünümü", icon: List },
+];
+
 export default function Sidebar() {
   const path = usePathname();
   const [manualOpen, setManualOpen] = useState(false);
+  const [manualOpenLocations, setManualOpenLocations] = useState(false);
 
   const isReportRoute = path.startsWith("/reports");
   const openReports = isReportRoute || manualOpen;
+
+  const isLocationsRoute = path.startsWith("/locations");
+  const openLocations = isLocationsRoute || manualOpenLocations;
 
   return (
     <aside className="w-64 border-r p-4">
@@ -69,11 +79,56 @@ export default function Sidebar() {
 
         <div>
           <Button
-            variant={isReportRoute ? "primary" : "ghost"}
-            size="md"
+            variant={isLocationsRoute ? "primary" : "ghost"}
+            size="nav"
             fullWidth
+            justify="between"
+            onClick={() => setManualOpenLocations((v) => !v)}
+          >
+            <div className="flex items-center gap-3">
+              <MapPin size={18} />
+              Konumlar
+            </div>
+
+            {openLocations ? (
+              <ChevronUp size={16} />
+            ) : (
+              <ChevronDown size={16} />
+            )}
+          </Button>
+
+          {openLocations && (
+            <div className="ml-4 mt-1 space-y-1">
+              {locationItems.map((r) => {
+                const active = path === r.href;
+                const Icon = r.icon;
+
+                return (
+                  <Link
+                    key={r.href}
+                    href={r.href}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                      active
+                        ? "bg-black text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon size={16} />
+                    {r.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <Button
+            variant={isReportRoute ? "primary" : "ghost"}
+            size="nav"
+            fullWidth
+            justify="between"
             onClick={() => setManualOpen(!manualOpen)}
-            className="justify-start"
           >
             <div className="flex items-center gap-3">
               <FileText size={18} />

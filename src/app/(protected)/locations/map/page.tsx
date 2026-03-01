@@ -53,7 +53,7 @@ export default function LocationsPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold">
-          Personel Konum Takibi
+          Harita Görünümü
         </h1>
 
         <input
