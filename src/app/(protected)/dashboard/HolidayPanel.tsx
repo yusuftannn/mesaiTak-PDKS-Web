@@ -1,18 +1,4 @@
-const holidays2026 = [
-  { date: "01.01.2026", name: "Yılbaşı" },
-  { date: "19.03.2026", name: "Ramazan Bayramı (1. Gün)" },
-  { date: "20.03.2026", name: "Ramazan Bayramı (2. Gün)" },
-  { date: "21.03.2026", name: "Ramazan Bayramı (3. Gün)" },
-  { date: "23.04.2026", name: "Ulusal Egemenlik ve Çocuk Bayramı" },
-  { date: "01.05.2026", name: "Emek ve Dayanışma Günü" },
-  { date: "19.05.2026", name: "Atatürk’ü Anma, Gençlik ve Spor Bayramı" },
-  { date: "26.05.2026", name: "Kurban Bayramı (1. Gün)" },
-  { date: "27.05.2026", name: "Kurban Bayramı (2. Gün)" },
-  { date: "28.05.2026", name: "Kurban Bayramı (3. Gün)" },
-  { date: "29.05.2026", name: "Kurban Bayramı (4. Gün)" },
-  { date: "30.08.2026", name: "Zafer Bayramı" },
-  { date: "29.10.2026", name: "Cumhuriyet Bayramı" },
-];
+import { holidays2026 } from "@/lib/db/constants/holidays";
 
 function getDayName(dateStr: string) {
   const [day, month, year] = dateStr.split(".");

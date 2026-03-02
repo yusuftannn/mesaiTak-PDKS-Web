@@ -1,11 +1,10 @@
 import { db } from "@/lib/firebase";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { AttendanceDoc, LeaveDoc } from "./constants/reportTypes";
+
+function formatDate(date: Date) {
+  return date.toISOString().split("T")[0];
+}
 
 export async function getMonthlyReport(
   start: Date,
@@ -14,11 +13,14 @@ export async function getMonthlyReport(
   attendance: AttendanceDoc[];
   leaves: LeaveDoc[];
 }> {
+  const startStr = formatDate(start);
+  const endStr = formatDate(end);
+
   const attendanceSnap = await getDocs(
     query(
       collection(db, "attendance"),
-      where("date", ">=", start),
-      where("date", "<=", end),
+      where("date", ">=", startStr),
+      where("date", "<=", endStr),
     ),
   );
 
@@ -31,11 +33,7 @@ export async function getMonthlyReport(
   );
 
   return {
-    attendance: attendanceSnap.docs.map(
-      (d) => d.data() as AttendanceDoc,
-    ),
-    leaves: leavesSnap.docs.map(
-      (d) => d.data() as LeaveDoc,
-    ),
+    attendance: attendanceSnap.docs.map((d) => d.data() as AttendanceDoc),
+    leaves: leavesSnap.docs.map((d) => d.data() as LeaveDoc),
   };
 }

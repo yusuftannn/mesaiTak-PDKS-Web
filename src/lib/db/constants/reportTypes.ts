@@ -1,10 +1,17 @@
 import { Timestamp } from "firebase/firestore";
 
 export type AttendanceDoc = {
+  id: string;
   uid: string;
-  date: Timestamp;
+  companyId: string;
+  branchId: string;
+  date: string;
+  shiftStart?: string;
+  shiftEnd?: string;
   checkInAt?: Timestamp;
   checkOutAt?: Timestamp;
+  totalMinutes?: number;
+  overtimeMinutes?: number;
   status: string;
 };
 
