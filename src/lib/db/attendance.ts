@@ -31,11 +31,14 @@ export type AttendanceWithLocation = {
 };
 
 export async function listAttendanceByDate(
-  date: string,
+  start: Date,
+  end: Date
 ): Promise<AttendanceWithLocation[]> {
+
   const q = query(
     collection(db, "attendance"),
-    where("date", "==", date),
+    where("date", ">=", start.toISOString().slice(0,10)),
+    where("date", "<=", end.toISOString().slice(0,10)),
   );
 
   const snap = await getDocs(q);
