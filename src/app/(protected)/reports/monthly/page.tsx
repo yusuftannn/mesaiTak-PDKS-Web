@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { listUsers, AppUser } from "@/lib/db/users";
+import { listAllUsers, AppUser } from "@/lib/db/users";
 import { getMonthlyReport } from "@/lib/db/reports";
 import { AttendanceDoc, LeaveDoc } from "@/lib/db/constants/reportTypes";
 import Button from "@/components/ui/Button";
@@ -69,7 +69,7 @@ export default function MonthlyReportPage() {
       const end = endOfMonth(date);
 
       const [u, report] = await Promise.all([
-        listUsers(),
+        listAllUsers(),
         getMonthlyReport(start, end),
       ]);
 

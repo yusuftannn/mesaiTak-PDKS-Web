@@ -1,7 +1,7 @@
 "use client";
 import { Power, UserPlus, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AppUser, listUsers, updateUser } from "@/lib/db/users";
+import { AppUser, listAllUsers, updateUser } from "@/lib/db/users";
 import { listCompanies, Company } from "@/lib/db/companies";
 import { listBranchesByCompany, Branch } from "@/lib/db/branches";
 import Button from "@/components/ui/Button";
@@ -27,7 +27,7 @@ export default function UsersPage() {
     (async () => {
       setLoading(true);
 
-      const [u, c] = await Promise.all([listUsers(), listCompanies()]);
+      const [u, c] = await Promise.all([listAllUsers(), listCompanies()]);
 
       if (!mounted) return;
 
@@ -360,7 +360,7 @@ export default function UsersPage() {
           companies={companies}
           onClose={() => setShowCreate(false)}
           onCreated={async () => {
-            const data = await listUsers();
+            const data = await listAllUsers();
             setUsers(data);
           }}
         />
@@ -372,7 +372,7 @@ export default function UsersPage() {
           companies={companies}
           onClose={() => setEditingUser(null)}
           onUpdated={async () => {
-            const data = await listUsers();
+            const data = await listAllUsers();
             setUsers(data);
           }}
         />

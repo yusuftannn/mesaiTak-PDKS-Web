@@ -44,32 +44,26 @@ type LeaveDoc = {
   createdAt: Timestamp;
 };
 
-
-export async function listLeaves(
-  userId: string
-): Promise<Leave[]> {
-
+export async function listLeaves(): Promise<Leave[]> {
   const snap = await getDocs(collection(db, "leaves"));
 
-  return snap.docs
-    .map((d) => {
-      const data = d.data() as LeaveDoc;
+  return snap.docs.map((d) => {
+    const data = d.data() as LeaveDoc;
 
-      return {
-        id: d.id,
-        userId: data.userId,
-        type: data.type,
-        startDate: data.startDate.toDate(),
-        endDate: data.endDate.toDate(),
-        reason: data.reason,
-        status: data.status,
-        reviewedBy: data.reviewedBy,
-        reviewedAt: data.reviewedAt?.toDate(),
-        rejectReason: data.rejectReason,
-        createdAt: data.createdAt.toDate(),
-      };
-    })
-    .filter((l) => l.userId === userId && l.status === "onaylandı");
+    return {
+      id: d.id,
+      userId: data.userId,
+      type: data.type,
+      startDate: data.startDate.toDate(),
+      endDate: data.endDate.toDate(),
+      reason: data.reason,
+      status: data.status,
+      reviewedBy: data.reviewedBy,
+      reviewedAt: data.reviewedAt?.toDate(),
+      rejectReason: data.rejectReason,
+      createdAt: data.createdAt.toDate(),
+    };
+  });
 }
 
 export async function createLeave(data: {

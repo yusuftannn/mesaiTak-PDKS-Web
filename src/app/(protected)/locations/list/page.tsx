@@ -5,7 +5,7 @@ import {
   listAttendanceByDate,
   AttendanceWithLocation,
 } from "@/lib/db/attendance";
-import { listUsers } from "@/lib/db/users";
+import { listAllUsers } from "@/lib/db/users";
 import { useAuthStore } from "@/lib/auth/auth.store";
 
 type SortKey = "name" | "checkIn" | "checkOut" | "status";
@@ -62,8 +62,11 @@ export default function LocationsListPage() {
     async function load() {
       setLoading(true);
 
-      const attendance = await listAttendanceByDate(date);
-      const users = await listUsers();
+      const start = new Date(date);
+      const end = new Date(date);
+      
+      const attendance = await listAttendanceByDate(start, end);
+      const users = await listAllUsers();
 
       const merged: AttendanceWithLocation[] = attendance.map((a) => {
         const u = users.find((x) => x.uid === a.uid);

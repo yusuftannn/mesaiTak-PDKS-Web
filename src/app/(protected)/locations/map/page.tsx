@@ -6,20 +6,17 @@ import {
   listAttendanceByDate,
   AttendanceWithLocation,
 } from "@/lib/db/attendance";
-import { listUsers } from "@/lib/db/users";
+import { listAllUsers } from "@/lib/db/users";
 import { useAuthStore } from "@/lib/auth/auth.store";
 
-const AttendanceMap = dynamic(
-  () => import("@/components/maps/AttendanceMap"),
-  { ssr: false },
-);
+const AttendanceMap = dynamic(() => import("@/components/maps/AttendanceMap"), {
+  ssr: false,
+});
 
 export default function LocationsPage() {
   const { user } = useAuthStore();
 
-  const [date, setDate] = useState(
-    new Date().toISOString().slice(0, 10),
-  );
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
 
   const [data, setData] = useState<AttendanceWithLocation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -28,8 +25,11 @@ export default function LocationsPage() {
     async function load() {
       setLoading(true);
 
-      const attendance = await listAttendanceByDate(date);
-      const users = await listUsers();
+      const start = new Date(date);
+      const end = new Date(date);
+
+      const attendance = await listAttendanceByDate(start, end);
+      const users = await listAllUsers();
 
       const merged: AttendanceWithLocation[] = attendance.map((a) => {
         const u = users.find((x) => x.uid === a.uid);
@@ -52,9 +52,7 @@ export default function LocationsPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold">
-          Harita Görünümü
-        </h1>
+        <h1 className="text-xl font-semibold">Harita Görünümü</h1>
 
         <input
           type="date"
@@ -72,13 +70,8 @@ export default function LocationsPage() {
             <h2 className="font-semibold mb-3">Liste</h2>
 
             {data.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded-xl p-3 mb-2"
-              >
-                <div className="font-medium">
-                  {item.userName}
-                </div>
+              <div key={item.id} className="border rounded-xl p-3 mb-2">
+                <div className="font-medium">{item.userName}</div>
 
                 <div className="text-sm text-gray-600">
                   Status: {item.status}

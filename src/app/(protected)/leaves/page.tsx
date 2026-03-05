@@ -10,7 +10,7 @@ import {
 } from "@/lib/db/leaves";
 import Button from "@/components/ui/Button";
 import { useToastStore } from "@/lib/ui/toast.store";
-import { listUsers, AppUser } from "@/lib/db/users";
+import { listAllUsers, AppUser } from "@/lib/db/users";
 import { LEAVE_TYPES } from "../../../lib/db/constants/leaveTypes";
 import { useAuthStore } from "../../../lib/auth/auth.store";
 import { LEAVE_STATUS_LABEL } from "../../../lib/db/constants/leaveStatus";
@@ -35,7 +35,7 @@ export default function LeavesPage() {
 
     (async () => {
       try {
-        const [l, u] = await Promise.all([listLeaves(), listUsers()]);
+        const [l, u] = await Promise.all([listLeaves(), listAllUsers()]);
 
         if (!mounted) return;
 

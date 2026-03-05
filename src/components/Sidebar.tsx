@@ -18,6 +18,8 @@ import {
   ChevronUp,
   Map,
   List,
+  Tags,
+  UserCheck,
 } from "lucide-react";
 import Button from "./ui/Button";
 
@@ -28,7 +30,6 @@ const nav = [
   { href: "/users", label: "Kullanıcılar", icon: Users },
   { href: "/shifts", label: "Vardiya", icon: Clock },
   { href: "/leaves", label: "İzin Talepleri", icon: CalendarCheck },
-  { href: "/group-tags", label: "Grup Etiketleri", icon: CalendarCheck },
 ];
 
 const reportItems = [
@@ -41,16 +42,25 @@ const locationItems = [
   { href: "/locations/list", label: "Liste Görünümü", icon: List },
 ];
 
+const groupTagItems = [
+  { href: "/group-tags", label: "Etiket Listesi", icon: Tags },
+  { href: "/group-tags/assign", label: "Etiket Ata", icon: UserCheck },
+];
+
 export default function Sidebar() {
   const path = usePathname();
   const [manualOpen, setManualOpen] = useState(false);
   const [manualOpenLocations, setManualOpenLocations] = useState(false);
+  const [manualOpenGroupTags, setManualOpenGroupTags] = useState(false);
 
   const isReportRoute = path.startsWith("/reports");
   const openReports = isReportRoute || manualOpen;
 
   const isLocationsRoute = path.startsWith("/locations");
   const openLocations = isLocationsRoute || manualOpenLocations;
+
+  const isGroupTagRoute = path.startsWith("/group-tags");
+  const openGroupTags = isGroupTagRoute || manualOpenGroupTags;
 
   return (
     <aside className="w-64 border-r p-4">
@@ -78,6 +88,7 @@ export default function Sidebar() {
           );
         })}
 
+        {/* LOCATION */}
         <div>
           <Button
             variant={isLocationsRoute ? "primary" : "ghost"}
@@ -123,6 +134,7 @@ export default function Sidebar() {
           )}
         </div>
 
+        {/* REPORTS */}
         <div>
           <Button
             variant={isReportRoute ? "primary" : "ghost"}
@@ -142,6 +154,52 @@ export default function Sidebar() {
           {openReports && (
             <div className="ml-4 mt-1 space-y-1">
               {reportItems.map((r) => {
+                const active = path === r.href;
+                const Icon = r.icon;
+
+                return (
+                  <Link
+                    key={r.href}
+                    href={r.href}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                      active
+                        ? "bg-black text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon size={16} />
+                    {r.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* GROUP TAGS */}
+        <div>
+          <Button
+            variant={isGroupTagRoute ? "primary" : "ghost"}
+            size="nav"
+            fullWidth
+            justify="between"
+            onClick={() => setManualOpenGroupTags((v) => !v)}
+          >
+            <div className="flex items-center gap-3">
+              <Tags size={18} />
+              Grup Etiketleri
+            </div>
+
+            {openGroupTags ? (
+              <ChevronUp size={16} />
+            ) : (
+              <ChevronDown size={16} />
+            )}
+          </Button>
+
+          {openGroupTags && (
+            <div className="ml-4 mt-1 space-y-1">
+              {groupTagItems.map((r) => {
                 const active = path === r.href;
                 const Icon = r.icon;
 

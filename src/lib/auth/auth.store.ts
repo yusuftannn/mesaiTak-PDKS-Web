@@ -10,6 +10,7 @@ export type AuthUserDoc = {
   role: Role;
   companyId?: string | null;
   branchId?: string | null;
+  groupTagId?: string | null;
   status: UserStatus;
 };
 

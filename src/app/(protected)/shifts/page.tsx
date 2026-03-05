@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { listUsers, AppUser } from "@/lib/db/users";
+import { listAllUsers, AppUser } from "@/lib/db/users";
 import Button from "@/components/ui/Button";
 import {
   listShiftsByDateRange,
@@ -99,7 +99,7 @@ export default function ShiftsPage() {
     setLoading(true);
 
     const [u, s] = await Promise.all([
-      listUsers(),
+      listAllUsers(),
       listShiftsByDateRange(weekRange.monday, weekRange.sunday),
     ]);
 
@@ -113,7 +113,7 @@ export default function ShiftsPage() {
 
     const fetchData = async (): Promise<void> => {
       const [u, s] = await Promise.all([
-        listUsers(),
+        listAllUsers(),
         listShiftsByDateRange(weekRange.monday, weekRange.sunday),
       ]);
 

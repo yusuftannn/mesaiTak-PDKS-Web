@@ -6,6 +6,8 @@ import {
   updateDoc,
   serverTimestamp,
   setDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { secondaryAuth } from "@/lib/firebase";
@@ -22,13 +24,31 @@ export type AppUser = {
   role: UserRole;
   companyId: string | null;
   branchId: string | null;
+  groupTagId?: string | null;
   country?: string;
   status: UserStatus;
 };
 
 type UserDoc = Omit<AppUser, "id">;
 
-export async function listUsers(): Promise<AppUser[]> {
+export async function listUsersByCompany(
+  companyId: string,
+): Promise<AppUser[]> {
+  const q = query(collection(db, "users"), where("companyId", "==", companyId));
+
+  const snap = await getDocs(q);
+
+  return snap.docs.map((d) => {
+    const data = d.data() as UserDoc;
+
+    return {
+      id: d.id,
+      ...data,
+    };
+  });
+}
+
+export async function listAllUsers(): Promise<AppUser[]> {
   const snap = await getDocs(collection(db, "users"));
 
   return snap.docs.map((d) => {
@@ -49,6 +69,7 @@ export async function createUser(params: {
   role: UserRole;
   companyId: string | null;
   branchId: string | null;
+  groupTagId: null;
   country?: string;
 }) {
   const cred = await createUserWithEmailAndPassword(
@@ -65,6 +86,7 @@ export async function createUser(params: {
     role: params.role,
     companyId: params.companyId,
     branchId: params.branchId,
+    groupTagId: null,
     country: params.country ?? "Turkiye",
     status: "active",
     createdAt: serverTimestamp(),
@@ -88,6 +110,16 @@ export async function updateUser(
 ) {
   await updateDoc(doc(db, "users", userId), {
     ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function setUserGroupTag(
+  userId: string,
+  groupTagId: string | null,
+) {
+  await updateDoc(doc(db, "users", userId), {
+    groupTagId,
     updatedAt: serverTimestamp(),
   });
 }

@@ -1,4 +1,4 @@
-import { listUsers } from "@/lib/db/users";
+import { listAllUsers } from "@/lib/db/users";
 import { listAttendanceByDate } from "@/lib/db/attendance";
 import { listLeaves } from "@/lib/db/leaves";
 import { listShiftsByDateRange } from "@/lib/db/shifts";
@@ -10,7 +10,7 @@ export async function buildMonthlyPuantaj(
   end: Date
 ) {
 
-  const users = await listUsers();
+  const users = await listAllUsers();
 
   const attendance = await listAttendanceByDate(start, end);
 
