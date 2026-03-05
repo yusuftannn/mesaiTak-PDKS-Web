@@ -28,6 +28,7 @@ const nav = [
   { href: "/users", label: "Kullanıcılar", icon: Users },
   { href: "/shifts", label: "Vardiya", icon: Clock },
   { href: "/leaves", label: "İzin Talepleri", icon: CalendarCheck },
+  { href: "/group-tags", label: "Grup Etiketleri", icon: CalendarCheck },
 ];
 
 const reportItems = [
