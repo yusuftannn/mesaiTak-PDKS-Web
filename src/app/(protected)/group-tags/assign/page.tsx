@@ -5,6 +5,7 @@ import { useAuthStore } from "@/lib/auth/auth.store";
 import { listUsersByCompany, setUserGroupTag, AppUser } from "@/lib/db/users";
 import { GroupTag } from "@/types/groupTag";
 import { listGroupTags } from "@/lib/services/groupTag.service";
+import MultiTagSelect from "@/components/MultiTagSelect";
 
 export default function AssignGroupPage() {
   const authUser = useAuthStore((s) => s.user);
@@ -28,11 +29,11 @@ export default function AssignGroupPage() {
     load();
   }, [authUser]);
 
-  const handleChange = async (userId: string, groupTagId: string | null) => {
-    await setUserGroupTag(userId, groupTagId);
+  const handleChange = async (userId: string, values: string[]) => {
+    await setUserGroupTag(userId, values);
 
     setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, groupTagId } : u)),
+      prev.map((u) => (u.id === userId ? { ...u, groupTagIds: values } : u)),
     );
   };
 
@@ -40,7 +41,7 @@ export default function AssignGroupPage() {
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-6">Grup Etiketi Atama</h1>
 
-      <div className="bg-white border rounded-xl overflow-hidden">
+      <div className="bg-white border rounded-xl overflow-visible">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr className="text-left">
@@ -61,23 +62,11 @@ export default function AssignGroupPage() {
                 <td className="text-gray-600">{user.email}</td>
 
                 <td>
-                  <select
-                    value={user.groupTagId ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value;
-
-                      handleChange(user.id, val === "" ? null : val);
-                    }}
-                    className="border rounded px-2 py-1"
-                  >
-                    <option value="">Grup Yok</option>
-
-                    {tags.map((tag) => (
-                      <option key={tag.id} value={tag.id}>
-                        {tag.name}
-                      </option>
-                    ))}
-                  </select>
+                  <MultiTagSelect
+                    userTags={user.groupTagIds ?? []}
+                    tags={tags}
+                    onChange={(values) => handleChange(user.id, values)}
+                  />
                 </td>
               </tr>
             ))}

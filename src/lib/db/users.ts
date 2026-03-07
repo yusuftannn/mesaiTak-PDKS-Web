@@ -24,7 +24,7 @@ export type AppUser = {
   role: UserRole;
   companyId: string | null;
   branchId: string | null;
-  groupTagId?: string | null;
+  groupTagIds: string[];
   country?: string;
   status: UserStatus;
 };
@@ -44,6 +44,7 @@ export async function listUsersByCompany(
     return {
       id: d.id,
       ...data,
+      groupTagIds: data.groupTagIds ?? [],
     };
   });
 }
@@ -69,7 +70,7 @@ export async function createUser(params: {
   role: UserRole;
   companyId: string | null;
   branchId: string | null;
-  groupTagId: null;
+  groupTagIds: string[];
   country?: string;
 }) {
   const cred = await createUserWithEmailAndPassword(
@@ -86,7 +87,7 @@ export async function createUser(params: {
     role: params.role,
     companyId: params.companyId,
     branchId: params.branchId,
-    groupTagId: null,
+    groupTagIds: params.groupTagIds ?? [],
     country: params.country ?? "Turkiye",
     status: "active",
     createdAt: serverTimestamp(),
@@ -114,12 +115,9 @@ export async function updateUser(
   });
 }
 
-export async function setUserGroupTag(
-  userId: string,
-  groupTagId: string | null,
-) {
+export async function setUserGroupTag(userId: string, groupTagIds: string[]) {
   await updateDoc(doc(db, "users", userId), {
-    groupTagId,
+    groupTagIds,
     updatedAt: serverTimestamp(),
   });
 }

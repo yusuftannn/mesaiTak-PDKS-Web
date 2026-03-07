@@ -5,18 +5,23 @@ import { useGroupTagStore } from "@/lib/store/groupTag.store";
 import { format } from "date-fns";
 import GroupTagModal from "./GroupTagModal";
 import { GroupTag } from "@/types/groupTag";
+import { useAuthStore } from "@/lib/auth/auth.store";
 
 export default function GroupTagsPage() {
   const { tags, fetchTags, removeTag, addTag, editTag } = useGroupTagStore();
 
+  const authUser = useAuthStore((s) => s.user);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<GroupTag | null>(null);
 
-  const companyId = "demoCompany";
+  const companyId = authUser?.companyId;
 
   useEffect(() => {
+    if (!companyId) return;
+
     fetchTags(companyId);
-  }, []);
+  }, [companyId]);
 
   const openCreate = () => {
     setEditing(null);
@@ -29,6 +34,8 @@ export default function GroupTagsPage() {
   };
 
   const handleSave = async (name: string) => {
+    if (!companyId) return;
+
     if (editing) {
       await editTag(editing.id, name);
     } else {
