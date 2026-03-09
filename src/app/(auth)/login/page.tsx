@@ -8,7 +8,7 @@ import { FirebaseError } from "firebase/app";
 import { auth } from "@/lib/firebase";
 import { mapFirebaseError } from "@/lib/auth/firebaseError";
 import { useToastStore } from "@/lib/ui/toast.store";
-import { useAuthStore } from "@/lib/auth/auth.store";
+import { useAuthStore } from "@/features/auth/auth.store";
 import Button from "@/components/ui/Button";
 
 export default function LoginPage() {

@@ -1,40 +1,29 @@
-import { listAllUsers } from "@/lib/db/users";
-import { listAttendanceByDate } from "@/lib/db/attendance";
+import { listAllUsers } from "@/features/users/users.service";
+import { listAttendanceByDate } from "@/features/attendance/attendance.service";
 import { listLeaves } from "@/lib/db/leaves";
 import { listShiftsByDateRange } from "@/lib/db/shifts";
 
 import { runPuantajEngine } from "@/lib/puantaj/puantajEngine";
 
-export async function buildMonthlyPuantaj(
-  start: Date,
-  end: Date
-) {
-
+export async function buildMonthlyPuantaj(start: Date, end: Date) {
   const users = await listAllUsers();
 
   const attendance = await listAttendanceByDate(start, end);
 
   const shifts = await listShiftsByDateRange(start, end);
 
+  const allLeaves = await listLeaves();
+
   const result = [];
 
   for (const user of users) {
+    const userAttendance = attendance.filter((a) => a.uid === user.uid);
 
-    const userAttendance = attendance.filter(
-      (a) => a.uid === user.uid
-    );
+    const userShifts = shifts.filter((s) => s.userId === user.uid);
 
-    const userShifts = shifts.filter(
-      (s) => s.userId === user.uid
-    );
+    const userLeaves = allLeaves.filter((l) => l.userId === user.uid);
 
-    const leaves = await listLeaves(user.uid);
-
-    const report = runPuantajEngine(
-      userAttendance,
-      userShifts,
-      leaves
-    );
+    const report = runPuantajEngine(userAttendance, userShifts, userLeaves);
 
     result.push({
       sicilNo: user.uid,

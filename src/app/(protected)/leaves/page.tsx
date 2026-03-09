@@ -10,9 +10,10 @@ import {
 } from "@/lib/db/leaves";
 import Button from "@/components/ui/Button";
 import { useToastStore } from "@/lib/ui/toast.store";
-import { listAllUsers, AppUser } from "@/lib/db/users";
+import { listAllUsers } from "@/features/users/users.service";
+import { AppUser } from "@/features/users/users.types";
 import { LEAVE_TYPES } from "../../../lib/db/constants/leaveTypes";
-import { useAuthStore } from "../../../lib/auth/auth.store";
+import { useAuthStore } from "../../../features/auth/auth.store";
 import { LEAVE_STATUS_LABEL } from "../../../lib/db/constants/leaveStatus";
 
 function formatDate(d: Date) {

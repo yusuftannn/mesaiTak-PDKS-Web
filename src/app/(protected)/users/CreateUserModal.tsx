@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createUser } from "@/lib/db/users";
+import { createUser } from "@/features/users/users.service";
 import { Company } from "@/lib/db/companies";
 import { Branch } from "@/lib/db/branches";
 import { listBranchesByCompany } from "@/lib/db/branches";
@@ -58,6 +58,7 @@ export default function CreateUserModal({
         companyId: companyId || null,
         branchId: branchId || null,
         country: country || "Turkiye",
+        groupTagIds: [],
       });
 
       onCreated();

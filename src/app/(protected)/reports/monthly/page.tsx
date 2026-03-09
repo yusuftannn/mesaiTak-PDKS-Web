@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { listAllUsers, AppUser } from "@/lib/db/users";
+import { listAllUsers } from "@/features/users/users.service";
+import { AppUser } from "@/features/users/users.types";
 import { getMonthlyReport } from "@/lib/db/reports";
 import { AttendanceDoc, LeaveDoc } from "@/lib/db/constants/reportTypes";
 import Button from "@/components/ui/Button";

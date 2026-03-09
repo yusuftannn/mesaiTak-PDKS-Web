@@ -8,11 +8,11 @@ import {
   onSnapshot,
   Unsubscribe,
 } from "firebase/firestore";
-import type { AppUser } from "@/lib/db/users";
+import { AppUser } from "@/features/users/users.types";
 
 type AttendanceDoc = {
   uid: string;
-  date: string; 
+  date: string;
   checkInAt?: { toDate: () => Date } | null;
   checkOutAt?: { toDate: () => Date } | null;
   breaks?: { end?: { toDate: () => Date } | null }[];

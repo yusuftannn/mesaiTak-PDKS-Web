@@ -12,7 +12,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import { useEffect } from "react";
-import { AttendanceWithLocation } from "@/lib/db/attendance";
+import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
 
 function FitBounds({ points }: { points: [number, number][] }) {
   const map = useMap();

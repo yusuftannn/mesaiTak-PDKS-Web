@@ -2,12 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import {
-  listAttendanceByDate,
-  AttendanceWithLocation,
-} from "@/lib/db/attendance";
-import { listAllUsers } from "@/lib/db/users";
-import { useAuthStore } from "@/lib/auth/auth.store";
+import { listAttendanceByDate } from "@/features/attendance/attendance.service";
+import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
+import { listAllUsers } from "@/features/users/users.service";
+import { useAuthStore } from "@/features/auth/auth.store";
 
 const AttendanceMap = dynamic(() => import("@/components/maps/AttendanceMap"), {
   ssr: false,

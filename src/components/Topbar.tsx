@@ -1,7 +1,7 @@
 "use client";
 
 import { auth } from "@/lib/firebase";
-import { useAuthStore } from "@/lib/auth/auth.store";
+import { useAuthStore } from "@/features/auth/auth.store";
 import { LogOut } from "lucide-react";
 import Button from "@/components/ui/Button";
 

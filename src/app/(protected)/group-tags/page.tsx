@@ -5,7 +5,7 @@ import { useGroupTagStore } from "@/lib/store/groupTag.store";
 import { format } from "date-fns";
 import GroupTagModal from "./GroupTagModal";
 import { GroupTag } from "@/types/groupTag";
-import { useAuthStore } from "@/lib/auth/auth.store";
+import { useAuthStore } from "@/features/auth/auth.store";
 
 export default function GroupTagsPage() {
   const { tags, fetchTags, removeTag, addTag, editTag } = useGroupTagStore();

@@ -14,7 +14,7 @@ import {
   DashboardStats,
   DashboardUser,
 } from "@/lib/db/dashboard";
-import { listAllUsers } from "@/lib/db/users";
+import { listAllUsers } from "@/features/users/users.service";
 import HolidayPanel from "./HolidayPanel";
 import UserRow from "./UserRow";
 

@@ -1,7 +1,8 @@
 "use client";
 import { Power, UserPlus, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AppUser, listAllUsers, updateUser } from "@/lib/db/users";
+import { listAllUsers, updateUser } from "@/features/users/users.service";
+import { AppUser } from "@/features/users/users.types";
 import { listCompanies, Company } from "@/lib/db/companies";
 import { listBranchesByCompany, Branch } from "@/lib/db/branches";
 import Button from "@/components/ui/Button";

@@ -1,8 +1,8 @@
 // src/app/(protected)/layout.tsx
 "use client";
 
-import { useAuthBootstrap } from "@/lib/auth/useAuth";
-import { useAuthStore } from "@/lib/auth/auth.store";
+import { useAuthBootstrap } from "@/features/auth/useAuth";
+import { useAuthStore } from "@/features/auth/auth.store";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import AppShell from "@/components/AppShell";

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppUser, updateUser, UserRole } from "@/lib/db/users";
+import { updateUser } from "@/features/users/users.service";
+import { AppUser, UserRole } from "@/features/users/users.types";
+
 import { Company } from "@/lib/db/companies";
 import { Branch, listBranchesByCompany } from "@/lib/db/branches";
 import Button from "@/components/ui/Button";

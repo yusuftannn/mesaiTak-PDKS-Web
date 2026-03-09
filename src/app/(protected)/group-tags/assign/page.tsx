@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/lib/auth/auth.store";
-import { listUsersByCompany, setUserGroupTag, AppUser } from "@/lib/db/users";
+import { useAuthStore } from "@/features/auth/auth.store";
+import {
+  listUsersByCompany,
+  setUserGroupTag,
+} from "@/features/users/users.service";
+import { AppUser } from "@/features/users/users.types";
 import { GroupTag } from "@/types/groupTag";
 import { listGroupTags } from "@/lib/services/groupTag.service";
 import MultiTagSelect from "@/components/MultiTagSelect";

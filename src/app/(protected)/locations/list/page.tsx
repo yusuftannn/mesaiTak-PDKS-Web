@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  listAttendanceByDate,
-  AttendanceWithLocation,
-} from "@/lib/db/attendance";
-import { listAllUsers } from "@/lib/db/users";
-import { useAuthStore } from "@/lib/auth/auth.store";
+import { listAttendanceByDate } from "@/features/attendance/attendance.service";
+import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
+import { listAllUsers } from "@/features/users/users.service";
+import { useAuthStore } from "@/features/auth/auth.store";
 
 type SortKey = "name" | "checkIn" | "checkOut" | "status";
 type SortDir = "asc" | "desc";
@@ -64,7 +62,7 @@ export default function LocationsListPage() {
 
       const start = new Date(date);
       const end = new Date(date);
-      
+
       const attendance = await listAttendanceByDate(start, end);
       const users = await listAllUsers();
 
