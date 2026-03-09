@@ -10,30 +10,17 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+
 import { v4 as uuid } from "uuid";
 
-export type Branch = {
-  id: string;
-  branchId: string;
-  name: string;
-  companyId: string;
-  createdAt: Date | null;
-};
-
-type BranchDoc = {
-  branchId?: string;
-  name: string;
-  companyId: string;
-  createdAt?: {
-    toDate: () => Date;
-  };
-};
+import { Branch, BranchDoc } from "./branches.types";
+import { COLLECTIONS } from "@/constants/collections";
 
 export async function listBranchesByCompany(
   companyId: string,
 ): Promise<Branch[]> {
   const q = query(
-    collection(db, "branches"),
+    collection(db, COLLECTIONS.BRANCHES),
     where("companyId", "==", companyId),
   );
 
@@ -63,7 +50,7 @@ export async function listBranchesByCompany(
 export async function createBranch(companyId: string, name: string) {
   const branchId = uuid();
 
-  await setDoc(doc(db, "branches", branchId), {
+  await setDoc(doc(db, COLLECTIONS.BRANCHES, branchId), {
     branchId,
     companyId,
     name,
@@ -72,9 +59,11 @@ export async function createBranch(companyId: string, name: string) {
 }
 
 export async function updateBranch(branchId: string, name: string) {
-  await updateDoc(doc(db, "branches", branchId), { name });
+  await updateDoc(doc(db, COLLECTIONS.BRANCHES, branchId), {
+    name,
+  });
 }
 
 export async function removeBranch(branchId: string) {
-  await deleteDoc(doc(db, "branches", branchId));
+  await deleteDoc(doc(db, COLLECTIONS.BRANCHES, branchId));
 }

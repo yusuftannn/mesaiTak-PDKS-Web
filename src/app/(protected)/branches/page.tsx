@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { listCompanies, Company } from "@/lib/db/companies";
 import { useToastStore } from "@/lib/ui/toast.store";
 import {
-  Branch,
   listBranchesByCompany,
   createBranch,
   removeBranch,
   updateBranch,
-} from "@/lib/db/branches";
+} from "@/features/branches/branches.service";
+import { Branch } from "@/features/branches/branches.types";
 import Button from "@/components/ui/Button";
 
 export default function BranchesPage() {

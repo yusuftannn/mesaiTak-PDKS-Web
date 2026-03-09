@@ -5,7 +5,8 @@ import { updateUser } from "@/features/users/users.service";
 import { AppUser, UserRole } from "@/features/users/users.types";
 
 import { Company } from "@/lib/db/companies";
-import { Branch, listBranchesByCompany } from "@/lib/db/branches";
+import { Branch } from "@/features/branches/branches.types";
+import { listBranchesByCompany } from "@/features/branches/branches.service";
 import Button from "@/components/ui/Button";
 
 type Props = {

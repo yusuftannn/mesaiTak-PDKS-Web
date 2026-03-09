@@ -1,6 +1,8 @@
 export const COLLECTIONS = {
-  ATTENDANCE: "attendance",
   USERS: "users",
+  COMPANIES: "companies",
+  BRANCHES: "branches",
+  ATTENDANCE: "attendance",
   SHIFTS: "shifts",
   LEAVES: "leaves",
 };

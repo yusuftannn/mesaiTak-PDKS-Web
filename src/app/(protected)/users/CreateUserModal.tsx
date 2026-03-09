@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { createUser } from "@/features/users/users.service";
 import { Company } from "@/lib/db/companies";
-import { Branch } from "@/lib/db/branches";
-import { listBranchesByCompany } from "@/lib/db/branches";
+import { Branch } from "@/features/branches/branches.types";
+import { listBranchesByCompany } from "@/features/branches/branches.service";
 import Button from "@/components/ui/Button";
 
 type Props = {
