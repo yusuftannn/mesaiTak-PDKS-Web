@@ -12,8 +12,8 @@ import {
   copyWeekShifts,
   copyWeekShiftsOverwrite,
   clearWeekShifts,
-  Shift,
-} from "@/lib/db/shifts";
+} from "@/features/shifts/shifts.service";
+import { Shift } from "@/features/shifts/shifts.types";
 import {
   getWeekRange,
   getDayKey,

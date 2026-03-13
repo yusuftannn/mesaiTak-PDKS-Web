@@ -1,4 +1,5 @@
 import { db } from "@/lib/firebase";
+
 import {
   collection,
   addDoc,
@@ -10,31 +11,16 @@ import {
   where,
   Timestamp,
 } from "firebase/firestore";
-import { ShiftType } from "./constants/shiftTypes";
 
-export type Shift = {
-  id: string;
-  userId: string;
-  date: Date;
-  startTime: string;
-  endTime: string;
-  type: ShiftType;
-};
-
-type ShiftDoc = {
-  userId: string;
-  date: Timestamp;
-  startTime: string;
-  endTime: string;
-  type: ShiftType;
-};
+import { Shift, ShiftDoc, CreateShiftParams } from "./shifts.types";
+import { COLLECTIONS } from "@/constants/collections";
 
 export async function listShiftsByDateRange(
   start: Date,
   end: Date,
 ): Promise<Shift[]> {
   const q = query(
-    collection(db, "shifts"),
+    collection(db, COLLECTIONS.SHIFTS),
     where("date", ">=", Timestamp.fromDate(start)),
     where("date", "<=", Timestamp.fromDate(end)),
   );
@@ -43,6 +29,7 @@ export async function listShiftsByDateRange(
 
   return snap.docs.map((d) => {
     const data = d.data() as ShiftDoc;
+
     return {
       id: d.id,
       userId: data.userId,
@@ -54,19 +41,16 @@ export async function listShiftsByDateRange(
   });
 }
 
-export async function createShift(params: {
-  userId: string;
-  date: Date;
-  startTime: string;
-  endTime: string;
-  type: ShiftType;
-}) {
-  await addDoc(collection(db, "shifts"), {
+export async function createShift(params: CreateShiftParams) {
+  await addDoc(collection(db, COLLECTIONS.SHIFTS), {
     userId: params.userId,
     date: Timestamp.fromDate(params.date),
+
     startTime: params.startTime,
     endTime: params.endTime,
+
     type: params.type,
+
     createdAt: Timestamp.now(),
   });
 }
@@ -76,16 +60,16 @@ export async function updateShift(
   data: {
     startTime: string;
     endTime: string;
-    type: ShiftType;
+    type: string;
   },
 ) {
-  await updateDoc(doc(db, "shifts", shiftId), {
+  await updateDoc(doc(db, COLLECTIONS.SHIFTS, shiftId), {
     ...data,
   });
 }
 
 export async function removeShift(shiftId: string) {
-  await deleteDoc(doc(db, "shifts", shiftId));
+  await deleteDoc(doc(db, COLLECTIONS.SHIFTS, shiftId));
 }
 
 async function hasShift(userId: string, date: Date) {
@@ -133,6 +117,7 @@ export async function copyWeekShifts(sourceMonday: Date) {
     });
   }
 }
+
 async function deleteTargetShift(userId: string, date: Date) {
   const q = query(
     collection(db, "shifts"),
@@ -180,6 +165,7 @@ export async function copyWeekShiftsOverwrite(sourceMonday: Date) {
     });
   }
 }
+
 export async function clearWeekShifts(monday: Date) {
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);

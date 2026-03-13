@@ -1,7 +1,7 @@
 import { listAllUsers } from "@/features/users/users.service";
 import { listAttendanceByDate } from "@/features/attendance/attendance.service";
 import { listLeaves } from "@/lib/db/leaves";
-import { listShiftsByDateRange } from "@/lib/db/shifts";
+import { listShiftsByDateRange } from "@/features/shifts/shifts.service";
 
 import { runPuantajEngine } from "@/lib/puantaj/puantajEngine";
 

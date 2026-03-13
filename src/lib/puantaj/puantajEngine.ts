@@ -1,5 +1,5 @@
-import { AttendanceWithLocation } from "@/../src/lib/db/attendance";
-import { Shift } from "@/../src/lib/db/shifts";
+import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
+import { Shift } from "@/features/shifts/shifts.types";
 import { Leave } from "@/../src/lib/db/leaves";
 
 import { calculateDaily } from "./calculateDaily";
