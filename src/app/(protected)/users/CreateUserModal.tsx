@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createUser } from "@/features/users/users.service";
-import { Company } from "@/lib/db/companies";
+import { Company } from "@/features/companies/companies.types";
 import { Branch } from "@/features/branches/branches.types";
 import { listBranchesByCompany } from "@/features/branches/branches.service";
 import Button from "@/components/ui/Button";

@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useToastStore } from "@/lib/ui/toast.store";
 import {
-  Company,
   createCompany,
   listCompanies,
   removeCompany,
   updateCompany,
-} from "@/lib/db/companies";
+} from "@/features/companies/companies.service";
+import { Company } from "@/features/companies/companies.types";
 import Button from "@/components/ui/Button";
 
 export default function CompaniesPage() {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { listCompanies, Company } from "@/lib/db/companies";
+import { Company } from "@/features/companies/companies.types";
+import { listCompanies } from "@/features/companies/companies.service";
 import { useToastStore } from "@/lib/ui/toast.store";
 import {
   listBranchesByCompany,
