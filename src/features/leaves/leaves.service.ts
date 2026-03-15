@@ -1,4 +1,5 @@
 import { db } from "@/lib/firebase";
+
 import {
   collection,
   getDocs,
@@ -9,43 +10,12 @@ import {
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
-import { LeaveType } from "./constants/leaveTypes";
-import { LeaveStatus } from "./constants/leaveStatus";
 
-export type Leave = {
-  id: string;
-  userId: string;
-
-  type: LeaveType;
-  startDate: Date;
-  endDate: Date;
-
-  reason?: string;
-
-  status: LeaveStatus;
-
-  reviewedBy?: string;
-  reviewedAt?: Date;
-  rejectReason?: string;
-
-  createdAt: Date;
-};
-
-type LeaveDoc = {
-  userId: string;
-  type: LeaveType;
-  startDate: Timestamp;
-  endDate: Timestamp;
-  reason?: string;
-  status: LeaveStatus;
-  reviewedBy?: string;
-  reviewedAt?: Timestamp;
-  rejectReason?: string;
-  createdAt: Timestamp;
-};
+import { Leave, LeaveDoc, CreateLeaveParams } from "./leaves.types";
+import { COLLECTIONS } from "@/constants/collections";
 
 export async function listLeaves(): Promise<Leave[]> {
-  const snap = await getDocs(collection(db, "leaves"));
+  const snap = await getDocs(collection(db, COLLECTIONS.LEAVES));
 
   return snap.docs.map((d) => {
     const data = d.data() as LeaveDoc;
@@ -53,40 +23,47 @@ export async function listLeaves(): Promise<Leave[]> {
     return {
       id: d.id,
       userId: data.userId,
+
       type: data.type,
+
       startDate: data.startDate.toDate(),
       endDate: data.endDate.toDate(),
+
       reason: data.reason,
+
       status: data.status,
+
       reviewedBy: data.reviewedBy,
       reviewedAt: data.reviewedAt?.toDate(),
+
       rejectReason: data.rejectReason,
+
       createdAt: data.createdAt.toDate(),
     };
   });
 }
 
-export async function createLeave(data: {
-  userId: string;
-  type: LeaveType;
-  startDate: Date;
-  endDate: Date;
-  reason?: string;
-}) {
-  await addDoc(collection(db, "leaves"), {
+export async function createLeave(data: CreateLeaveParams) {
+  await addDoc(collection(db, COLLECTIONS.LEAVES), {
     userId: data.userId,
+
     type: data.type,
+
     startDate: Timestamp.fromDate(data.startDate),
     endDate: Timestamp.fromDate(data.endDate),
+
     reason: data.reason ?? null,
+
     status: "beklemede",
+
     createdAt: serverTimestamp(),
   });
 }
 
 export async function approveLeave(leaveId: string, reviewerId: string) {
-  await updateDoc(doc(db, "leaves", leaveId), {
+  await updateDoc(doc(db, COLLECTIONS.LEAVES, leaveId), {
     status: "onaylandı",
+
     reviewedBy: reviewerId,
     reviewedAt: serverTimestamp(),
   });
@@ -97,14 +74,16 @@ export async function rejectLeave(
   reviewerId: string,
   reason: string,
 ) {
-  await updateDoc(doc(db, "leaves", leaveId), {
+  await updateDoc(doc(db, COLLECTIONS.LEAVES, leaveId), {
     status: "reddedildi",
+
     reviewedBy: reviewerId,
     reviewedAt: serverTimestamp(),
+
     rejectReason: reason,
   });
 }
 
 export async function deleteLeave(leaveId: string) {
-  await deleteDoc(doc(db, "leaves", leaveId));
+  await deleteDoc(doc(db, COLLECTIONS.LEAVES, leaveId));
 }

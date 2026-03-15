@@ -1,7 +1,6 @@
 import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
 import { Shift } from "@/features/shifts/shifts.types";
-import { Leave } from "@/../src/lib/db/leaves";
-
+import { Leave } from "../../features/leaves/leaves.types";
 import { calculateDaily } from "./calculateDaily";
 import { calculateMonthly } from "./calculateMonthly";
 import { isHoliday } from "./holidayService";

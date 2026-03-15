@@ -2,19 +2,23 @@
 
 import { useEffect, useState } from "react";
 import {
-  Leave,
   listLeaves,
   approveLeave,
   rejectLeave,
   deleteLeave,
-} from "@/lib/db/leaves";
+} from "@/features/leaves/leaves.service";
+import {
+  Leave,
+  LEAVE_TYPES,
+  LeaveStatus,
+} from "../../../features/leaves/leaves.types";
 import Button from "@/components/ui/Button";
 import { useToastStore } from "@/lib/ui/toast.store";
 import { listAllUsers } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
-import { LEAVE_TYPES } from "../../../lib/db/constants/leaveTypes";
+
 import { useAuthStore } from "../../../features/auth/auth.store";
-import { LEAVE_STATUS_LABEL } from "../../../lib/db/constants/leaveStatus";
+import { LEAVE_STATUS_LABEL } from "../../../features/leaves/leaves.types";
 
 function formatDate(d: Date) {
   return d.toLocaleDateString("tr-TR");
@@ -190,7 +194,7 @@ export default function LeavesPage() {
                             : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {LEAVE_STATUS_LABEL[l.status]}
+                      {LEAVE_STATUS_LABEL[l.status as LeaveStatus]}
                     </span>
                   </td>
 

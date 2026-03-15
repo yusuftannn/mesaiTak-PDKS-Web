@@ -15,11 +15,13 @@ import {
 import { v4 as uuid } from "uuid";
 
 import { Company, CompanyDoc } from "./companies.types";
-
-const COLLECTION = "companies";
+import { COLLECTIONS } from "@/constants/collections";
 
 export async function listCompanies(): Promise<Company[]> {
-  const q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"));
+  const q = query(
+    collection(db, COLLECTIONS.COMPANIES),
+    orderBy("createdAt", "desc"),
+  );
 
   const snap = await getDocs(q);
 
@@ -39,7 +41,7 @@ export async function listCompanies(): Promise<Company[]> {
 export async function createCompany(name: string, country: string) {
   const companyId = uuid();
 
-  await setDoc(doc(db, COLLECTION, companyId), {
+  await setDoc(doc(db, COLLECTIONS.COMPANIES, companyId), {
     companyId,
     name,
     country,
@@ -55,7 +57,7 @@ export async function updateCompany(
     country: string;
   },
 ) {
-  const ref = doc(db, COLLECTION, companyId);
+  const ref = doc(db, COLLECTIONS.COMPANIES, companyId);
 
   await updateDoc(ref, {
     name: data.name,
@@ -66,5 +68,5 @@ export async function updateCompany(
 }
 
 export async function removeCompany(companyId: string) {
-  await deleteDoc(doc(db, COLLECTION, companyId));
+  await deleteDoc(doc(db, COLLECTIONS.COMPANIES, companyId));
 }
