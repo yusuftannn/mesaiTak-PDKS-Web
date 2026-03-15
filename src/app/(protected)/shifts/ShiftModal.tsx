@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SHIFT_TYPES, ShiftType } from "@/lib/db/constants/shiftTypes";
+import { SHIFT_TYPES, ShiftType } from "@/features/shifts/shifts.types";
 import Button from "@/components/ui/Button";
 type ShiftInitial = {
   startTime: string;

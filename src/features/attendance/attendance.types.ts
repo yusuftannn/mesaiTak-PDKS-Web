@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export type AttendanceWithLocation = {
   id: string;
   uid: string;
@@ -6,8 +8,11 @@ export type AttendanceWithLocation = {
   date: string;
   status: string;
 
-  checkInAt?: Date;
-  checkOutAt?: Date;
+  checkInAt?: Timestamp;
+  checkOutAt?: Timestamp;
+
+  shiftStart?: string;
+  shiftEnd?: string;
 
   checkInLocation?: {
     lat: number;

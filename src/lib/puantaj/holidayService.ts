@@ -1,4 +1,4 @@
-import { holidays2026 } from "@/lib/db/constants/holidays";
+import { holidays2026 } from "@/constants/holidays";
 
 export function isHoliday(date: string): boolean {
   return holidays2026.some((h) => h.date === date);

@@ -1,5 +1,15 @@
 import { Timestamp } from "firebase/firestore";
-import { ShiftType } from "@/lib/db/constants/shiftTypes";
+
+export type ShiftType = "normal" | "gece" | "mesai";
+
+export const SHIFT_TYPES: {
+  value: ShiftType;
+  label: string;
+}[] = [
+  { value: "normal", label: "Normal" },
+  { value: "gece", label: "Gece" },
+  { value: "mesai", label: "Mesai" },
+];
 
 export type Shift = {
   id: string;

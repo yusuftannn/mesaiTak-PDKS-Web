@@ -1,4 +1,4 @@
-import { holidays2026 } from "@/lib/db/constants/holidays";
+import { holidays2026 } from "@/constants/holidays";
 
 function getDayName(dateStr: string) {
   const [day, month, year] = dateStr.split(".");

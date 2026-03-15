@@ -4,10 +4,12 @@ import { useEffect, useState, useMemo } from "react";
 import { listAllUsers } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
 import { getMonthlyReport } from "@/lib/db/reports";
-import { AttendanceDoc, LeaveDoc } from "@/lib/db/constants/reportTypes";
+import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
+import { LeaveDoc } from "@/features/leaves/leaves.types";
+
 import Button from "@/components/ui/Button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { holidays2026 } from "@/lib/db/constants/holidays";
+import { holidays2026 } from "@/constants/holidays";
 
 function formatDateLocalISO(date: Date) {
   const year = date.getFullYear();
@@ -56,7 +58,7 @@ function formatDate(date: Date) {
 export default function MonthlyReportPage() {
   const [date, setDate] = useState<Date>(new Date());
   const [users, setUsers] = useState<AppUser[]>([]);
-  const [attendance, setAttendance] = useState<AttendanceDoc[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceWithLocation[]>([]);
   const [leaves, setLeaves] = useState<LeaveDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -90,7 +92,7 @@ export default function MonthlyReportPage() {
   }, [date]);
 
   const attendanceMap = useMemo(() => {
-    const map = new Map<string, AttendanceDoc>();
+    const map = new Map<string, AttendanceWithLocation>();
     attendance.forEach((a) => {
       map.set(`${a.uid}_${a.date}`, a);
     });
