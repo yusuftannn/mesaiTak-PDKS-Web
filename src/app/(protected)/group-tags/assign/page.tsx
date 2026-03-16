@@ -7,8 +7,8 @@ import {
   setUserGroupTag,
 } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
-import { GroupTag } from "@/types/groupTag";
-import { listGroupTags } from "@/lib/services/groupTag.service";
+import { GroupTag } from "@/features/group-tags/group-tags.types";
+import { listGroupTags } from "@/features/group-tags/group-tags.service";
 import MultiTagSelect from "@/components/MultiTagSelect";
 
 export default function AssignGroupPage() {

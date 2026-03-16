@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { listAllUsers } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
-import { getMonthlyReport } from "@/lib/db/reports";
+import { getMonthlyReport } from "@/features/reports/reports.service";
 import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
 import { LeaveDoc } from "@/features/leaves/leaves.types";
 

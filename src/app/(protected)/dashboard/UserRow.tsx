@@ -1,6 +1,6 @@
 "use client";
 
-import type { DashboardUser } from "@/lib/db/dashboard";
+import type { DashboardUser } from "@/features/dashboard/dashboard.types";
 
 function getInitials(name: string) {
   return name

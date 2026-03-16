@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { GroupTag } from "@/types/groupTag";
+import { GroupTag } from "@/features/group-tags/group-tags.types";
 import TagChip from "./TagChip";
 
 export default function MultiTagSelect({

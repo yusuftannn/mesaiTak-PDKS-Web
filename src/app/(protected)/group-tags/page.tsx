@@ -1,27 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useGroupTagStore } from "@/lib/store/groupTag.store";
+import { useGroupTagStore } from "@/features/group-tags/group-tags.store";
 import { format } from "date-fns";
 import GroupTagModal from "./GroupTagModal";
-import { GroupTag } from "@/types/groupTag";
+import { GroupTag } from "@/features/group-tags/group-tags.types";
 import { useAuthStore } from "@/features/auth/auth.store";
 
 export default function GroupTagsPage() {
   const { tags, fetchTags, removeTag, addTag, editTag } = useGroupTagStore();
-
-  const authUser = useAuthStore((s) => s.user);
+  const companyId = useAuthStore((s) => s.user?.companyId);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<GroupTag | null>(null);
-
-  const companyId = authUser?.companyId;
 
   useEffect(() => {
     if (!companyId) return;
 
     fetchTags(companyId);
-  }, [companyId]);
+  }, [companyId, fetchTags]);
 
   const openCreate = () => {
     setEditing(null);

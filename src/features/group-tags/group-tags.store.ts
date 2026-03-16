@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import { GroupTag } from "@/types/groupTag";
+import { GroupTag } from "@/features/group-tags/group-tags.types";
 import {
   listGroupTags,
   createGroupTag,
   updateGroupTag,
   deleteGroupTag,
-} from "@/lib/services/groupTag.service";
+} from "@/features/group-tags/group-tags.service";
 
 interface GroupTagStore {
   tags: GroupTag[];

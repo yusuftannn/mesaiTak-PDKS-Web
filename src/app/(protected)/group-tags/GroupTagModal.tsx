@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GroupTag } from "@/types/groupTag";
+import { GroupTag } from "@/features/group-tags/group-tags.types";
 
 export default function GroupTagModal({
   open,

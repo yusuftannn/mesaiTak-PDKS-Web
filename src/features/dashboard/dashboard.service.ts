@@ -8,36 +8,15 @@ import {
   onSnapshot,
   Unsubscribe,
 } from "firebase/firestore";
+
+import {
+  AttendanceDoc,
+  ShiftDoc,
+  DashboardUser,
+  DashboardStats,
+} from "./dashboard.types";
+
 import { AppUser } from "@/features/users/users.types";
-
-type AttendanceDoc = {
-  uid: string;
-  date: string;
-  checkInAt?: { toDate: () => Date } | null;
-  checkOutAt?: { toDate: () => Date } | null;
-  breaks?: { end?: { toDate: () => Date } | null }[];
-};
-
-type ShiftDoc = {
-  userId: string;
-  date: Timestamp;
-  startTime: string;
-  endTime: string;
-};
-
-export type DashboardUser = AppUser & {
-  shiftStart: string | null;
-  shiftEnd: string | null;
-};
-
-export type DashboardStats = {
-  arrived: { count: number; users: DashboardUser[] };
-  late: { count: number; users: DashboardUser[] };
-  working: { count: number; users: DashboardUser[] };
-  onBreak: { count: number; users: DashboardUser[] };
-  absent: { count: number; users: DashboardUser[] };
-  earlyLeave: { count: number; users: DashboardUser[] };
-};
 
 function todayString(): string {
   return new Date().toISOString().split("T")[0];
@@ -92,7 +71,8 @@ export async function subscribeTodayDashboard(
 
     snap.docs.forEach((doc) => {
       const a = doc.data() as AttendanceDoc;
-      const user = users.find((u) => u.uid === a.uid);
+      const userMap = new Map(users.map((u) => [u.uid, u]));
+      const user = userMap.get(a.uid);
       if (!user) return;
 
       presentSet.add(user.uid);

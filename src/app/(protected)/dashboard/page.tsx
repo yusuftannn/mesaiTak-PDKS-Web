@@ -9,11 +9,11 @@ import {
   LogOut,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { subscribeTodayDashboard } from "@/features/dashboard/dashboard.service";
 import {
-  subscribeTodayDashboard,
   DashboardStats,
   DashboardUser,
-} from "@/lib/db/dashboard";
+} from "@/features/dashboard/dashboard.types";
 import { listAllUsers } from "@/features/users/users.service";
 import HolidayPanel from "./HolidayPanel";
 import UserRow from "./UserRow";
