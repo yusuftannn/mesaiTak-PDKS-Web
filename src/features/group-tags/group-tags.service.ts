@@ -27,7 +27,7 @@ export async function listGroupTags(companyId: string): Promise<GroupTag[]> {
     const data = d.data();
 
     const usersSnap = await getDocs(
-      query(collection(db, "users"), where("groupTagId", "==", d.id)),
+      query(collection(db, "users"), where("groupTagIds", "array-contains", d.id)),
     );
 
     tags.push({

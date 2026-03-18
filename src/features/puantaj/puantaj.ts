@@ -3,7 +3,7 @@ import { listAttendanceByDate } from "@/features/attendance/attendance.service";
 import { listLeaves } from "@/features/leaves/leaves.service";
 import { listShiftsByDateRange } from "@/features/shifts/shifts.service";
 
-import { runPuantajEngine } from "@/lib/puantaj/puantajEngine";
+import { runPuantajEngine } from "@/features/puantaj/puantajEngine";
 
 export async function buildMonthlyPuantaj(start: Date, end: Date) {
   const users = await listAllUsers();

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import LegendTable from "./LegendTable";
-import { buildMonthlyPuantaj } from "@/lib/db/puantaj";
+import { buildMonthlyPuantaj } from "@/features/puantaj/puantaj";
 import { minutesToTime } from "@/lib/utils/time";
 
 type PuantajReport = {
