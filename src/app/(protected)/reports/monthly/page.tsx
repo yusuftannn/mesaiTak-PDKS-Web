@@ -6,12 +6,11 @@ import { AppUser } from "@/features/users/users.types";
 import { getMonthlyReport } from "@/features/reports/reports.service";
 import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
 import { LeaveDoc } from "@/features/leaves/leaves.types";
+import { loadPdfMake } from "@/lib/utils/exportPdf";
 
 import Button from "@/components/ui/Button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileDown } from "lucide-react";
 import { holidays2026 } from "@/constants/holidays";
-import { exportMonthlyExcel } from "@/lib/utils/exportExcel";
-import { exportMonthlyPdf } from "@/lib/utils/exportPdf";
 
 function formatDateLocalISO(date: Date) {
   const year = date.getFullYear();
@@ -216,6 +215,116 @@ export default function MonthlyReportPage() {
     };
   }
 
+  /* -------------------- PDF -------------------- */
+  const handleExportPdf = async (): Promise<void> => {
+    const pdfMakeInstance = await loadPdfMake();
+
+    const body: (string | number)[][] = [];
+
+    body.push([
+      "#",
+      "Ad Soyad",
+      ...Array.from({ length: days }, (_, i) => i + 1),
+      "Toplam",
+    ]);
+
+    // DATA
+    users.forEach((u, index) => {
+      let total = 0;
+
+      const row: (string | number)[] = [index + 1, u.name];
+
+      for (let d = 1; d <= days; d++) {
+        const currentDate = new Date(date.getFullYear(), date.getMonth(), d);
+
+        const result = getDayStatus(currentDate, u.id);
+
+        total += result.workedHours;
+        row.push(result.label);
+      }
+
+      row.push(Number(total.toFixed(1)));
+      body.push(row);
+    });
+
+    pdfMakeInstance
+      .createPdf({
+        pageOrientation: "landscape",
+        pageSize: "A4",
+        content: [
+          {
+            text: "Aylık Mesai Raporu",
+            bold: true,
+            margin: [0, 0, 0, 10],
+          },
+          {
+            table: {
+              headerRows: 1,
+              body,
+            },
+            layout: "lightHorizontalLines",
+          },
+        ],
+        defaultStyle: {
+          fontSize: 7,
+        },
+      })
+      .download(`mesaitak-${date.getFullYear()}-${date.getMonth() + 1}.pdf`);
+  };
+
+  /* -------------------- EXCEL -------------------- */
+
+  const handleExportExcel = async () => {
+    const ExcelJS = (await import("exceljs")).default;
+
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Aylık Rapor");
+
+    const header = [
+      "#",
+      "Ad Soyad",
+      ...Array.from({ length: days }, (_, i) => i + 1),
+      "Toplam",
+    ];
+
+    ws.addRow(header);
+
+    const headerRow = ws.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.alignment = { horizontal: "center" };
+
+    users.forEach((u, i) => {
+      let total = 0;
+
+      const rowData: (string | number)[] = [i + 1, u.name];
+
+      for (let d = 1; d <= days; d++) {
+        const result = getDayStatus(
+          new Date(date.getFullYear(), date.getMonth(), d),
+          u.id,
+        );
+
+        total += result.workedHours;
+        rowData.push(result.label);
+      }
+
+      rowData.push(total.toFixed(1));
+      ws.addRow(rowData);
+    });
+
+    const buffer = await wb.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer]);
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mesaitak-aylik.xlsx";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="p-6">
       <div className="mx-auto space-y-6">
@@ -304,35 +413,23 @@ export default function MonthlyReportPage() {
             </tbody>
           </table>
         </div>
-      </div>
-      <div className="mt-6 flex gap-4">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() =>
-            exportMonthlyExcel({
-              users,
-              date,
-              getDayStatus,
-            })
-          }
-        >
-          Excel indir
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="success"
+            icon={<FileDown size={16} />}
+            onClick={handleExportPdf}
+          >
+            PDF İndir
+          </Button>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() =>
-            exportMonthlyPdf({
-              users,
-              date,
-              getDayStatus,
-            })
-          }
-        >
-          PDF indir
-        </Button>
+          <Button
+            variant="primary"
+            icon={<FileDown size={16} />}
+            onClick={handleExportExcel}
+          >
+            Excel İndir
+          </Button>
+        </div>
       </div>
     </div>
   );
