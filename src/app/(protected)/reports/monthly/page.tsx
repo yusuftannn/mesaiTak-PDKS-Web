@@ -10,6 +10,8 @@ import { LeaveDoc } from "@/features/leaves/leaves.types";
 import Button from "@/components/ui/Button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { holidays2026 } from "@/constants/holidays";
+import { exportMonthlyExcel } from "@/lib/utils/exportExcel";
+import { exportMonthlyPdf } from "@/lib/utils/exportPdf";
 
 function formatDateLocalISO(date: Date) {
   const year = date.getFullYear();
@@ -303,13 +305,38 @@ export default function MonthlyReportPage() {
           </table>
         </div>
       </div>
+      <div className="mt-6 flex gap-4">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() =>
+            exportMonthlyExcel({
+              users,
+              date,
+              getDayStatus,
+            })
+          }
+        >
+          Excel indir
+        </Button>
+
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() =>
+            exportMonthlyPdf({
+              users,
+              date,
+              getDayStatus,
+            })
+          }
+        >
+          PDF indir
+        </Button>
+      </div>
     </div>
   );
 }
-
-/* -------------------------------------------------- */
-/* ----------------- LEGEND COMPONENT ---------------- */
-/* -------------------------------------------------- */
 
 function LegendItem({ color, label }: { color: string; label: string }) {
   return (
