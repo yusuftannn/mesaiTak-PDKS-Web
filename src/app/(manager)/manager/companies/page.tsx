@@ -67,7 +67,7 @@ export default function CompaniesPage() {
     }
 
     try {
-      await createCompany(name.trim(), country);
+      await createCompany({ name, country });
 
       setName("");
       setCountry("TR");

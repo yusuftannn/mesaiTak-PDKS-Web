@@ -25,7 +25,6 @@ import Button from "./ui/Button";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/companies", label: "Şirketler", icon: Building2 },
   { href: "/branches", label: "Şubeler", icon: MapPin },
   { href: "/users", label: "Kullanıcılar", icon: Users },
   { href: "/shifts", label: "Vardiya", icon: Clock },
@@ -65,7 +64,7 @@ export default function Sidebar() {
   return (
     <aside className="w-64 border-r p-4">
       <div className="font-semibold text-lg">MesaiTak</div>
-      <div className="text-xs text-gray-500">Manager Panel</div>
+      <div className="text-xs text-gray-500">Admin Panel</div>
 
       <nav className="mt-6 space-y-1">
         {nav.map((x) => {

@@ -97,7 +97,7 @@ export default function LoginPage() {
         className="w-full max-w-sm border rounded-xl p-6 space-y-4 shadow-sm"
       >
         <h1 className="text-xl font-semibold text-center">
-          MesaiTak Manager Login
+          MesaiTak Login
         </h1>
 
         <input

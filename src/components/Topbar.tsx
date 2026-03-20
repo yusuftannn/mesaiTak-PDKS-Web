@@ -16,7 +16,7 @@ export default function Topbar() {
   return (
     <header className="border-b p-4 flex items-center justify-between">
       <div className="text-sm text-gray-600">
-        Merhaba <b>{user?.name}</b>
+        Merhaba <b>{user?.name} - {user?.role}</b>
       </div>
       <Button
         variant="danger"

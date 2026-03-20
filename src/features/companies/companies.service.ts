@@ -16,6 +16,22 @@ import { v4 as uuid } from "uuid";
 
 import { Company, CompanyDoc } from "./companies.types";
 import { COLLECTIONS } from "@/constants/collections";
+import { PlanId } from "../plans/plans.types";
+
+function mapCompany(d: CompanyDoc, id: string): Company {
+  return {
+    id,
+    companyId: d.companyId,
+    name: d.name,
+    country: d.country,
+
+    planId: d.planId ?? null,
+    subscriptionId: d.subscriptionId ?? null,
+
+    createdAt: d.createdAt ? d.createdAt.toDate() : null,
+    updatedAt: d.updatedAt ? d.updatedAt.toDate() : null,
+  };
+}
 
 export async function listCompanies(): Promise<Company[]> {
   const q = query(
@@ -25,28 +41,39 @@ export async function listCompanies(): Promise<Company[]> {
 
   const snap = await getDocs(q);
 
-  return snap.docs.map((d) => {
-    const data = d.data() as CompanyDoc;
-
-    return {
-      id: d.id,
-      companyId: data.companyId,
-      name: data.name,
-      country: data.country,
-      createdAt: data.createdAt ? data.createdAt.toDate() : null,
-    };
-  });
+  return snap.docs.map((d) => mapCompany(d.data() as CompanyDoc, d.id));
 }
 
-export async function createCompany(name: string, country: string) {
+export async function createCompany(params: {
+  name: string;
+  country: string;
+  planId?: PlanId;
+}): Promise<string> {
   const companyId = uuid();
 
   await setDoc(doc(db, COLLECTIONS.COMPANIES, companyId), {
     companyId,
-    name,
-    country,
+    name: params.name,
+    country: params.country,
+
+    planId: params.planId ?? "FREE",
+    subscriptionId: null,
 
     createdAt: serverTimestamp(),
+  });
+
+  return companyId;
+}
+
+export async function assignPlanToCompany(
+  companyId: string,
+  planId: PlanId,
+): Promise<void> {
+  const ref = doc(db, COLLECTIONS.COMPANIES, companyId);
+
+  await updateDoc(ref, {
+    planId,
+    updatedAt: serverTimestamp(),
   });
 }
 
@@ -56,17 +83,16 @@ export async function updateCompany(
     name: string;
     country: string;
   },
-) {
+): Promise<void> {
   const ref = doc(db, COLLECTIONS.COMPANIES, companyId);
 
   await updateDoc(ref, {
     name: data.name,
     country: data.country,
-
-    updatedAt: new Date(),
+    updatedAt: serverTimestamp(),
   });
 }
 
-export async function removeCompany(companyId: string) {
+export async function removeCompany(companyId: string): Promise<void> {
   await deleteDoc(doc(db, COLLECTIONS.COMPANIES, companyId));
 }

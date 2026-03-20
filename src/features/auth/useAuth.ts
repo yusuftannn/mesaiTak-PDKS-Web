@@ -30,7 +30,7 @@ export function useAuthBootstrap() {
 
         const data = snap.data() as Omit<AuthUserDoc, "uid" | "email">;
 
-        if (data.role !== "manager") {
+        if (data.role !== "manager" && data.role !== "admin") {
           setAuthError("unauthorized");
           await auth.signOut();
           setUser(null);

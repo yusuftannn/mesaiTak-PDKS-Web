@@ -1,70 +1,89 @@
-import { db } from "@/lib/firebase";
-
+import { create } from "zustand";
+import { Company } from "./companies.types";
 import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+  listCompanies,
+  createCompany,
+  updateCompany,
+  removeCompany,
+  assignPlanToCompany,
+} from "./companies.service";
+import { PlanId } from "../plans/plans.types";
 
-import { v4 as uuid } from "uuid";
+interface CompaniesState {
+  companies: Company[];
+  loading: boolean;
+  selectedCompany: Company | null;
 
-import { Company, CompanyDoc } from "./companies.types";
+  fetchCompanies: () => Promise<void>;
 
-const COLLECTION = "companies";
-
-export async function listCompanies(): Promise<Company[]> {
-  const q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"));
-
-  const snap = await getDocs(q);
-
-  return snap.docs.map((d) => {
-    const data = d.data() as CompanyDoc;
-
-    return {
-      id: d.id,
-      companyId: data.companyId,
-      name: data.name,
-      country: data.country,
-      createdAt: data.createdAt ? data.createdAt.toDate() : null,
-    };
-  });
-}
-
-export async function createCompany(name: string, country: string) {
-  const companyId = uuid();
-
-  await setDoc(doc(db, COLLECTION, companyId), {
-    companyId,
-    name,
-    country,
-
-    createdAt: serverTimestamp(),
-  });
-}
-
-export async function updateCompany(
-  companyId: string,
-  data: {
+  createCompany: (params: {
     name: string;
     country: string;
+    planId?: PlanId;
+  }) => Promise<void>;
+
+  updateCompany: (params: {
+    companyId: string;
+    name: string;
+    country: string;
+  }) => Promise<void>;
+
+  deleteCompany: (companyId: string) => Promise<void>;
+
+  assignPlan: (companyId: string, planId: PlanId) => Promise<void>;
+
+  setSelectedCompany: (company: Company | null) => void;
+}
+
+export const useCompaniesStore = create<CompaniesState>((set, get) => ({
+  companies: [],
+  loading: false,
+  selectedCompany: null,
+
+  fetchCompanies: async () => {
+    set({ loading: true });
+
+    const data = await listCompanies();
+
+    set({
+      companies: data,
+      loading: false,
+    });
   },
-) {
-  const ref = doc(db, COLLECTION, companyId);
 
-  await updateDoc(ref, {
-    name: data.name,
-    country: data.country,
+  createCompany: async (params) => {
+    set({ loading: true });
 
-    updatedAt: new Date(),
-  });
-}
+    await createCompany(params);
 
-export async function removeCompany(companyId: string) {
-  await deleteDoc(doc(db, COLLECTION, companyId));
-}
+    await get().fetchCompanies();
+  },
+
+  updateCompany: async ({ companyId, name, country }) => {
+    set({ loading: true });
+
+    await updateCompany(companyId, { name, country });
+
+    await get().fetchCompanies();
+  },
+
+  deleteCompany: async (companyId) => {
+    set({ loading: true });
+
+    await removeCompany(companyId);
+
+    await get().fetchCompanies();
+  },
+
+  assignPlan: async (companyId, planId) => {
+    set({ loading: true });
+
+    await assignPlanToCompany(companyId, planId);
+
+    await get().fetchCompanies();
+  },
+
+  setSelectedCompany: (company) => {
+    set({ selectedCompany: company });
+  },
+}));
