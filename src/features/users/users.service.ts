@@ -14,12 +14,13 @@ import {
 import { AppUser, CreateUserParams, UpdateUserParams } from "./users.types";
 import { COLLECTIONS } from "@/constants/collections";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { getCompanyId } from "@/lib/utils/company";
 
 type UserDoc = Omit<AppUser, "id">;
 
-export async function listUsersByCompany(
-  companyId: string,
-): Promise<AppUser[]> {
+export async function listUsers(): Promise<AppUser[]> {
+  const companyId = getCompanyId();
+
   const q = query(
     collection(db, COLLECTIONS.USERS),
     where("companyId", "==", companyId),
@@ -47,11 +48,14 @@ export async function listAllUsers(): Promise<AppUser[]> {
     return {
       id: d.id,
       ...data,
+      groupTagIds: data.groupTagIds ?? [],
     };
   });
 }
 
 export async function createUser(params: CreateUserParams) {
+  const companyId = getCompanyId();
+
   const cred = await createUserWithEmailAndPassword(
     secondaryAuth,
     params.email,
@@ -68,7 +72,7 @@ export async function createUser(params: CreateUserParams) {
 
     role: params.role,
 
-    companyId: params.companyId,
+    companyId,
     branchId: params.branchId,
 
     groupTagIds: params.groupTagIds ?? [],

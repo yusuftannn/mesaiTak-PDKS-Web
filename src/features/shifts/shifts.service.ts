@@ -14,13 +14,17 @@ import {
 
 import { Shift, ShiftDoc, CreateShiftParams } from "./shifts.types";
 import { COLLECTIONS } from "@/constants/collections";
+import { getCompanyId } from "@/lib/utils/company";
 
 export async function listShiftsByDateRange(
   start: Date,
   end: Date,
 ): Promise<Shift[]> {
+  const companyId = getCompanyId();
   const q = query(
     collection(db, COLLECTIONS.SHIFTS),
+
+    where("companyId", "==", companyId),
     where("date", ">=", Timestamp.fromDate(start)),
     where("date", "<=", Timestamp.fromDate(end)),
   );
@@ -33,6 +37,7 @@ export async function listShiftsByDateRange(
     return {
       id: d.id,
       userId: data.userId,
+      companyId: data.companyId,
       date: data.date.toDate(),
       startTime: data.startTime,
       endTime: data.endTime,
@@ -42,8 +47,10 @@ export async function listShiftsByDateRange(
 }
 
 export async function createShift(params: CreateShiftParams) {
+  const companyId = getCompanyId();
   await addDoc(collection(db, COLLECTIONS.SHIFTS), {
     userId: params.userId,
+    companyId,
     date: Timestamp.fromDate(params.date),
 
     startTime: params.startTime,
@@ -73,8 +80,10 @@ export async function removeShift(shiftId: string) {
 }
 
 async function hasShift(userId: string, date: Date) {
+  const companyId = getCompanyId();
   const q = query(
     collection(db, "shifts"),
+    where("companyId", "==", companyId),
     where("userId", "==", userId),
     where("date", "==", Timestamp.fromDate(date)),
   );
@@ -84,12 +93,15 @@ async function hasShift(userId: string, date: Date) {
 }
 
 export async function copyWeekShifts(sourceMonday: Date) {
+  const companyId = getCompanyId();
+
   const sourceSunday = new Date(sourceMonday);
   sourceSunday.setDate(sourceMonday.getDate() + 6);
   sourceSunday.setHours(23, 59, 59, 999);
 
   const q = query(
     collection(db, "shifts"),
+    where("companyId", "==", companyId),
     where("date", ">=", Timestamp.fromDate(sourceMonday)),
     where("date", "<=", Timestamp.fromDate(sourceSunday)),
   );
@@ -109,6 +121,7 @@ export async function copyWeekShifts(sourceMonday: Date) {
 
     await addDoc(collection(db, "shifts"), {
       userId: data.userId,
+      companyId,
       date: Timestamp.fromDate(targetDate),
       startTime: data.startTime,
       endTime: data.endTime,
@@ -119,8 +132,10 @@ export async function copyWeekShifts(sourceMonday: Date) {
 }
 
 async function deleteTargetShift(userId: string, date: Date) {
+  const companyId = getCompanyId();
   const q = query(
     collection(db, "shifts"),
+    where("companyId", "==", companyId),
     where("userId", "==", userId),
     where("date", "==", Timestamp.fromDate(date)),
   );
@@ -133,12 +148,14 @@ async function deleteTargetShift(userId: string, date: Date) {
 }
 
 export async function copyWeekShiftsOverwrite(sourceMonday: Date) {
+  const companyId = getCompanyId();
   const sourceSunday = new Date(sourceMonday);
   sourceSunday.setDate(sourceMonday.getDate() + 6);
   sourceSunday.setHours(23, 59, 59, 999);
 
   const q = query(
     collection(db, "shifts"),
+    where("companyId", "==", companyId),
     where("date", ">=", Timestamp.fromDate(sourceMonday)),
     where("date", "<=", Timestamp.fromDate(sourceSunday)),
   );
@@ -167,12 +184,14 @@ export async function copyWeekShiftsOverwrite(sourceMonday: Date) {
 }
 
 export async function clearWeekShifts(monday: Date) {
+  const companyId = getCompanyId();
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   sunday.setHours(23, 59, 59, 999);
 
   const q = query(
     collection(db, "shifts"),
+    where("companyId", "==", companyId),
     where("date", ">=", Timestamp.fromDate(monday)),
     where("date", "<=", Timestamp.fromDate(sunday)),
   );

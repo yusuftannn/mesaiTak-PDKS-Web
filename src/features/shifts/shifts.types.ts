@@ -14,6 +14,7 @@ export const SHIFT_TYPES: {
 export type Shift = {
   id: string;
   userId: string;
+  companyId: string;
   date: Date;
   startTime: string;
   endTime: string;
@@ -22,6 +23,7 @@ export type Shift = {
 
 export type ShiftDoc = {
   userId: string;
+  companyId: string;
   date: Timestamp;
   startTime: string;
   endTime: string;
@@ -30,6 +32,7 @@ export type ShiftDoc = {
 
 export type CreateShiftParams = {
   userId: string;
+  companyId: string;
   date: Date;
   startTime: string;
   endTime: string;

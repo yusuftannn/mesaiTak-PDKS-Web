@@ -31,7 +31,7 @@ export type CreateUserParams = {
 
   role: UserRole;
 
-  companyId: string | null;
+  companyId: string;
   branchId: string | null;
 
   groupTagIds: string[];
