@@ -10,28 +10,23 @@ import {
 interface GroupTagStore {
   tags: GroupTag[];
 
-  fetchTags: (companyId: string) => Promise<void>;
-
-  addTag: (name: string, companyId: string) => Promise<void>;
-
+  fetchTags: () => Promise<void>;
+  addTag: (name: string) => Promise<void>;
   editTag: (id: string, name: string) => Promise<void>;
-
   removeTag: (id: string) => Promise<void>;
 }
 
 export const useGroupTagStore = create<GroupTagStore>((set, get) => ({
   tags: [],
 
-  fetchTags: async (companyId) => {
-    const data = await listGroupTags(companyId);
-
+  fetchTags: async () => {
+    const data = await listGroupTags();
     set({ tags: data });
   },
 
-  addTag: async (name, companyId) => {
-    await createGroupTag(name, companyId);
-
-    await get().fetchTags(companyId);
+  addTag: async (name) => {
+    await createGroupTag(name);
+    await get().fetchTags();
   },
 
   editTag: async (id, name) => {

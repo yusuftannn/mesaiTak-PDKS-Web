@@ -3,6 +3,7 @@ import { AppUser } from "@/features/users/users.types";
 
 export type AttendanceDoc = {
   uid: string;
+  companyId: string;
   date: string;
   checkInAt?: { toDate: () => Date } | null;
   checkOutAt?: { toDate: () => Date } | null;
@@ -11,6 +12,7 @@ export type AttendanceDoc = {
 
 export type ShiftDoc = {
   userId: string;
+  companyId: string;
   date: Timestamp;
   startTime: string;
   endTime: string;

@@ -15,10 +15,11 @@ import { v4 as uuid } from "uuid";
 
 import { Branch, BranchDoc } from "./branches.types";
 import { COLLECTIONS } from "@/constants/collections";
+import { getCompanyId } from "@/lib/utils/company";
 
-export async function listBranchesByCompany(
-  companyId: string,
-): Promise<Branch[]> {
+export async function listBranches(): Promise<Branch[]> {
+  const companyId = getCompanyId();
+
   const q = query(
     collection(db, COLLECTIONS.BRANCHES),
     where("companyId", "==", companyId),
@@ -47,12 +48,15 @@ export async function listBranchesByCompany(
   return items;
 }
 
-export async function createBranch(companyId: string, name: string) {
+export async function createBranch(name: string) {
+  const companyId = getCompanyId();
+
   const branchId = uuid();
 
   await setDoc(doc(db, COLLECTIONS.BRANCHES, branchId), {
     branchId,
     companyId,
+
     name,
     createdAt: serverTimestamp(),
   });

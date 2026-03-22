@@ -19,6 +19,7 @@ export const LEAVE_STATUS_LABEL: Record<LeaveStatus, string> = {
 export type Leave = {
   id: string;
   userId: string;
+  companyId: string;
 
   type: LeaveType;
   startDate: Date;
@@ -37,6 +38,7 @@ export type Leave = {
 
 export type LeaveDoc = {
   userId: string;
+  companyId: string;
   type: LeaveType;
   startDate: Timestamp;
   endDate: Timestamp;
@@ -54,6 +56,7 @@ export type LeaveDoc = {
 
 export type CreateLeaveParams = {
   userId: string;
+  companyId: string;
   type: LeaveType;
   startDate: Date;
   endDate: Date;

@@ -15,7 +15,7 @@ import {
   DashboardUser,
   DashboardStats,
 } from "./dashboard.types";
-
+import { getCompanyId } from "@/lib/utils/company";
 import { AppUser } from "@/features/users/users.types";
 
 function todayString(): string {
@@ -36,12 +36,14 @@ export async function subscribeTodayDashboard(
   users: AppUser[],
   onChange: (stats: DashboardStats) => void,
 ): Promise<Unsubscribe> {
+  const companyId = getCompanyId();
   const today = new Date();
   const todayKey = todayString();
   const { start, end } = getDayRange(today);
 
   const shiftQuery = query(
     collection(db, "shifts"),
+    where("companyId", "==", companyId),
     where("date", ">=", Timestamp.fromDate(start)),
     where("date", "<=", Timestamp.fromDate(end)),
   );
@@ -57,6 +59,7 @@ export async function subscribeTodayDashboard(
 
   const attendanceQuery = query(
     collection(db, "attendance"),
+    where("companyId", "==", companyId),
     where("date", "==", todayKey),
   );
 
@@ -68,10 +71,10 @@ export async function subscribeTodayDashboard(
     const earlyLeave: DashboardUser[] = [];
 
     const presentSet = new Set<string>();
-
+    const userMap = new Map(users.map((u) => [u.uid, u]));
     snap.docs.forEach((doc) => {
       const a = doc.data() as AttendanceDoc;
-      const userMap = new Map(users.map((u) => [u.uid, u]));
+
       const user = userMap.get(a.uid);
       if (!user) return;
 

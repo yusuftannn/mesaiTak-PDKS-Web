@@ -1,5 +1,5 @@
 import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
-import { LeaveDoc } from "@/features/leaves/leaves.types";
+import { Leave } from "@/features/leaves/leaves.types";
 import { AppUser } from "@/features/users/users.types";
 
 export type UserBasic = {
@@ -8,7 +8,7 @@ export type UserBasic = {
 };
 export type MonthlyReport = {
   attendance: AttendanceWithLocation[];
-  leaves: LeaveDoc[];
+  leaves: Leave[];
 };
 
 export type DayStatus = {

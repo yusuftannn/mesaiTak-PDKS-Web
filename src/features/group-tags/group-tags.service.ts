@@ -11,46 +11,69 @@ import {
   where,
 } from "firebase/firestore";
 
-import { GroupTag } from "@/features/group-tags/group-tags.types";
+import {
+  GroupTag,
+  GroupTagDoc,
+  UserDoc,
+} from "@/features/group-tags/group-tags.types";
+import { getCompanyId } from "@/lib/utils/company";
 
-export async function listGroupTags(companyId: string): Promise<GroupTag[]> {
-  const q = query(
+export async function listGroupTags(): Promise<GroupTag[]> {
+  const companyId = getCompanyId();
+
+  const tagsQuery = query(
     collection(db, "groupTags"),
     where("companyId", "==", companyId),
   );
 
-  const snap = await getDocs(q);
+  const tagsSnap = await getDocs(tagsQuery);
 
-  const tags: GroupTag[] = [];
+  const usersQuery = query(
+    collection(db, "users"),
+    where("companyId", "==", companyId),
+  );
 
-  for (const d of snap.docs) {
-    const data = d.data();
+  const usersSnap = await getDocs(usersQuery);
 
-    const usersSnap = await getDocs(
-      query(collection(db, "users"), where("groupTagIds", "array-contains", d.id)),
-    );
+  const tagCountMap = new Map<string, number>();
 
-    tags.push({
+  usersSnap.docs.forEach((doc) => {
+    const data = doc.data() as UserDoc;
+
+    const tagIds = data.groupTagIds ?? [];
+
+    tagIds.forEach((tagId) => {
+      tagCountMap.set(tagId, (tagCountMap.get(tagId) || 0) + 1);
+    });
+  });
+
+  return tagsSnap.docs.map((d) => {
+    const data = d.data() as GroupTagDoc;
+
+    return {
       id: d.id,
       name: data.name,
       refId: data.refId,
       companyId: data.companyId,
+
       createdAt: data.createdAt?.toDate(),
       updatedAt: data.updatedAt?.toDate(),
-      userCount: usersSnap.size,
-    });
-  }
 
-  return tags;
+      userCount: tagCountMap.get(d.id) ?? 0,
+    };
+  });
 }
 
-export async function createGroupTag(name: string, companyId: string) {
+export async function createGroupTag(name: string) {
+  const companyId = getCompanyId();
+
   const refId = crypto.randomUUID().slice(0, 8);
 
   await addDoc(collection(db, "groupTags"), {
     name,
     refId,
     companyId,
+
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

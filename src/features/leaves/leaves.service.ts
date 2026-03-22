@@ -1,6 +1,8 @@
 import { db } from "@/lib/firebase";
 
 import {
+  query,
+  where,
   collection,
   getDocs,
   addDoc,
@@ -13,23 +15,33 @@ import {
 
 import { Leave, LeaveDoc, CreateLeaveParams } from "./leaves.types";
 import { COLLECTIONS } from "@/constants/collections";
+import { getCompanyId } from "@/lib/utils/company";
 
 export async function listLeaves(): Promise<Leave[]> {
-  const snap = await getDocs(collection(db, COLLECTIONS.LEAVES));
+  const companyId = getCompanyId();
+
+  const q = query(
+    collection(db, COLLECTIONS.LEAVES),
+    where("companyId", "==", companyId),
+  );
+
+  const snap = await getDocs(q);
 
   return snap.docs.map((d) => {
     const data = d.data() as LeaveDoc;
 
     return {
       id: d.id,
+
       userId: data.userId,
+      companyId: data.companyId,
 
       type: data.type,
 
       startDate: data.startDate.toDate(),
       endDate: data.endDate.toDate(),
 
-      reason: data.reason,
+      reason: data.reason ?? undefined,
 
       status: data.status,
 
@@ -44,8 +56,11 @@ export async function listLeaves(): Promise<Leave[]> {
 }
 
 export async function createLeave(data: CreateLeaveParams) {
+  const companyId = getCompanyId();
+
   await addDoc(collection(db, COLLECTIONS.LEAVES), {
     userId: data.userId,
+    companyId,
 
     type: data.type,
 

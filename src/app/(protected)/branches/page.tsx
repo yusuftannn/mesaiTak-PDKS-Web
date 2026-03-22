@@ -1,79 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Company } from "@/features/companies/companies.types";
-import { listCompanies } from "@/features/companies/companies.service";
-import { useToastStore } from "@/lib/ui/toast.store";
-import {
-  listBranchesByCompany,
-  createBranch,
-  removeBranch,
-  updateBranch,
-} from "@/features/branches/branches.service";
-import { Branch } from "@/features/branches/branches.types";
 import Button from "@/components/ui/Button";
+import { useToastStore } from "@/lib/ui/toast.store";
+import { useAuthStore } from "@/features/auth/auth.store";
+import { useBranchesStore } from "@/features/branches/branches.store";
 
 export default function BranchesPage() {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [companyId, setCompanyId] = useState<string>("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState("");
-  const [branches, setBranches] = useState<Branch[]>([]);
+  const showToast = useToastStore((s) => s.showToast);
+
+  const companyId = useAuthStore((s) => s.user?.companyId);
+
+  const {
+    branches,
+    fetchBranches,
+    createBranch,
+    updateBranch,
+    deleteBranch,
+    loading,
+  } = useBranchesStore();
+
   const [branchName, setBranchName] = useState("");
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [loading, setLoading] = useState(false);
-  const showToast = useToastStore((s) => s.showToast);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
 
   useEffect(() => {
-    let mounted = true;
-
-    (async () => {
-      const data = await listCompanies();
-      if (!mounted) return;
-
-      setCompanies(data);
-
-      if (data.length > 0) {
-        setCompanyId(data[0].companyId);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
+    fetchBranches();
   }, []);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const load = async () => {
-      if (!companyId) {
-        setBranches([]);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-
-      try {
-        const data = await listBranchesByCompany(companyId);
-        if (mounted) setBranches(data);
-      } catch (e: unknown) {
-        console.error("listBranchesByCompany failed:", e);
-        if (mounted) setBranches([]);
-        alert("Şubeler yüklenemedi. Console hatasını kontrol et.");
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    load();
-
-    return () => {
-      mounted = false;
-    };
-  }, [companyId, showToast]);
 
   const onCreate = async () => {
     if (!branchName.trim() || !companyId) {
@@ -86,23 +42,19 @@ export default function BranchesPage() {
     }
 
     try {
-      await createBranch(companyId, branchName.trim());
+      await createBranch(branchName);
       setBranchName("");
-
-      const data = await listBranchesByCompany(companyId);
-      setBranches(data);
 
       showToast({
         type: "success",
         title: "Şube Oluşturuldu",
-        message: "Yeni şube başarıyla eklendi.",
       });
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.log("createBranch error:", error);
       showToast({
         type: "error",
         title: "Hata",
-        message: "Şube eklenirken hata oluştu.",
+        message: "Şube eklenemedi",
       });
     }
   };
@@ -111,41 +63,26 @@ export default function BranchesPage() {
     if (!confirm("Şube silinsin mi?")) return;
 
     try {
-      await removeBranch(branchId);
-
-      const data = await listBranchesByCompany(companyId);
-      setBranches(data);
+      await deleteBranch(branchId);
 
       showToast({
         type: "success",
         title: "Şube Silindi",
-        message: "Şube başarıyla silindi.",
       });
-    } catch (err) {
-      console.error(err);
+    } catch {
       showToast({
         type: "error",
         title: "Hata",
-        message: "Şube silinirken hata oluştu.",
+        message: "Silme başarısız",
       });
     }
   };
 
   const onUpdate = async (branchId: string) => {
-    if (!editingName.trim()) {
-      showToast({
-        type: "info",
-        title: "Eksik Bilgi",
-        message: "Şube adı boş olamaz.",
-      });
-      return;
-    }
+    if (!editingName.trim()) return;
 
     try {
       await updateBranch(branchId, editingName.trim());
-
-      const data = await listBranchesByCompany(companyId);
-      setBranches(data);
 
       setEditingId(null);
       setEditingName("");
@@ -153,26 +90,23 @@ export default function BranchesPage() {
       showToast({
         type: "success",
         title: "Güncellendi",
-        message: "Şube adı başarıyla güncellendi.",
       });
-    } catch (err) {
-      console.error(err);
+    } catch {
       showToast({
         type: "error",
         title: "Hata",
-        message: "Güncelleme sırasında hata oluştu.",
+        message: "Güncellenemedi",
       });
     }
   };
 
-  const filteredBranches = branches
+  const filtered = branches
     .filter((b) => b.name.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => {
-      if (sortOrder === "asc") {
-        return a.name.localeCompare(b.name);
-      }
-      return b.name.localeCompare(a.name);
-    });
+    .sort((a, b) =>
+      sortOrder === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name),
+    );
 
   return (
     <div className="p-6">
@@ -182,24 +116,9 @@ export default function BranchesPage() {
         <div className="bg-white border rounded-xl p-5 shadow-sm space-y-4 h-fit">
           <h3 className="text-sm font-semibold text-gray-700">Yeni Şube</h3>
 
-          <div>
-            <label className="text-xs text-gray-500">Şirket</label>
-            <select
-              className="w-full border rounded-lg px-4 py-2 mt-1 text-sm"
-              value={companyId}
-              onChange={(e) => setCompanyId(e.target.value)}
-            >
-              {companies.map((c) => (
-                <option key={c.companyId} value={c.companyId}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <input
             className="w-full border rounded-lg px-4 py-2 text-sm"
-            placeholder="Yeni şube adı"
+            placeholder="Şube adı"
             value={branchName}
             onChange={(e) => setBranchName(e.target.value)}
           />
@@ -212,8 +131,7 @@ export default function BranchesPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white border rounded-xl p-4 shadow-sm flex items-center gap-4">
             <input
-              type="text"
-              placeholder="Şube ara..."
+              placeholder="Ara..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="border px-4 py-2 rounded-lg text-sm flex-1"
@@ -229,8 +147,8 @@ export default function BranchesPage() {
             </select>
 
             <Button
-              variant="secondary"
               size="sm"
+              variant="secondary"
               onClick={() => {
                 setSearch("");
                 setSortOrder("asc");
@@ -239,87 +157,69 @@ export default function BranchesPage() {
               Temizle
             </Button>
 
-            <div className="text-xs text-gray-500 whitespace-nowrap">
-              Toplam: {filteredBranches.length}
-            </div>
+            <div className="text-xs text-gray-500">{filtered.length}</div>
           </div>
 
           {loading ? (
-            <div className="text-sm text-gray-500 p-4">Yükleniyor…</div>
+            <div className="p-4 text-sm text-gray-500">Yükleniyor…</div>
           ) : (
-            <div className="bg-white border rounded-xl divide-y shadow-sm">
-              {filteredBranches.length === 0 ? (
-                <div className="p-6 text-sm text-gray-500">
-                  Filtreye uygun şube bulunamadı
-                </div>
-              ) : (
-                filteredBranches.map((b) => (
-                  <div
-                    key={b.branchId}
-                    className="p-4 flex items-center justify-between hover:bg-gray-50 transition"
-                  >
-                    <div className="flex-1">
-                      {editingId === b.branchId ? (
-                        <input
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          className="border px-3 py-1 rounded-lg text-sm w-full"
-                        />
-                      ) : (
-                        <>
-                          <div className="font-medium">{b.name}</div>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2 px-2">
-                      {editingId === b.branchId ? (
-                        <>
-                          <Button
-                            variant="success"
-                            size="sm"
-                            onClick={() => onUpdate(b.branchId)}
-                          >
-                            Kaydet
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => {
-                              setEditingId(null);
-                              setEditingName("");
-                            }}
-                          >
-                            İptal
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-blue-600 hover:text-blue-700"
-                            onClick={() => {
-                              setEditingId(b.branchId);
-                              setEditingName(b.name);
-                            }}
-                          >
-                            Düzenle
-                          </Button>
-
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => onRemove(b.branchId)}
-                          >
-                            Sil
-                          </Button>
-                        </>
-                      )}
-                    </div>
+            <div className="bg-white border rounded-xl divide-y">
+              {filtered.map((b) => (
+                <div
+                  key={b.branchId}
+                  className="p-4 flex justify-between items-center"
+                >
+                  <div className="flex-1">
+                    {editingId === b.branchId ? (
+                      <input
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        className="border px-3 py-1 rounded-lg text-sm w-full"
+                      />
+                    ) : (
+                      <div className="font-medium">{b.name}</div>
+                    )}
                   </div>
-                ))
-              )}
+
+                  <div className="flex gap-2">
+                    {editingId === b.branchId ? (
+                      <>
+                        <Button size="sm" onClick={() => onUpdate(b.branchId)}>
+                          Kaydet
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setEditingId(null)}
+                        >
+                          İptal
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingId(b.branchId);
+                            setEditingName(b.name);
+                          }}
+                        >
+                          Düzenle
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => onRemove(b.branchId)}
+                        >
+                          Sil
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
