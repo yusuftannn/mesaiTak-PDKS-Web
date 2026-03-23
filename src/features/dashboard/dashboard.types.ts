@@ -2,6 +2,7 @@ import { Timestamp } from "firebase/firestore";
 import { AppUser } from "@/features/users/users.types";
 
 export type AttendanceDoc = {
+  status?: "mola" | "çalışıyor" | string;
   uid: string;
   companyId: string;
   date: string;

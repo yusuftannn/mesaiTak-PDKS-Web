@@ -1,4 +1,5 @@
 "use client";
+
 import { Power, UserPlus, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { listAllUsers, updateUser } from "@/features/users/users.service";
@@ -6,22 +7,28 @@ import { AppUser } from "@/features/users/users.types";
 import { Company } from "@/features/companies/companies.types";
 import { listCompanies } from "@/features/companies/companies.service";
 import { Branch } from "@/features/branches/branches.types";
-import { listBranchesByCompany } from "@/features/branches/branches.service";
+import { listBranches } from "@/features/branches/branches.service";
+import { getCompanyId } from "@/lib/utils/company";
+
 import Button from "@/components/ui/Button";
 import CreateUserModal from "./CreateUserModal";
 import EditUserModal from "./EditUserModal";
 
 export default function UsersPage() {
+  const companyId = getCompanyId();
+
   const [users, setUsers] = useState<AppUser[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [branches, setBranches] = useState<Record<string, Branch[]>>({});
+  const [branches, setBranches] = useState<Branch[]>([]);
+
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState("");
   const [editingUser, setEditingUser] = useState<AppUser | null>(null);
+
   const [filterRole, setFilterRole] = useState<"" | AppUser["role"]>("");
   const [filterStatus, setFilterStatus] = useState<"" | AppUser["status"]>("");
-  const [filterCompany, setFilterCompany] = useState("");
   const [filterBranch, setFilterBranch] = useState("");
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,24 +37,19 @@ export default function UsersPage() {
     (async () => {
       setLoading(true);
 
-      const [u, c] = await Promise.all([listAllUsers(), listCompanies()]);
+      const [u, c, b] = await Promise.all([
+        listAllUsers(),
+        listCompanies(),
+        listBranches(),
+      ]);
 
       if (!mounted) return;
 
-      setUsers(u);
+      const filteredUsers = u.filter((x) => x.companyId === companyId);
+
+      setUsers(filteredUsers);
       setCompanies(c);
-
-      const companyIds = Array.from(
-        new Set(u.map((x) => x.companyId).filter(Boolean)),
-      ) as string[];
-
-      for (const cid of companyIds) {
-        const data = await listBranchesByCompany(cid);
-        setBranches((prev) => ({
-          ...prev,
-          [cid]: data,
-        }));
-      }
+      setBranches(b);
 
       setLoading(false);
     })();
@@ -55,42 +57,12 @@ export default function UsersPage() {
     return () => {
       mounted = false;
     };
-  }, []);
-
-  const loadBranches = async (companyId: string) => {
-    if (branches[companyId]) return;
-
-    const data = await listBranchesByCompany(companyId);
-    setBranches((prev) => ({
-      ...prev,
-      [companyId]: data,
-    }));
-  };
+  }, [companyId]);
 
   const onChangeRole = async (userId: string, role: AppUser["role"]) => {
     await updateUser(userId, { role });
+
     setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role } : u)));
-  };
-
-  const onChangeCompany = async (userId: string, companyId: string) => {
-    await updateUser(userId, {
-      companyId,
-      branchId: null,
-    });
-
-    await loadBranches(companyId);
-
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId
-          ? {
-              ...u,
-              companyId,
-              branchId: null,
-            }
-          : u,
-      ),
-    );
   };
 
   const onChangeBranch = async (userId: string, branchId: string) => {
@@ -124,6 +96,9 @@ export default function UsersPage() {
     return <div className="p-6">Yükleniyor…</div>;
   }
 
+  const companyName =
+    companies.find((c) => c.companyId === companyId)?.name ?? "-";
+
   const filteredUsers = users.filter((u) => {
     const matchesSearch =
       u.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -131,32 +106,26 @@ export default function UsersPage() {
 
     const matchesRole = filterRole ? u.role === filterRole : true;
     const matchesStatus = filterStatus ? u.status === filterStatus : true;
-    const matchesCompany = filterCompany ? u.companyId === filterCompany : true;
     const matchesBranch = filterBranch ? u.branchId === filterBranch : true;
 
-    return (
-      matchesSearch &&
-      matchesRole &&
-      matchesStatus &&
-      matchesCompany &&
-      matchesBranch
-    );
+    return matchesSearch && matchesRole && matchesStatus && matchesBranch;
   });
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6 max-w-7xl">
-        <h2 className="text-lg font-semibold">Kullanıcılar</h2>
-
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2"
-            icon={<UserPlus size={16} />}
-          >
-            Kullanıcı Ekle
-          </Button>
+        <div>
+          <h2 className="text-lg font-semibold">Kullanıcılar</h2>
+          <div className="text-xs text-gray-500">{companyName}</div>
         </div>
+
+        <Button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2"
+          icon={<UserPlus size={16} />}
+        >
+          Kullanıcı Ekle
+        </Button>
       </div>
 
       <div className="space-y-4 max-w-7xl">
@@ -197,35 +166,17 @@ export default function UsersPage() {
           </select>
 
           <select
-            value={filterCompany}
-            onChange={(e) => {
-              setFilterCompany(e.target.value);
-              setFilterBranch("");
-            }}
+            value={filterBranch}
+            onChange={(e) => setFilterBranch(e.target.value)}
             className="border px-3 py-2 rounded-lg text-sm"
           >
-            <option value="">Tüm Şirketler</option>
-            {companies.map((c) => (
-              <option key={c.companyId} value={c.companyId}>
-                {c.name}
+            <option value="">Tüm Şubeler</option>
+            {branches.map((b) => (
+              <option key={b.branchId} value={b.branchId}>
+                {b.name}
               </option>
             ))}
           </select>
-
-          {filterCompany && (
-            <select
-              value={filterBranch}
-              onChange={(e) => setFilterBranch(e.target.value)}
-              className="border px-3 py-2 rounded-lg text-sm"
-            >
-              <option value="">Tüm Şubeler</option>
-              {(branches[filterCompany] ?? []).map((b) => (
-                <option key={b.branchId} value={b.branchId}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          )}
 
           <Button
             variant="secondary"
@@ -234,7 +185,6 @@ export default function UsersPage() {
               setSearch("");
               setFilterRole("");
               setFilterStatus("");
-              setFilterCompany("");
               setFilterBranch("");
             }}
           >
@@ -261,7 +211,7 @@ export default function UsersPage() {
 
             <tbody>
               {filteredUsers.map((u) => (
-                <tr key={u.id} className="border-t hover:bg-gray-50 transition">
+                <tr key={u.id} className="border-t hover:bg-gray-50">
                   <td className="p-3">
                     <div className="font-medium">{u.name}</div>
                     <div className="text-xs text-gray-500">{u.email}</div>
@@ -284,40 +234,24 @@ export default function UsersPage() {
                     )}
                   </td>
 
-                  <td className="p-3 text-center">
-                    <select
-                      className="border rounded px-2 py-1 text-xs"
-                      value={u.companyId ?? ""}
-                      onChange={(e) => onChangeCompany(u.id, e.target.value)}
-                      disabled={u.status === "passive"}
-                    >
-                      <option value="">—</option>
-                      {companies.map((c) => (
-                        <option key={c.companyId} value={c.companyId}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
+                  <td className="p-3 text-center text-xs text-gray-600">
+                    {companyName}
                   </td>
 
                   <td className="p-3 text-center">
-                    {u.companyId ? (
-                      <select
-                        className="border rounded px-2 py-1 text-xs"
-                        value={u.branchId ?? ""}
-                        onChange={(e) => onChangeBranch(u.id, e.target.value)}
-                        disabled={u.status === "passive"}
-                      >
-                        <option value="">—</option>
-                        {(branches[u.companyId] ?? []).map((b) => (
-                          <option key={b.branchId} value={b.branchId}>
-                            {b.name}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span className="text-xs text-gray-400">Şirket seç</span>
-                    )}
+                    <select
+                      className="border rounded px-2 py-1 text-xs"
+                      value={u.branchId ?? ""}
+                      onChange={(e) => onChangeBranch(u.id, e.target.value)}
+                      disabled={u.status === "passive"}
+                    >
+                      <option value="">—</option>
+                      {branches.map((b) => (
+                        <option key={b.branchId} value={b.branchId}>
+                          {b.name}
+                        </option>
+                      ))}
+                    </select>
                   </td>
 
                   <td className="p-3 text-center">
@@ -327,8 +261,8 @@ export default function UsersPage() {
                       icon={<Power size={12} />}
                       className={`mx-auto flex items-center gap-1 justify-center ${
                         u.status === "active"
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-200 text-gray-600"
                       }`}
                       onClick={() => onToggleStatus(u)}
                     >
@@ -341,7 +275,6 @@ export default function UsersPage() {
                       variant="secondary"
                       size="sm"
                       icon={<Pencil size={16} />}
-                      className="mx-auto flex items-center gap-1 justify-center"
                       onClick={() => setEditingUser(u)}
                     />
                   </td>
@@ -352,7 +285,7 @@ export default function UsersPage() {
 
           {filteredUsers.length === 0 && (
             <div className="p-6 text-sm text-gray-500 text-center">
-              Filtreye uygun kullanıcı bulunamadı
+              Kullanıcı bulunamadı
             </div>
           )}
         </div>
@@ -360,11 +293,10 @@ export default function UsersPage() {
 
       {showCreate && (
         <CreateUserModal
-          companies={companies}
           onClose={() => setShowCreate(false)}
           onCreated={async () => {
             const data = await listAllUsers();
-            setUsers(data);
+            setUsers(data.filter((x) => x.companyId === companyId));
           }}
         />
       )}
@@ -372,11 +304,10 @@ export default function UsersPage() {
       {editingUser && (
         <EditUserModal
           user={editingUser}
-          companies={companies}
           onClose={() => setEditingUser(null)}
           onUpdated={async () => {
             const data = await listAllUsers();
-            setUsers(data);
+            setUsers(data.filter((x) => x.companyId === companyId));
           }}
         />
       )}

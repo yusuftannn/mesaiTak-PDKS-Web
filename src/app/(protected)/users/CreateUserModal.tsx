@@ -2,43 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { createUser } from "@/features/users/users.service";
-import { Company } from "@/features/companies/companies.types";
 import { Branch } from "@/features/branches/branches.types";
-import { listBranchesByCompany } from "@/features/branches/branches.service";
+import { listBranches } from "@/features/branches/branches.service";
+import { getCompanyId } from "@/lib/utils/company";
+
 import Button from "@/components/ui/Button";
 
 type Props = {
-  companies: Company[];
   onClose: () => void;
   onCreated: () => void;
 };
 
-export default function CreateUserModal({
-  companies,
-  onClose,
-  onCreated,
-}: Props) {
+export default function CreateUserModal({ onClose, onCreated }: Props) {
+  const companyId = getCompanyId();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState<"employee" | "admin">("employee");
-  const [companyId, setCompanyId] = useState<string>("");
+
   const [branchId, setBranchId] = useState<string>("");
   const [branches, setBranches] = useState<Branch[]>([]);
+
   const [country, setCountry] = useState("Turkiye");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!companyId) {
-      setBranches([]);
-      setBranchId("");
-      return;
-    }
-
-    listBranchesByCompany(companyId).then(setBranches);
-  }, [companyId]);
+    listBranches().then(setBranches);
+  }, []);
 
   const onSubmit = async () => {
     if (!name || !email || !password) {
@@ -55,7 +49,7 @@ export default function CreateUserModal({
         password,
         phone,
         role,
-        companyId: companyId || null,
+        companyId,
         branchId: branchId || null,
         country: country || "Turkiye",
         groupTagIds: [],
@@ -126,32 +120,19 @@ export default function CreateUserModal({
 
         <select
           className="border rounded p-2 w-full"
-          value={companyId}
-          onChange={(e) => setCompanyId(e.target.value)}
+          value={branchId}
+          onChange={(e) => setBranchId(e.target.value)}
         >
-          <option value="">Şirket seç</option>
-          {companies.map((c) => (
-            <option key={c.companyId} value={c.companyId}>
-              {c.name}
+          <option value="">Şube seç (opsiyonel)</option>
+          {branches.map((b) => (
+            <option key={b.branchId} value={b.branchId}>
+              {b.name}
             </option>
           ))}
         </select>
 
-        {companyId && (
-          <select
-            className="border rounded p-2 w-full"
-            value={branchId}
-            onChange={(e) => setBranchId(e.target.value)}
-          >
-            <option value="">Şube seç</option>
-            {branches.map((b) => (
-              <option key={b.branchId} value={b.branchId}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        )}
         {error && <p className="text-sm text-red-600">{error}</p>}
+
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="secondary" size="sm" onClick={onClose}>
             İptal

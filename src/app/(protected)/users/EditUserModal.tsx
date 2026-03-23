@@ -4,42 +4,33 @@ import { useEffect, useState } from "react";
 import { updateUser } from "@/features/users/users.service";
 import { AppUser, UserRole } from "@/features/users/users.types";
 
-import { Company } from "@/features/companies/companies.types";
 import { Branch } from "@/features/branches/branches.types";
-import { listBranchesByCompany } from "@/features/branches/branches.service";
+import { listBranches } from "@/features/branches/branches.service";
+import { getCompanyId } from "@/lib/utils/company";
+
 import Button from "@/components/ui/Button";
 
 type Props = {
   user: AppUser;
-  companies: Company[];
   onClose: () => void;
   onUpdated: () => void;
 };
 
-export default function EditUserModal({
-  user,
-  companies,
-  onClose,
-  onUpdated,
-}: Props) {
+export default function EditUserModal({ user, onClose, onUpdated }: Props) {
+  const companyId = getCompanyId();
+
   const [name, setName] = useState(user.name);
   const [phone, setPhone] = useState(user.phone ?? "");
   const [role, setRole] = useState<UserRole>(user.role);
-  const [companyId, setCompanyId] = useState(user.companyId ?? "");
   const [branchId, setBranchId] = useState(user.branchId ?? "");
   const [branches, setBranches] = useState<Branch[]>([]);
   const [country, setCountry] = useState(user.country ?? "Turkiye");
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!companyId) {
-      setBranches([]);
-      setBranchId("");
-      return;
-    }
-
-    listBranchesByCompany(companyId).then(setBranches);
-  }, [companyId]);
+    listBranches().then(setBranches);
+  }, []);
 
   const onSubmit = async () => {
     setLoading(true);
@@ -49,8 +40,8 @@ export default function EditUserModal({
         name,
         phone,
         country: country || "Turkiye",
+        companyId,
         role,
-        companyId: companyId || null,
         branchId: branchId || null,
       });
 
@@ -93,36 +84,20 @@ export default function EditUserModal({
         >
           <option value="employee">employee</option>
           <option value="admin">admin</option>
-          <option value="manager">manager</option>
         </select>
 
         <select
           className="border rounded p-2 w-full"
-          value={companyId}
-          onChange={(e) => setCompanyId(e.target.value)}
+          value={branchId}
+          onChange={(e) => setBranchId(e.target.value)}
         >
-          <option value="">Şirket seç</option>
-          {companies.map((c) => (
-            <option key={c.companyId} value={c.companyId}>
-              {c.name}
+          <option value="">Şube seç</option>
+          {branches.map((b) => (
+            <option key={b.branchId} value={b.branchId}>
+              {b.name}
             </option>
           ))}
         </select>
-
-        {companyId && (
-          <select
-            className="border rounded p-2 w-full"
-            value={branchId}
-            onChange={(e) => setBranchId(e.target.value)}
-          >
-            <option value="">Şube seç</option>
-            {branches.map((b) => (
-              <option key={b.branchId} value={b.branchId}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        )}
 
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="secondary" size="sm" onClick={onClose}>

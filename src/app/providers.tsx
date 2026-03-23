@@ -31,9 +31,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     }
   }, [user, initializing, pathname, router]);
 
-  if (initializing) {
-    return <div className="p-6">Yükleniyor...</div>;
-  }
-
-  return <>{children}</>;
+  return (
+    <>{initializing ? <div className="p-6">Yükleniyor...</div> : children}</>
+  );
 }
