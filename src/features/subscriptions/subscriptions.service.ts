@@ -34,19 +34,25 @@ function mapSubscription(id: string, data: SubscriptionDoc): Subscription {
   };
 }
 
-export async function getSubscriptionByCompany(
+export async function getActiveSubscriptionByCompany(
   companyId: string,
 ): Promise<Subscription | null> {
   const q = query(
     collection(db, "subscriptions"),
     where("companyId", "==", companyId),
+    where("status", "in", ["trial", "active"]),
   );
 
   const snap = await getDocs(q);
 
   if (snap.empty) return null;
 
-  const d = snap.docs[0];
+  const sorted = snap.docs.sort(
+    (a, b) => b.data().createdAt.toMillis() - a.data().createdAt.toMillis(),
+  );
+
+  const d = sorted[0];
+
   return mapSubscription(d.id, d.data() as SubscriptionDoc);
 }
 

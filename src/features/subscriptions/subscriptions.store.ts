@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { Subscription, SubscriptionStatus } from "./subscriptions.types";
+import { Subscription } from "./subscriptions.types";
 import {
   listSubscriptions,
-  getSubscriptionByCompany,
+  getActiveSubscriptionByCompany,
 } from "./subscriptions.service";
 
 interface SubscriptionsState {
@@ -27,7 +27,7 @@ export const useSubscriptionsStore = create<SubscriptionsState>((set) => ({
 
   fetchCompanySubscription: async (companyId) => {
     set({ loading: true });
-    const sub = await getSubscriptionByCompany(companyId);
+    const sub = await getActiveSubscriptionByCompany(companyId);
     set({ currentSubscription: sub, loading: false });
   },
 }));
