@@ -4,6 +4,7 @@ import {
   getDocs,
   doc,
   getDoc,
+  deleteDoc,
   addDoc,
   updateDoc,
   query,
@@ -101,4 +102,11 @@ export async function updateSubscriptionStatus(
   await updateDoc(ref, {
     status,
   });
+}
+
+export async function deleteSubscription(
+  subscriptionId: string,
+): Promise<void> {
+  const ref = doc(db, "subscriptions", subscriptionId);
+  await deleteDoc(ref);
 }

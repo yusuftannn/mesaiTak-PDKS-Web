@@ -1,6 +1,6 @@
 import { Timestamp } from "firebase/firestore";
 
-export type PlanId = "FREE" | "PRO" | "ENTERPRISE";
+export type PlanId = string;
 
 export interface Plan {
   id: PlanId;
@@ -17,4 +17,12 @@ export type PlanDoc = {
   userLimit: number;
   features: string[];
   createdAt: Timestamp;
+};
+
+export type PlanInput = {
+  id?: PlanId; 
+  name: string;
+  price: number;
+  userLimit: number;
+  features: string[];
 };

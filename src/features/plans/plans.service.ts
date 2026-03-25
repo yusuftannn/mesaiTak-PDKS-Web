@@ -5,10 +5,11 @@ import {
   doc,
   getDoc,
   deleteDoc,
-  setDoc,
-  Timestamp,
+  updateDoc,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
-import { Plan, PlanId, PlanDoc } from "./plans.types";
+import { Plan, PlanId, PlanDoc, PlanInput } from "./plans.types";
 
 function mapPlanDoc(id: string, data: PlanDoc): Plan {
   return {
@@ -36,16 +37,29 @@ export async function getPlan(planId: PlanId): Promise<Plan | null> {
   return mapPlanDoc(snap.id, snap.data() as PlanDoc);
 }
 
-export async function upsertPlan(plan: Omit<Plan, "createdAt">): Promise<void> {
-  const ref = doc(db, "plans", plan.id);
+export async function upsertPlan(data: PlanInput) {
+  if (data.id) {
+    const ref = doc(db, "plans", data.id);
 
-  await setDoc(ref, {
-    name: plan.name,
-    price: plan.price,
-    userLimit: plan.userLimit,
-    features: plan.features,
-    createdAt: Timestamp.now(),
+    await updateDoc(ref, {
+      name: data.name,
+      price: data.price,
+      userLimit: data.userLimit,
+      features: data.features,
+    });
+
+    return data.id;
+  }
+
+
+  const { id, ...rest } = data;
+
+  const ref = await addDoc(collection(db, "plans"), {
+    ...rest,
+    createdAt: serverTimestamp(),
   });
+
+  return ref.id;
 }
 
 export async function deletePlan(planId: PlanId): Promise<void> {
