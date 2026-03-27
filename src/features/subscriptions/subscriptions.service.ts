@@ -3,13 +3,13 @@ import {
   collection,
   getDocs,
   doc,
-  getDoc,
   deleteDoc,
   addDoc,
   updateDoc,
   query,
   where,
   Timestamp,
+  getDoc,
 } from "firebase/firestore";
 import { Subscription, SubscriptionStatus } from "./subscriptions.types";
 import { PlanId } from "../plans/plans.types";
@@ -80,6 +80,16 @@ export async function createSubscription(params: {
     endDate: params.endDate ? Timestamp.fromDate(params.endDate) : null,
     createdAt: Timestamp.now(),
   });
+
+  const companyRef = doc(db, "companies", params.companyId);
+
+  await updateDoc(companyRef, {
+    currentPlanId: params.planId,
+    subscriptionStatus: params.status ?? "trial",
+    subscriptionEndDate: params.endDate
+      ? Timestamp.fromDate(params.endDate)
+      : null,
+  });
 }
 
 export async function updateSubscriptionPlan(
@@ -107,6 +117,68 @@ export async function updateSubscriptionStatus(
 export async function deleteSubscription(
   subscriptionId: string,
 ): Promise<void> {
-  const ref = doc(db, "subscriptions", subscriptionId);
-  await deleteDoc(ref);
+  if (!subscriptionId) {
+    throw new Error("subscriptionId is required");
+  }
+
+  const subRef = doc(db, "subscriptions", subscriptionId);
+  const subSnap = await getDoc(subRef);
+
+  if (!subSnap.exists()) {
+    throw new Error("Subscription not found");
+  }
+
+  const subData = subSnap.data() as SubscriptionDoc;
+  const companyId = subData.companyId;
+
+  if (!companyId) {
+    throw new Error("companyId missing in subscription");
+  }
+
+  await deleteDoc(subRef);
+
+  const q = query(
+    collection(db, "subscriptions"),
+    where("companyId", "==", companyId),
+    where("status", "in", ["trial", "active"]),
+  );
+
+  const snap = await getDocs(q);
+
+  const companyRef = doc(db, "companies", companyId);
+
+  if (!snap.empty) {
+    const sorted = snap.docs.sort(
+      (a, b) =>
+        (b.data() as SubscriptionDoc).createdAt.toMillis() -
+        (a.data() as SubscriptionDoc).createdAt.toMillis(),
+    );
+
+    const latest = sorted[0].data() as SubscriptionDoc;
+
+    await updateDoc(companyRef, {
+      currentPlanId: latest.planId,
+      subscriptionStatus: latest.status,
+      subscriptionEndDate: latest.endDate ?? null,
+    });
+  } else {
+    const freePlanQuery = query(
+      collection(db, "plans"),
+      where("name", "==", "FREE"),
+    );
+
+    const freeSnap = await getDocs(freePlanQuery);
+
+    if (freeSnap.empty) {
+      throw new Error("FREE plan not found in plans collection");
+    }
+
+    const freePlanDoc = freeSnap.docs[0];
+
+    await updateDoc(companyRef, {
+      currentPlanId: freePlanDoc.id,
+      subscriptionStatus: "expired" as SubscriptionStatus,
+      subscriptionEndDate: null,
+    });
+  }
 }

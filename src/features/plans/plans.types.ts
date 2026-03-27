@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase/firestore";
 
 export type PlanId = string;
+export type PlanDurationType = "days" | "months" | "years" | "unlimited";
 
 export interface Plan {
   id: PlanId;
@@ -9,6 +10,8 @@ export interface Plan {
   userLimit: number;
   features: string[];
   createdAt: Date;
+    duration: number | null;
+  durationType: PlanDurationType;
 }
 
 export type PlanDoc = {
@@ -17,6 +20,8 @@ export type PlanDoc = {
   userLimit: number;
   features: string[];
   createdAt: Timestamp;
+    duration: number | null;
+  durationType: PlanDurationType;
 };
 
 export type PlanInput = {
@@ -25,4 +30,6 @@ export type PlanInput = {
   price: number;
   userLimit: number;
   features: string[];
+    duration: number | null;
+  durationType: PlanDurationType;
 };

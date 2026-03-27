@@ -19,6 +19,8 @@ function mapPlanDoc(id: string, data: PlanDoc): Plan {
     userLimit: data.userLimit,
     features: data.features,
     createdAt: data.createdAt.toDate(),
+    duration: data.duration,
+    durationType: data.durationType,
   };
 }
 
@@ -46,11 +48,12 @@ export async function upsertPlan(data: PlanInput) {
       price: data.price,
       userLimit: data.userLimit,
       features: data.features,
+      duration: data.duration,
+      durationType: data.durationType,
     });
 
     return data.id;
   }
-
 
   const { id, ...rest } = data;
 

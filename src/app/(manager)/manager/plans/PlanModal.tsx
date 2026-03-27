@@ -1,7 +1,7 @@
 "use client";
 
-import { PlanInput } from "@/features/plans/plans.types";
-import { useState } from "react";
+import { PlanInput, PlanDurationType } from "@/features/plans/plans.types";
+import { useState, useEffect } from "react";
 
 type Props = {
   open: boolean;
@@ -18,7 +18,12 @@ export default function PlanModal({
   form,
   setForm,
 }: Props) {
-  const [featuresText, setFeaturesText] = useState(form.features.join(", "));
+  const [featuresText, setFeaturesText] = useState("");
+
+  useEffect(() => {
+    setFeaturesText(form.features.join(", "));
+  }, [form]);
+
   if (!open) return null;
 
   const handleChange = <K extends keyof PlanInput>(
@@ -57,7 +62,6 @@ export default function PlanModal({
           <input
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
-            placeholder="Plan adı"
             className="border p-2 w-full rounded"
           />
 
@@ -66,7 +70,6 @@ export default function PlanModal({
             type="number"
             value={form.price}
             onChange={(e) => handleChange("price", Number(e.target.value))}
-            placeholder="Fiyat"
             className="border p-2 w-full rounded"
           />
 
@@ -75,15 +78,37 @@ export default function PlanModal({
             type="number"
             value={form.userLimit}
             onChange={(e) => handleChange("userLimit", Number(e.target.value))}
-            placeholder="Kullanıcı limiti"
             className="border p-2 w-full rounded"
           />
+
+          <label className="text-sm text-gray-600">Süre:</label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              value={form.duration ?? ""}
+              onChange={(e) => handleChange("duration", Number(e.target.value))}
+              disabled={form.durationType === "unlimited"}
+              className="border p-2 w-full rounded"
+            />
+
+            <select
+              value={form.durationType}
+              onChange={(e) =>
+                handleChange("durationType", e.target.value as PlanDurationType)
+              }
+              className="border p-2 rounded"
+            >
+              <option value="days">Gün</option>
+              <option value="months">Ay</option>
+              <option value="years">Yıl</option>
+              <option value="unlimited">Sınırsız</option>
+            </select>
+          </div>
 
           <label className="text-sm text-gray-600">Özellikler</label>
           <textarea
             value={featuresText}
             onChange={(e) => setFeaturesText(e.target.value)}
-            placeholder="Özellikler (virgülle ayrılmış)"
             className="border p-2 w-full rounded min-h-[80px]"
           />
 

@@ -64,22 +64,6 @@ export default function SubscriptionsPage() {
     setModalOpen(true);
   };
 
-  const handleSave = async (data: {
-    companyId: string;
-    planId: PlanId;
-    status: SubscriptionStatus;
-  }) => {
-    if (editing) {
-      await updateSubscriptionPlan(editing.id, data.planId);
-      await updateSubscriptionStatus(editing.id, data.status);
-    } else {
-      await createSubscription(data);
-    }
-
-    setEditing(null);
-    await fetchSubscriptions();
-  };
-
   const changePlan = async (id: string, planId: PlanId) => {
     await updateSubscriptionPlan(id, planId);
     await fetchSubscriptions();
@@ -92,10 +76,6 @@ export default function SubscriptionsPage() {
 
   const getCompanyName = (companyId: string) => {
     return companies.find((c) => c.id === companyId)?.name ?? companyId;
-  };
-
-  const getPlanName = (planId: PlanId) => {
-    return plans.find((p) => p.id === planId)?.name ?? planId;
   };
 
   const getStatusBadge = (status: SubscriptionStatus) => {
