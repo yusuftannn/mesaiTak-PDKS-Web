@@ -12,7 +12,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { Subscription, SubscriptionStatus } from "./subscriptions.types";
-import { PlanId } from "../plans/plans.types";
+import { PlanId, Plan } from "../plans/plans.types";
 
 type SubscriptionDoc = {
   companyId: string;
@@ -33,6 +33,34 @@ function mapSubscription(id: string, data: SubscriptionDoc): Subscription {
     endDate: data.endDate ? data.endDate.toDate() : null,
     createdAt: data.createdAt.toDate(),
   };
+}
+
+function calculateEndDate(
+  startDate: Date,
+  duration: number | null,
+  durationType: "days" | "months" | "years" | "unlimited",
+): Date | null {
+  if (durationType === "unlimited" || duration === null) {
+    return null;
+  }
+
+  const date = new Date(startDate);
+
+  switch (durationType) {
+    case "days":
+      date.setDate(date.getDate() + duration);
+      break;
+
+    case "months":
+      date.setMonth(date.getMonth() + duration);
+      break;
+
+    case "years":
+      date.setFullYear(date.getFullYear() + duration);
+      break;
+  }
+
+  return date;
 }
 
 export async function getActiveSubscriptionByCompany(
@@ -92,14 +120,22 @@ export async function createSubscription(params: {
   });
 }
 
-export async function updateSubscriptionPlan(
+export async function updateSubscriptionPlanWithDates(
   subscriptionId: string,
-  planId: PlanId,
+  plan: Plan,
+  currentStartDate: Date,
 ): Promise<void> {
   const ref = doc(db, "subscriptions", subscriptionId);
 
+  const newEndDate = calculateEndDate(
+    currentStartDate,
+    plan.duration,
+    plan.durationType,
+  );
+
   await updateDoc(ref, {
-    planId,
+    planId: plan.id,
+    endDate: newEndDate ? Timestamp.fromDate(newEndDate) : null,
   });
 }
 

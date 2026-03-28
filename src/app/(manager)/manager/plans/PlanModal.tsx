@@ -1,15 +1,11 @@
 "use client";
 
-import { PlanInput, PlanDurationType } from "@/features/plans/plans.types";
+import {
+  PlanInput,
+  PlanDurationType,
+  Props,
+} from "@/features/plans/plans.types";
 import { useState, useEffect } from "react";
-
-type Props = {
-  open: boolean;
-  onClose: () => void;
-  onSave: (data: PlanInput) => Promise<void>;
-  form: PlanInput;
-  setForm: React.Dispatch<React.SetStateAction<PlanInput>>;
-};
 
 export default function PlanModal({
   open,

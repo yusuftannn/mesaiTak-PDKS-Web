@@ -19,6 +19,7 @@ function mapPlanDoc(id: string, data: PlanDoc): Plan {
     userLimit: data.userLimit,
     features: data.features,
     createdAt: data.createdAt.toDate(),
+    updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
     duration: data.duration,
     durationType: data.durationType,
   };
@@ -50,16 +51,21 @@ export async function upsertPlan(data: PlanInput) {
       features: data.features,
       duration: data.duration,
       durationType: data.durationType,
+      updatedAt: serverTimestamp(),
     });
 
     return data.id;
   }
 
-  const { id, ...rest } = data;
-
   const ref = await addDoc(collection(db, "plans"), {
-    ...rest,
+    name: data.name,
+    price: data.price,
+    userLimit: data.userLimit,
+    features: data.features,
+    duration: data.duration,
+    durationType: data.durationType,
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   });
 
   return ref.id;

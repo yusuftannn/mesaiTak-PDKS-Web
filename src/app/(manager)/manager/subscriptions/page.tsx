@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSubscriptionsStore } from "@/features/subscriptions/subscriptions.store";
 import {
   createSubscription,
-  updateSubscriptionPlan,
+  updateSubscriptionPlanWithDates,
   updateSubscriptionStatus,
   deleteSubscription,
 } from "@/features/subscriptions/subscriptions.service";
@@ -64,8 +64,13 @@ export default function SubscriptionsPage() {
     setModalOpen(true);
   };
 
-  const changePlan = async (id: string, planId: PlanId) => {
-    await updateSubscriptionPlan(id, planId);
+  const changePlan = async (sub: Subscription, planId: PlanId) => {
+    const selectedPlan = plans.find((p) => p.id === planId);
+
+    if (!selectedPlan) return;
+
+    await updateSubscriptionPlanWithDates(sub.id, selectedPlan, sub.startDate);
+
     await fetchSubscriptions();
   };
 
@@ -140,9 +145,7 @@ export default function SubscriptionsPage() {
                   <td>
                     <select
                       value={s.planId}
-                      onChange={(e) =>
-                        changePlan(s.id, e.target.value as PlanId)
-                      }
+                      onChange={(e) => changePlan(s, e.target.value as PlanId)}
                       className="border rounded p-1"
                     >
                       {plans.map((p) => (
