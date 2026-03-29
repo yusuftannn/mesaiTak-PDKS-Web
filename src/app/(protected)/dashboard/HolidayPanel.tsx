@@ -1,12 +1,13 @@
 import { holidays2026 } from "@/constants/holidays";
 
 function getDayName(dateStr: string) {
-  const [day, month, year] = dateStr.split(".");
-  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  const date = new Date(dateStr);
 
-  return date.toLocaleDateString("tr-TR", {
+  if (isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat("tr-TR", {
     weekday: "long",
-  });
+  }).format(date);
 }
 
 export default function HolidayPanel() {

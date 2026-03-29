@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import GroupTagModal from "./GroupTagModal";
 import { GroupTag } from "@/features/group-tags/group-tags.types";
 import { useAuthStore } from "@/features/auth/auth.store";
+import Button from "@/components/ui/Button";
 
 export default function GroupTagsPage() {
   const { tags, fetchTags, removeTag, addTag, editTag } = useGroupTagStore();
@@ -17,7 +18,7 @@ export default function GroupTagsPage() {
   useEffect(() => {
     if (!companyId) return;
 
-    fetchTags(companyId);
+    fetchTags();
   }, [companyId, fetchTags]);
 
   const openCreate = () => {
@@ -36,7 +37,7 @@ export default function GroupTagsPage() {
     if (editing) {
       await editTag(editing.id, name);
     } else {
-      await addTag(name, companyId);
+      await addTag(name);
     }
   };
 
@@ -45,12 +46,9 @@ export default function GroupTagsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Grup Etiketleri</h1>
 
-        <button
-          onClick={openCreate}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
+        <Button onClick={openCreate} size="md">
           + Yeni Etiket
-        </button>
+        </Button>
       </div>
 
       <div className="overflow-x-auto bg-white rounded-xl border">
@@ -68,43 +66,59 @@ export default function GroupTagsPage() {
           </thead>
 
           <tbody>
-            {tags.map((tag, i) => (
-              <tr key={tag.id} className="border-t">
-                <td className="p-3">{i + 1}</td>
-
-                <td>{tag.name}</td>
-
-                <td>{tag.userCount ?? 0}</td>
-
-                <td className="font-mono text-xs">{tag.refId}</td>
-
-                <td>
-                  {tag.createdAt ? format(tag.createdAt, "dd.MM.yyyy") : "-"}
-                </td>
-
-                <td>
-                  {tag.updatedAt ? format(tag.updatedAt, "dd.MM.yyyy") : "-"}
-                </td>
-
-                <td>
-                  <div className="flex gap-2 justify-center">
-                    <button
-                      onClick={() => openEdit(tag)}
-                      className="px-3 py-1 text-xs bg-blue-500 text-white rounded"
-                    >
-                      Düzenle
-                    </button>
-
-                    <button
-                      onClick={() => removeTag(tag.id)}
-                      className="px-3 py-1 text-xs bg-red-500 text-white rounded"
-                    >
-                      Sil
-                    </button>
-                  </div>
+            {tags.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="text-center py-10 text-gray-500">
+                  Henüz grup etiketi yok.
                 </td>
               </tr>
-            ))}
+            ) : (
+              tags.map((tag, i) => (
+                <tr key={tag.id} className="border-t">
+                  <td className="p-3">{i + 1}</td>
+
+                  <td>{tag.name}</td>
+
+                  <td>{tag.userCount ?? 0}</td>
+
+                  <td className="font-mono text-xs">{tag.refId}</td>
+
+                  <td>
+                    {tag.createdAt ? format(tag.createdAt, "dd.MM.yyyy") : "-"}
+                  </td>
+
+                  <td>
+                    {tag.updatedAt ? format(tag.updatedAt, "dd.MM.yyyy") : "-"}
+                  </td>
+
+                  <td>
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => openEdit(tag)}
+                      >
+                        Düzenle
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => {
+                          if (
+                            confirm("Bu etiketi silmek istediğine emin misin?")
+                          ) {
+                            removeTag(tag.id);
+                          }
+                        }}
+                      >
+                        Sil
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

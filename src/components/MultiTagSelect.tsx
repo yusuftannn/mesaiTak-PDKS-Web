@@ -4,19 +4,23 @@ import { useState, useRef, useEffect } from "react";
 import { GroupTag } from "@/features/group-tags/group-tags.types";
 import TagChip from "./TagChip";
 
+type Props = {
+  userTags: string[];
+  tags: GroupTag[];
+  onChange: (values: string[]) => void;
+  disabled?: boolean;
+};
+
 export default function MultiTagSelect({
   userTags,
   tags,
   onChange,
-}: {
-  userTags: string[];
-  tags: GroupTag[];
-  onChange: (values: string[]) => void;
-}) {
+  disabled = false,
+}: Props) {
   const [open, setOpen] = useState(false);
-
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  // dışarı tıklayınca kapat
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (!containerRef.current) return;
@@ -34,6 +38,8 @@ export default function MultiTagSelect({
   }, []);
 
   const toggleTag = (tagId: string) => {
+    if (disabled) return; // ekstra güvenlik
+
     let values = [...userTags];
 
     if (values.includes(tagId)) {
@@ -50,11 +56,19 @@ export default function MultiTagSelect({
   return (
     <div ref={containerRef} className="relative w-[220px]">
       <div
-        onClick={() => setOpen((v) => !v)}
-        className="border rounded px-2 py-1 flex flex-wrap gap-1 cursor-pointer bg-white"
+        onClick={() => {
+          if (disabled) return;
+          setOpen((v) => !v);
+        }}
+        className={`
+          border rounded px-2 py-1 flex flex-wrap gap-1
+          ${disabled ? "bg-gray-100 cursor-not-allowed" : "bg-white cursor-pointer"}
+        `}
       >
         {selectedTags.length === 0 && (
-          <span className="text-gray-400 text-sm">Etiket seç</span>
+          <span className="text-gray-400 text-sm">
+            {disabled ? "Önce etiket oluşturunuz" : "Etiket seç"}
+          </span>
         )}
 
         {selectedTags.map((tag) => (
@@ -62,7 +76,7 @@ export default function MultiTagSelect({
         ))}
       </div>
 
-      {open && (
+      {open && !disabled && (
         <div className="absolute z-50 bg-white border rounded mt-1 w-full shadow">
           {tags.map((tag) => {
             const checked = userTags?.includes(tag.id);

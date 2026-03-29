@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GroupTag } from "@/features/group-tags/group-tags.types";
+import Button from "@/components/ui/Button";
 
 export default function GroupTagModal({
   open,
@@ -15,15 +16,33 @@ export default function GroupTagModal({
   initial?: GroupTag | null;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setName(initial?.name ?? "");
+  }, [initial]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
 
   if (!open) return null;
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
 
-    await onSave(name);
-
-    onClose();
+    try {
+      setLoading(true);
+      await onSave(name);
+      onClose();
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,16 +60,16 @@ export default function GroupTagModal({
         />
 
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 border rounded">
+          <Button variant="secondary" onClick={onClose} disabled={loading}>
             İptal
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-blue-600 text-white rounded"
+            loading={loading}
           >
             Kaydet
-          </button>
+          </Button>
         </div>
       </div>
     </div>

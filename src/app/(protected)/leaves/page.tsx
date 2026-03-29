@@ -324,11 +324,15 @@ export default function LeavesPage() {
             </tbody>
           </table>
 
-          {filteredLeaves.length === 0 && (
+          {leaves.length === 0 ? (
+            <div className="p-6 text-sm text-gray-500 text-center">
+              Henüz izin talebi yok
+            </div>
+          ) : filteredLeaves.length === 0 ? (
             <div className="p-6 text-sm text-gray-500 text-center">
               Filtreye uygun izin bulunamadı
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

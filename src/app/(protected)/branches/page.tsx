@@ -162,6 +162,10 @@ export default function BranchesPage() {
 
           {loading ? (
             <div className="p-4 text-sm text-gray-500">Yükleniyor…</div>
+          ) : filtered.length === 0 ? (
+            <div className="bg-white border rounded-xl p-8 text-center text-sm text-gray-500">
+              Eklenmiş Şube bulunmamaktadır.
+            </div>
           ) : (
             <div className="bg-white border rounded-xl divide-y">
               {filtered.map((b) => (

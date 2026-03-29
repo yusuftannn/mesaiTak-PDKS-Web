@@ -17,11 +17,9 @@ export default function AssignGroupPage() {
   useEffect(() => {
     if (!authUser?.companyId) return;
 
-    const companyId = authUser.companyId;
-
     async function load() {
       const userList = await listUsers();
-      const tagList = await listGroupTags(companyId);
+      const tagList = await listGroupTags();
 
       setUsers(userList);
       setTags(tagList);
@@ -66,6 +64,7 @@ export default function AssignGroupPage() {
                   <MultiTagSelect
                     userTags={user.groupTagIds ?? []}
                     tags={tags}
+                    disabled={tags.length === 0}
                     onChange={(values) => handleChange(user.id, values)}
                   />
                 </td>
