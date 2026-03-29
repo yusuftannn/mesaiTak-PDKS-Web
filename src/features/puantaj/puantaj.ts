@@ -1,4 +1,4 @@
-import { listAllUsers } from "@/features/users/users.service";
+import { listUsers } from "@/features/users/users.service";
 import { listAttendanceByDate } from "@/features/attendance/attendance.service";
 import { listLeaves } from "@/features/leaves/leaves.service";
 import { listShiftsByDateRange } from "@/features/shifts/shifts.service";
@@ -6,7 +6,7 @@ import { listShiftsByDateRange } from "@/features/shifts/shifts.service";
 import { runPuantajEngine } from "@/features/puantaj/puantajEngine";
 
 export async function buildMonthlyPuantaj(start: Date, end: Date) {
-  const users = await listAllUsers();
+  const users = await listUsers();
 
   const attendance = await listAttendanceByDate(start, end);
 

@@ -14,7 +14,7 @@ import {
   DashboardStats,
   DashboardUser,
 } from "@/features/dashboard/dashboard.types";
-import { listAllUsers } from "@/features/users/users.service";
+import { listUsers } from "@/features/users/users.service";
 import HolidayPanel from "./HolidayPanel";
 import UserRow from "./UserRow";
 
@@ -38,7 +38,7 @@ export default function DashboardPage() {
     const init = async () => {
       setLoading(true);
 
-      const users = await listAllUsers();
+      const users = await listUsers();
       const usersWithShift = users.filter((u) => u.companyId && u.branchId);
 
       unsubscribe = await subscribeTodayDashboard(usersWithShift, (data) => {

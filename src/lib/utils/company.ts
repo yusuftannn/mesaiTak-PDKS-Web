@@ -1,11 +1,19 @@
 import { useAuthStore } from "@/features/auth/auth.store";
 
 export function getCompanyId(): string {
-  const companyId = useAuthStore.getState().user?.companyId;
+  const user = useAuthStore.getState().user;
 
-  if (!companyId) {
+  if (!user) {
+    throw new Error("User bulunamadı");
+  }
+
+  if (user.role === "manager") {
+    return ""; 
+  }
+
+  if (!user.companyId) {
     throw new Error("CompanyId bulunamadı");
   }
 
-  return companyId;
+  return user.companyId;
 }

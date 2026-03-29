@@ -1,22 +1,20 @@
 "use client";
 
 import { Power, UserPlus, Pencil } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listUsers, updateUser } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
 import { Company } from "@/features/companies/companies.types";
 import { listCompanies } from "@/features/companies/companies.service";
 import { Branch } from "@/features/branches/branches.types";
 import { listBranches } from "@/features/branches/branches.service";
-import { getCompanyId } from "@/lib/utils/company";
 
 import Button from "@/components/ui/Button";
 import CreateUserModal from "./CreateUserModal";
 import EditUserModal from "./EditUserModal";
+import { useAuthStore } from "@/features/auth/auth.store";
 
 export default function UsersPage() {
-  const companyId = getCompanyId();
-
   const [users, setUsers] = useState<AppUser[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -30,6 +28,8 @@ export default function UsersPage() {
   const [filterBranch, setFilterBranch] = useState("");
 
   const [loading, setLoading] = useState(true);
+
+  const currentUser = useAuthStore((s) => s.user);
 
   useEffect(() => {
     let mounted = true;
@@ -45,9 +45,7 @@ export default function UsersPage() {
 
       if (!mounted) return;
 
-      const filteredUsers = u.filter((x) => x.companyId === companyId);
-
-      setUsers(filteredUsers);
+      setUsers(u);
       setCompanies(c);
       setBranches(b);
 
@@ -57,7 +55,23 @@ export default function UsersPage() {
     return () => {
       mounted = false;
     };
-  }, [companyId]);
+  }, []);
+
+  const companyMap = useMemo(() => {
+    const map = new Map<string, string>();
+    companies.forEach((c) => map.set(c.companyId, c.name));
+    return map;
+  }, [companies]);
+
+  const getCompanyName = (companyId: string | null) => {
+    if (!companyId) return "-";
+    return companyMap.get(companyId) ?? companyId;
+  };
+
+  const getBranchesByCompany = (companyId: string | null) => {
+    if (!companyId) return [];
+    return branches.filter((b) => b.companyId === companyId);
+  };
 
   const onChangeRole = async (userId: string, role: AppUser["role"]) => {
     await updateUser(userId, { role });
@@ -96,8 +110,10 @@ export default function UsersPage() {
     return <div className="p-6">Yükleniyor…</div>;
   }
 
-  const companyName =
-    companies.find((c) => c.companyId === companyId)?.name ?? "-";
+  const headerCompanyName =
+    currentUser?.role === "manager"
+      ? "Tüm Kullanıcılar"
+      : getCompanyName(currentUser?.companyId ?? null);
 
   const filteredUsers = users.filter((u) => {
     const matchesSearch =
@@ -116,7 +132,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-between mb-6 max-w-7xl">
         <div>
           <h2 className="text-lg font-semibold">Kullanıcılar</h2>
-          <div className="text-xs text-gray-500">{companyName}</div>
+          <div className="text-xs text-gray-500">{headerCompanyName}</div>
         </div>
 
         <Button
@@ -140,23 +156,30 @@ export default function UsersPage() {
 
           <select
             value={filterRole}
-            onChange={(e) => {
-              const value = e.target.value;
-              setFilterRole(value === "" ? "" : (value as AppUser["role"]));
-            }}
+            onChange={(e) =>
+              setFilterRole(
+                e.target.value === ""
+                  ? ""
+                  : (e.target.value as AppUser["role"]),
+              )
+            }
             className="border px-3 py-2 rounded-lg text-sm"
           >
             <option value="">Tüm Roller</option>
             <option value="employee">employee</option>
             <option value="admin">admin</option>
+            <option value="manager">manager</option>
           </select>
 
           <select
             value={filterStatus}
-            onChange={(e) => {
-              const value = e.target.value;
-              setFilterStatus(value === "" ? "" : (value as AppUser["status"]));
-            }}
+            onChange={(e) =>
+              setFilterStatus(
+                e.target.value === ""
+                  ? ""
+                  : (e.target.value as AppUser["status"]),
+              )
+            }
             className="border px-3 py-2 rounded-lg text-sm"
           >
             <option value="">Tüm Durumlar</option>
@@ -234,7 +257,7 @@ export default function UsersPage() {
                   </td>
 
                   <td className="p-3 text-center text-xs text-gray-600">
-                    {companyName}
+                    {getCompanyName(u.companyId)}
                   </td>
 
                   <td className="p-3 text-center">
@@ -245,7 +268,7 @@ export default function UsersPage() {
                       disabled={u.status === "passive"}
                     >
                       <option value="">—</option>
-                      {branches.map((b) => (
+                      {getBranchesByCompany(u.companyId).map((b) => (
                         <option key={b.branchId} value={b.branchId}>
                           {b.name}
                         </option>
@@ -295,7 +318,7 @@ export default function UsersPage() {
           onClose={() => setShowCreate(false)}
           onCreated={async () => {
             const data = await listUsers();
-            setUsers(data.filter((x) => x.companyId === companyId));
+            setUsers(data);
           }}
         />
       )}
@@ -306,7 +329,7 @@ export default function UsersPage() {
           onClose={() => setEditingUser(null)}
           onUpdated={async () => {
             const data = await listUsers();
-            setUsers(data.filter((x) => x.companyId === companyId));
+            setUsers(data);
           }}
         />
       )}

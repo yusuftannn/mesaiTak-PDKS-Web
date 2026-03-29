@@ -14,7 +14,7 @@ import {
 } from "../../../features/leaves/leaves.types";
 import Button from "@/components/ui/Button";
 import { useToastStore } from "@/lib/ui/toast.store";
-import { listAllUsers } from "@/features/users/users.service";
+import { listUsers } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
 
 import { useAuthStore } from "../../../features/auth/auth.store";
@@ -40,7 +40,7 @@ export default function LeavesPage() {
 
     (async () => {
       try {
-        const [l, u] = await Promise.all([listLeaves(), listAllUsers()]);
+        const [l, u] = await Promise.all([listLeaves(), listUsers()]);
 
         if (!mounted) return;
 

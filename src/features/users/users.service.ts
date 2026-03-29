@@ -7,6 +7,7 @@ import {
   updateDoc,
   serverTimestamp,
   setDoc,
+  getDoc,
   query,
   where,
 } from "firebase/firestore";
@@ -14,12 +15,40 @@ import {
 import { AppUser, CreateUserParams, UpdateUserParams } from "./users.types";
 import { COLLECTIONS } from "@/constants/collections";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { getCompanyId } from "@/lib/utils/company";
+import { useAuthStore } from "@/features/auth/auth.store";
 
 type UserDoc = Omit<AppUser, "id">;
 
 export async function listUsers(): Promise<AppUser[]> {
-  const companyId = getCompanyId();
+  const currentUser = useAuthStore.getState().user;
+
+  if (!currentUser) {
+    throw new Error("User bulunamadı");
+  }
+
+  let users: AppUser[] = [];
+
+  if (currentUser.role === "manager") {
+    const snap = await getDocs(collection(db, COLLECTIONS.USERS));
+
+    users = snap.docs.map((d) => {
+      const data = d.data() as UserDoc;
+
+      return {
+        id: d.id,
+        ...data,
+        groupTagIds: data.groupTagIds ?? [],
+      };
+    });
+
+    return users;
+  }
+
+  const companyId = currentUser.companyId;
+
+  if (!companyId) {
+    throw new Error("CompanyId bulunamadı");
+  }
 
   const q = query(
     collection(db, COLLECTIONS.USERS),
@@ -28,7 +57,7 @@ export async function listUsers(): Promise<AppUser[]> {
 
   const snap = await getDocs(q);
 
-  return snap.docs.map((d) => {
+  users = snap.docs.map((d) => {
     const data = d.data() as UserDoc;
 
     return {
@@ -37,24 +66,21 @@ export async function listUsers(): Promise<AppUser[]> {
       groupTagIds: data.groupTagIds ?? [],
     };
   });
-}
 
-export async function listAllUsers(): Promise<AppUser[]> {
-  const snap = await getDocs(collection(db, COLLECTIONS.USERS));
-
-  return snap.docs.map((d) => {
-    const data = d.data() as UserDoc;
-
-    return {
-      id: d.id,
-      ...data,
-      groupTagIds: data.groupTagIds ?? [],
-    };
-  });
+  return users.filter((u) => u.role !== "manager");
 }
 
 export async function createUser(params: CreateUserParams) {
-  const companyId = getCompanyId();
+  const currentUser = useAuthStore.getState().user;
+
+  if (!currentUser) {
+    throw new Error("User bulunamadı");
+  }
+
+  const companyId =
+    currentUser.role === "manager"
+      ? params.companyId
+      : currentUser.companyId;
 
   const cred = await createUserWithEmailAndPassword(
     secondaryAuth,
@@ -86,7 +112,20 @@ export async function createUser(params: CreateUserParams) {
 }
 
 export async function updateUser(userId: string, data: UpdateUserParams) {
-  await updateDoc(doc(db, COLLECTIONS.USERS, userId), {
+  const userRef = doc(db, COLLECTIONS.USERS, userId);
+
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) throw new Error("User not found");
+
+  const existing = snap.data() as UserDoc;
+
+  const currentUser = useAuthStore.getState().user;
+
+  if (existing.role === "manager" && currentUser?.role !== "manager") {
+    throw new Error("Manager kullanıcı değiştirilemez");
+  }
+
+  await updateDoc(userRef, {
     ...data,
     updatedAt: serverTimestamp(),
   });

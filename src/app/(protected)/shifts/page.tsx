@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { listAllUsers } from "@/features/users/users.service";
+import { listUsers } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
 import Button from "@/components/ui/Button";
 import {
@@ -62,7 +62,7 @@ export default function ShiftsPage() {
     setLoading(true);
 
     const [u, s] = await Promise.all([
-      listAllUsers(),
+      listUsers(),
       listShiftsByDateRange(weekRange.monday, weekRange.sunday),
     ]);
 
@@ -76,7 +76,7 @@ export default function ShiftsPage() {
 
     const fetchData = async (): Promise<void> => {
       const [u, s] = await Promise.all([
-        listAllUsers(),
+        listUsers(),
         listShiftsByDateRange(weekRange.monday, weekRange.sunday),
       ]);
 
@@ -435,6 +435,7 @@ export default function ShiftsPage() {
                 startTime: start,
                 endTime: end,
                 type,
+                companyId: ""
               });
             }
 

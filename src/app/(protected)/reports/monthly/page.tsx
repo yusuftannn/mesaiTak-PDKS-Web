@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { listAllUsers } from "@/features/users/users.service";
+import { listUsers } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
 import { getMonthlyReport } from "@/features/reports/reports.service";
 import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
-import { LeaveDoc } from "@/features/leaves/leaves.types";
+import { Leave } from "@/features/leaves/leaves.types";
 import { loadPdfMake } from "@/lib/utils/exportPdf";
 
 import Button from "@/components/ui/Button";
@@ -60,7 +60,7 @@ export default function MonthlyReportPage() {
   const [date, setDate] = useState<Date>(new Date());
   const [users, setUsers] = useState<AppUser[]>([]);
   const [attendance, setAttendance] = useState<AttendanceWithLocation[]>([]);
-  const [leaves, setLeaves] = useState<LeaveDoc[]>([]);
+  const [leaves, setLeaves] = useState<Leave[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function MonthlyReportPage() {
       const end = endOfMonth(date);
 
       const [u, report] = await Promise.all([
-        listAllUsers(),
+        listUsers(),
         getMonthlyReport(start, end),
       ]);
 
@@ -101,13 +101,13 @@ export default function MonthlyReportPage() {
   }, [attendance]);
 
   const leaveMap = useMemo(() => {
-    const map = new Map<string, LeaveDoc[]>();
+    const map = new Map<string, Leave[]>();
 
     leaves
       .filter((l) => l.status === "onaylandı")
       .forEach((l) => {
-        const start = l.startDate.toDate();
-        const end = l.endDate.toDate();
+        const start = l.startDate;
+        const end = l.endDate;
 
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
           const key = `${l.userId}_${formatDate(d)}`;
@@ -179,10 +179,7 @@ export default function MonthlyReportPage() {
       };
     }
 
-    const worked = calcHours(
-      attendance.checkInAt.toDate(),
-      attendance.checkOutAt.toDate(),
-    );
+    const worked = calcHours(attendance.checkInAt, attendance.checkOutAt);
 
     const shiftHours =
       attendance.shiftStart && attendance.shiftEnd

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { listAttendanceByDate } from "@/features/attendance/attendance.service";
 import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
-import { listAllUsers } from "@/features/users/users.service";
+import { listUsers } from "@/features/users/users.service";
 import { useAuthStore } from "@/features/auth/auth.store";
 
 type SortKey = "name" | "checkIn" | "checkOut" | "status";
@@ -64,7 +64,7 @@ export default function LocationsListPage() {
       const end = new Date(date);
 
       const attendance = await listAttendanceByDate(start, end);
-      const users = await listAllUsers();
+      const users = await listUsers();
 
       const merged: AttendanceWithLocation[] = attendance.map((a) => {
         const u = users.find((x) => x.uid === a.uid);

@@ -90,7 +90,6 @@ export default function ManagerDashboardPage() {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Manager Dashboard</h1>
 
-      {/* STAT CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard title="Toplam Şirket" value={totalCompanies} />
         <StatCard title="Aktif Abonelik" value={activeSubscriptions} />
