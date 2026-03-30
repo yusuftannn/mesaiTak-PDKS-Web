@@ -41,14 +41,39 @@ export default function SubscriptionsPage() {
     };
 
     fetchMeta();
-  }, []);
+  }, [fetchSubscriptions]);
 
   const handleCreate = async (data: {
     companyId: string;
     planId: PlanId;
     status: SubscriptionStatus;
+    startDate: Date;
+    endDate: Date | null;
   }) => {
     await createSubscription(data);
+    await fetchSubscriptions();
+  };
+
+  const handleUpdate = async (data: {
+    companyId: string;
+    planId: PlanId;
+    status: SubscriptionStatus;
+    startDate: Date;
+    endDate: Date | null;
+  }) => {
+    if (!editing) return;
+
+    const selectedPlan = plans.find((p) => p.id === data.planId);
+    if (!selectedPlan) return;
+
+    await updateSubscriptionPlanWithDates(
+      editing.id,
+      selectedPlan,
+      data.startDate,
+    );
+
+    await updateSubscriptionStatus(editing.id, data.status);
+
     await fetchSubscriptions();
   };
 
@@ -62,21 +87,6 @@ export default function SubscriptionsPage() {
   const handleEdit = (sub: Subscription) => {
     setEditing(sub);
     setModalOpen(true);
-  };
-
-  const changePlan = async (sub: Subscription, planId: PlanId) => {
-    const selectedPlan = plans.find((p) => p.id === planId);
-
-    if (!selectedPlan) return;
-
-    await updateSubscriptionPlanWithDates(sub.id, selectedPlan, sub.startDate);
-
-    await fetchSubscriptions();
-  };
-
-  const changeStatus = async (id: string, status: SubscriptionStatus) => {
-    await updateSubscriptionStatus(id, status);
-    await fetchSubscriptions();
   };
 
   const getCompanyName = (companyId: string) => {
@@ -143,40 +153,10 @@ export default function SubscriptionsPage() {
                   </td>
 
                   <td>
-                    <select
-                      value={s.planId}
-                      onChange={(e) => changePlan(s, e.target.value as PlanId)}
-                      className="border rounded p-1"
-                    >
-                      {plans.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
-                        </option>
-                      ))}
-                    </select>
+                    {plans.find((p) => p.id === s.planId)?.name ?? s.planId}
                   </td>
 
-                  <td>
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge(s.status)}
-
-                      <select
-                        value={s.status}
-                        onChange={(e) =>
-                          changeStatus(
-                            s.id,
-                            e.target.value as SubscriptionStatus,
-                          )
-                        }
-                        className="border rounded p-1"
-                      >
-                        <option value="trial">trial</option>
-                        <option value="active">active</option>
-                        <option value="canceled">canceled</option>
-                        <option value="expired">expired</option>
-                      </select>
-                    </div>
-                  </td>
+                  <td>{getStatusBadge(s.status)}</td>
 
                   <td>{s.startDate.toLocaleDateString("tr-TR")}</td>
 
@@ -208,8 +188,12 @@ export default function SubscriptionsPage() {
 
       <SubscriptionModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleCreate}
+        onClose={() => {
+          setModalOpen(false);
+          setEditing(null);
+        }}
+        onSave={editing ? handleUpdate : handleCreate}
+        editing={editing}
       />
     </div>
   );

@@ -29,7 +29,7 @@ export default function BranchesPage() {
 
   useEffect(() => {
     fetchBranches();
-  }, []);
+  }, [fetchBranches]);
 
   const onCreate = async () => {
     if (!branchName.trim() || !companyId) {

@@ -46,7 +46,7 @@ export default function MonthlyReportTable() {
   return (
     <div className="w-full space-y-6">
       <div className="bg-white rounded-xl shadow border overflow-x-auto">
-        <table className="min-w-[2200px] w-full text-xs border-collapse">
+        <table className="min-w-550 w-full text-xs border-collapse">
           <thead className="bg-gray-100 text-gray-700 uppercase">
             <tr>
               <th rowSpan={2} className="border p-3">

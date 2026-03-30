@@ -47,7 +47,7 @@ export default function GroupTagModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-[400px] rounded-xl p-6">
+      <div className="bg-white w-100 rounded-xl p-6">
         <h2 className="text-lg font-semibold mb-4">
           {initial ? "Grup Etiketi Düzenle" : "Grup Etiketi Oluştur"}
         </h2>

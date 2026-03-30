@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Plan, PlanId } from "@/features/plans/plans.types";
 import { SubscriptionStatus } from "@/features/subscriptions/subscriptions.types";
 import { Company } from "@/features/companies/companies.types";
@@ -9,7 +9,12 @@ import { listCompanies } from "@/features/companies/companies.service";
 import { listPlans } from "@/features/plans/plans.service";
 import { FormState, Props } from "@/features/subscriptions/subscriptions.types";
 
-export default function SubscriptionModal({ open, onClose, onSave }: Props) {
+export default function SubscriptionModal({
+  open,
+  onClose,
+  onSave,
+  editing,
+}: Props) {
   const [form, setForm] = useState<FormState>({
     companyId: "",
     planId: "" as PlanId,
@@ -24,7 +29,7 @@ export default function SubscriptionModal({ open, onClose, onSave }: Props) {
 
   const formatDate = (d: Date): string => d.toISOString().split("T")[0];
 
-  const calculateEndDate = (plan: Plan, start: Date): string => {
+  const calculateEndDate = useCallback((plan: Plan, start: Date): string => {
     if (plan.durationType === "unlimited") return "";
 
     const d = new Date(start);
@@ -42,7 +47,7 @@ export default function SubscriptionModal({ open, onClose, onSave }: Props) {
     }
 
     return formatDate(d);
-  };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -60,21 +65,31 @@ export default function SubscriptionModal({ open, onClose, onSave }: Props) {
 
       const today = formatDate(new Date());
 
-      const firstPlan = plansData[0];
+      if (editing) {
+        setForm({
+          companyId: editing.companyId,
+          planId: editing.planId,
+          status: editing.status,
+          startDate: formatDate(editing.startDate),
+          endDate: editing.endDate ? formatDate(editing.endDate) : "",
+        });
+      } else {
+        const firstPlan = plansData[0];
 
-      setForm({
-        companyId: "",
-        planId: firstPlan?.id ?? ("" as PlanId),
-        status: "trial",
-        startDate: today,
-        endDate: firstPlan ? calculateEndDate(firstPlan, new Date()) : "",
-      });
+        setForm({
+          companyId: "",
+          planId: firstPlan?.id ?? ("" as PlanId),
+          status: "trial",
+          startDate: today,
+          endDate: firstPlan ? calculateEndDate(firstPlan, new Date()) : "",
+        });
+      }
 
       setLoading(false);
     };
 
     fetchData();
-  }, [open]);
+  }, [open, editing, calculateEndDate]);
 
   const handlePlanChange = (planId: PlanId) => {
     const plan = plans.find((p) => p.id === planId);
@@ -122,7 +137,10 @@ export default function SubscriptionModal({ open, onClose, onSave }: Props) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl w-full max-w-md p-6">
-        <h2 className="text-lg font-semibold mb-4">Yeni Abonelik</h2>
+        <h2 className="text-lg font-semibold mb-4">
+          {" "}
+          {editing ? "Abonelik Düzenle" : "Yeni Abonelik"}
+        </h2>
 
         {loading ? (
           <div className="text-center py-6">Yükleniyor...</div>

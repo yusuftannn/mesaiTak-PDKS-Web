@@ -105,7 +105,7 @@ export default function PlanModal({
           <textarea
             value={featuresText}
             onChange={(e) => setFeaturesText(e.target.value)}
-            className="border p-2 w-full rounded min-h-[80px]"
+            className="border p-2 w-full rounded min-h-20"
           />
 
           <div className="flex gap-2 pt-2">

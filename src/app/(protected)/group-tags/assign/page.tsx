@@ -44,7 +44,7 @@ export default function AssignGroupPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr className="text-left">
-              <th className="p-3 w-[60px]">#</th>
+              <th className="p-3 w-15">#</th>
               <th>Ad</th>
               <th>Email</th>
               <th>Grup Etiketi</th>

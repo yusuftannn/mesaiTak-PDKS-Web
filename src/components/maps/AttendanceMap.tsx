@@ -61,7 +61,7 @@ export default function AttendanceMap({
     points.length > 0 ? points[0] : [41.0082, 28.9784];
 
   return (
-    <div className="h-[600px] w-full rounded-2xl overflow-hidden border">
+    <div className="h-150 w-full rounded-2xl overflow-hidden border">
       <MapContainer center={center} zoom={12} className="h-full w-full">
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"

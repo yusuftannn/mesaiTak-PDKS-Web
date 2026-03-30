@@ -30,4 +30,5 @@ export type Props = {
     startDate: Date;
     endDate: Date | null;
   }) => Promise<void>;
+  editing?: Subscription | null;
 };
