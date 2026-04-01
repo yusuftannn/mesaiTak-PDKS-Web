@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Button from "@/components/ui/Button";
 import { useToastStore } from "@/lib/ui/toast.store";
 import { useAuthStore } from "@/features/auth/auth.store";
+import { ExternalLink } from "lucide-react";
 import { useBranchesStore } from "@/features/branches/branches.store";
+import { QRCodeCanvas } from "qrcode.react";
+import { createRoot } from "react-dom/client";
+import type { TDocumentDefinitions } from "pdfmake/interfaces";
 
 export default function BranchesPage() {
   const showToast = useToastStore((s) => s.showToast);
@@ -26,6 +30,7 @@ export default function BranchesPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const qrRefs = useRef<Record<string, HTMLCanvasElement | null>>({});
 
   useEffect(() => {
     fetchBranches();
@@ -108,6 +113,77 @@ export default function BranchesPage() {
         : b.name.localeCompare(a.name),
     );
 
+  const downloadQR = (canvas: HTMLCanvasElement | null, name: string) => {
+    if (!canvas) return;
+
+    const url = canvas.toDataURL("image/png");
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${name}-qr.png`;
+    link.click();
+  };
+
+  const generateQRBase64 = (value: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const rootEl = document.createElement("div");
+      document.body.appendChild(rootEl);
+
+      const root = createRoot(rootEl);
+
+      root.render(<QRCodeCanvas value={value} size={512} includeMargin />);
+
+      setTimeout(() => {
+        const qrCanvas = rootEl.querySelector("canvas") as HTMLCanvasElement;
+
+        const base64 = qrCanvas.toDataURL("image/png");
+
+        root.unmount();
+        document.body.removeChild(rootEl);
+
+        resolve(base64);
+      }, 200);
+    });
+  };
+
+  const downloadQRPoster = async (qrValue: string, name: string) => {
+    const base64 = await generateQRBase64(qrValue);
+
+    const pdfMakeModule = await import("pdfmake/build/pdfmake");
+    const pdfFontsModule = await import("pdfmake/build/vfs_fonts");
+
+    const pdfMake = pdfMakeModule.default || pdfMakeModule;
+    const pdfFonts = pdfFontsModule.default || pdfFontsModule;
+
+    pdfMake.vfs = pdfFonts.vfs;
+
+    const docDefinition: TDocumentDefinitions = {
+      pageSize: "A4",
+      content: [
+        {
+          text: "MesaiTak Check-in",
+          alignment: "center",
+          margin: [0, 20, 0, 20],
+          fontSize: 20,
+          bold: true,
+        },
+        {
+          image: base64,
+          width: 300,
+          alignment: "center",
+          margin: [0, 10, 0, 20],
+        },
+        {
+          text: name,
+          alignment: "center",
+          fontSize: 14,
+        },
+      ],
+    };
+
+    pdfMake.createPdf(docDefinition).download(`${name}-qr-poster.pdf`);
+  };
+
   return (
     <div className="p-6">
       <h2 className="text-lg font-semibold mb-6">Şubeler</h2>
@@ -173,19 +249,66 @@ export default function BranchesPage() {
                   key={b.branchId}
                   className="p-4 flex justify-between items-center"
                 >
-                  <div className="flex-1">
-                    {editingId === b.branchId ? (
-                      <input
-                        value={editingName}
-                        onChange={(e) => setEditingName(e.target.value)}
-                        className="border px-3 py-1 rounded-lg text-sm w-full"
-                      />
-                    ) : (
-                      <div className="font-medium">{b.name}</div>
-                    )}
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="flex-1">
+                      {editingId === b.branchId ? (
+                        <input
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          className="border px-3 py-1 rounded-lg text-sm w-full"
+                        />
+                      ) : (
+                        <div className="flex items-center gap-4">
+                          <QRCodeCanvas
+                            value={b.qrValue}
+                            size={32}
+                            ref={(el) => {
+                              qrRefs.current[b.branchId] = el;
+                            }}
+                          />
+                          <div className="font-medium">{b.name}</div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
+                    <button
+                      onClick={() =>
+                        downloadQR(qrRefs.current[b.branchId], b.name)
+                      }
+                      className="p-2 rounded-lg hover:bg-gray-100"
+                      title="PNG indir"
+                    >
+                      <img
+                        src="/icons/png-icon.png"
+                        alt="png"
+                        className="w-5 h-5"
+                      />
+                    </button>
+
+                    <button
+                      onClick={() => downloadQRPoster(b.qrValue, b.name)}
+                      className="p-2 rounded-lg hover:bg-gray-100"
+                      title="PDF indir"
+                    >
+                      <img
+                        src="/icons/pdf-icon.png"
+                        alt="pdf"
+                        className="w-5 h-5"
+                      />
+                    </button>
+
+                    <a
+                      href={b.qrValue}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg hover:bg-gray-100"
+                      title="Check-in sayfasına git"
+                    >
+                      <ExternalLink size={18} />
+                    </a>
+
                     {editingId === b.branchId ? (
                       <>
                         <Button size="sm" onClick={() => onUpdate(b.branchId)}>
@@ -203,7 +326,7 @@ export default function BranchesPage() {
                       <>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="secondary"
                           onClick={() => {
                             setEditingId(b.branchId);
                             setEditingName(b.name);

@@ -35,6 +35,7 @@ export async function listBranches(): Promise<Branch[]> {
         name: data.name,
         companyId: data.companyId,
         createdAt: data.createdAt ? data.createdAt.toDate() : null,
+        qrValue: data.qrValue ?? "",
       };
     });
 
@@ -69,6 +70,7 @@ export async function listBranchesByCompany(
       name: data.name,
       companyId: data.companyId,
       createdAt: data.createdAt ? data.createdAt.toDate() : null,
+      qrValue: data.qrValue ?? "",
     };
   });
 
@@ -88,10 +90,12 @@ export async function createBranch(name: string) {
 
   const branchId = uuid();
 
+  const qrValue = `http://localhost:3000/check-in?branchId=${branchId}`;
+
   await setDoc(doc(db, COLLECTIONS.BRANCHES, branchId), {
     branchId,
     companyId,
-
+    qrValue,
     name,
     createdAt: serverTimestamp(),
   });

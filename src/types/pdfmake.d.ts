@@ -16,6 +16,7 @@ declare module "pdfmake/build/pdfmake" {
 
 declare module "pdfmake/build/vfs_fonts" {
   const pdfFonts: {
+    vfs: Record<string, string>;
     pdfMake: {
       vfs: Record<string, string>;
     };
