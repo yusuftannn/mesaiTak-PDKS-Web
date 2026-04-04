@@ -8,6 +8,7 @@ import { listUsers } from "@/features/users/users.service";
 import { useAuthStore } from "@/features/auth/auth.store";
 import Button from "@/components/ui/Button";
 import { RotateCcw } from "lucide-react";
+import dayjs from "dayjs";
 const AttendanceMap = dynamic(() => import("@/components/maps/AttendanceMap"), {
   ssr: false,
 });
@@ -15,7 +16,7 @@ const AttendanceMap = dynamic(() => import("@/components/maps/AttendanceMap"), {
 export default function LocationsPage() {
   const { user } = useAuthStore();
 
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(dayjs().format("YYYY-MM-DD"));
 
   const [data, setData] = useState<AttendanceWithLocation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -64,7 +65,7 @@ export default function LocationsPage() {
             variant="secondary"
             size="md"
             icon={<RotateCcw className="w-4 h-4" />}
-            onClick={() => setDate(new Date().toISOString().slice(0, 10))}
+            onClick={() => setDate(dayjs().format("YYYY-MM-DD"))}
           >
             Bugüne dön
           </Button>

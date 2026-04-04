@@ -17,9 +17,10 @@ import {
 } from "./dashboard.types";
 import { getCompanyId } from "@/lib/utils/company";
 import { AppUser } from "@/features/users/users.types";
+import dayjs from "dayjs";
 
 function todayString(): string {
-  return new Date().toISOString().split("T")[0];
+  return dayjs().format("YYYY-MM-DD");
 }
 
 function getDayRange(date: Date) {

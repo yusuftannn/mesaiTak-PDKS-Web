@@ -5,6 +5,7 @@ import { listAttendanceByDate } from "@/features/attendance/attendance.service";
 import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
 import { listUsers } from "@/features/users/users.service";
 import { useAuthStore } from "@/features/auth/auth.store";
+import dayjs from "dayjs";
 
 type SortKey = "name" | "checkIn" | "checkOut" | "status";
 type SortDir = "asc" | "desc";
@@ -47,7 +48,7 @@ function getStatusBadge(status?: string) {
 export default function LocationsListPage() {
   const { user } = useAuthStore();
 
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(dayjs().format("YYYY-MM-DD"));
   const [data, setData] = useState<AttendanceWithLocation[]>([]);
   const [loading, setLoading] = useState(true);
 
