@@ -5,6 +5,9 @@ export type Branch = {
   companyId: string;
   createdAt: Date | null;
   qrValue: string;
+
+  lat: number;
+  lng: number; 
 };
 
 export type BranchDoc = {
@@ -15,4 +18,7 @@ export type BranchDoc = {
   createdAt?: {
     toDate: () => Date;
   };
+
+  lat: number; 
+  lng: number; 
 };

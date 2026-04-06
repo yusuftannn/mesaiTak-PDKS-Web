@@ -9,6 +9,7 @@ import { useBranchesStore } from "@/features/branches/branches.store";
 import { QRCodeCanvas } from "qrcode.react";
 import { createRoot } from "react-dom/client";
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
+import dynamic from "next/dynamic";
 
 export default function BranchesPage() {
   const showToast = useToastStore((s) => s.showToast);
@@ -27,6 +28,10 @@ export default function BranchesPage() {
   const [branchName, setBranchName] = useState("");
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -45,9 +50,20 @@ export default function BranchesPage() {
       });
       return;
     }
+    if (!selectedLocation) {
+      showToast({
+        type: "info",
+        title: "Konum seç",
+      });
+      return;
+    }
 
     try {
-      await createBranch(branchName);
+      await createBranch(
+        branchName,
+        selectedLocation.lat,
+        selectedLocation.lng,
+      );
       setBranchName("");
 
       showToast({
@@ -183,6 +199,10 @@ export default function BranchesPage() {
 
     pdfMake.createPdf(docDefinition).download(`${name}-qr-poster.pdf`);
   };
+
+  const MapPicker = dynamic(() => import("@/components/maps/MapPicker"), {
+    ssr: false,
+  });
 
   return (
     <div className="p-6">
@@ -351,6 +371,11 @@ export default function BranchesPage() {
           )}
         </div>
       </div>
+      <MapPicker
+        onSelect={(lat, lng) => {
+          setSelectedLocation({ lat, lng });
+        }}
+      />
     </div>
   );
 }

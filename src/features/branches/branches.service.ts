@@ -36,6 +36,8 @@ export async function listBranches(): Promise<Branch[]> {
         companyId: data.companyId,
         createdAt: data.createdAt ? data.createdAt.toDate() : null,
         qrValue: data.qrValue ?? "",
+        lat: data.lat,
+        lng: data.lng,
       };
     });
 
@@ -71,6 +73,8 @@ export async function listBranchesByCompany(
       companyId: data.companyId,
       createdAt: data.createdAt ? data.createdAt.toDate() : null,
       qrValue: data.qrValue ?? "",
+      lat: data.lat,
+      lng: data.lng,
     };
   });
 
@@ -83,9 +87,8 @@ export async function listBranchesByCompany(
   return items;
 }
 
-export async function createBranch(name: string) {
+export async function createBranch(name: string, lat: number, lng: number) {
   const companyId = getCompanyId();
-
   if (!companyId) throw new Error("Company bulunamadı");
 
   const branchId = uuid();
@@ -97,6 +100,8 @@ export async function createBranch(name: string) {
     companyId,
     qrValue,
     name,
+    lat,
+    lng,
     createdAt: serverTimestamp(),
   });
 }
