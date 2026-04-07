@@ -9,7 +9,7 @@ import { useBranchesStore } from "@/features/branches/branches.store";
 import { QRCodeCanvas } from "qrcode.react";
 import { createRoot } from "react-dom/client";
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
-import dynamic from "next/dynamic";
+import MapModal from "@/components/maps/MapModal";
 
 export default function BranchesPage() {
   const showToast = useToastStore((s) => s.showToast);
@@ -28,6 +28,7 @@ export default function BranchesPage() {
   const [branchName, setBranchName] = useState("");
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [mapOpen, setMapOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number;
     lng: number;
@@ -200,10 +201,6 @@ export default function BranchesPage() {
     pdfMake.createPdf(docDefinition).download(`${name}-qr-poster.pdf`);
   };
 
-  const MapPicker = dynamic(() => import("@/components/maps/MapPicker"), {
-    ssr: false,
-  });
-
   return (
     <div className="p-6">
       <h2 className="text-lg font-semibold mb-6">Şubeler</h2>
@@ -218,6 +215,19 @@ export default function BranchesPage() {
             value={branchName}
             onChange={(e) => setBranchName(e.target.value)}
           />
+          {selectedLocation && (
+            <div className="text-xs text-green-600">
+              Seçildi: {selectedLocation.lat.toFixed(5)},{" "}
+              {selectedLocation.lng.toFixed(5)}
+            </div>
+          )}
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => setMapOpen(true)}
+          >
+            Konum Seç
+          </Button>
 
           <Button fullWidth onClick={onCreate}>
             Şube Ekle
@@ -371,8 +381,10 @@ export default function BranchesPage() {
           )}
         </div>
       </div>
-      <MapPicker
-        onSelect={(lat, lng) => {
+      <MapModal
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        onSave={(lat, lng) => {
           setSelectedLocation({ lat, lng });
         }}
       />

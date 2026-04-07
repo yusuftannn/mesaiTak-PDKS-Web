@@ -12,7 +12,7 @@ interface BranchStore {
   loading: boolean;
 
   fetchBranches: () => Promise<void>;
-  createBranch: (name: string) => Promise<void>;
+  createBranch: (name: string, lat: number, lng: number) => Promise<void>;
   updateBranch: (id: string, name: string) => Promise<void>;
   deleteBranch: (id: string) => Promise<void>;
 }
@@ -34,7 +34,7 @@ export const useBranchesStore = create<BranchStore>((set, get) => ({
       set({ loading: false });
     }
   },
-  
+
   createBranch: async (name: string, lat: number, lng: number) => {
     await createBranch(name, lat, lng);
     await get().fetchBranches();
