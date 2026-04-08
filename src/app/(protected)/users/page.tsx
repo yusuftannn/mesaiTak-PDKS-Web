@@ -1,8 +1,12 @@
 "use client";
 
-import { Power, UserPlus, Pencil } from "lucide-react";
+import { Power, UserPlus, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { listUsers, updateUser } from "@/features/users/users.service";
+import {
+  listUsers,
+  updateUser,
+  deleteUser,
+} from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
 import { Company } from "@/features/companies/companies.types";
 import { listCompanies } from "@/features/companies/companies.service";
@@ -71,6 +75,14 @@ export default function UsersPage() {
     setUsers((prev) =>
       prev.map((u) => (u.id === userId ? { ...u, branchId } : u)),
     );
+  };
+
+  const onDeleteUser = async (user: AppUser) => {
+    if (!confirm(`${user.name} silinsin mi?`)) return;
+
+    await deleteUser(user.id);
+
+    setUsers((prev) => prev.filter((u) => u.id !== user.id));
   };
 
   const onToggleStatus = async (user: AppUser) => {
@@ -270,12 +282,24 @@ export default function UsersPage() {
                   </td>
 
                   <td className="p-3 text-center">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      icon={<Pencil size={16} />}
-                      onClick={() => setEditingUser(u)}
-                    />
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={<Pencil size={16} />}
+                        onClick={() => setEditingUser(u)}
+                      />
+
+                      {u.role !== "manager" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={<Trash2 size={16} />}
+                          className="text-red-600 hover:bg-red-50"
+                          onClick={() => onDeleteUser(u)}
+                        />
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

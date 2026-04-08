@@ -5,6 +5,7 @@ import {
   doc,
   getDocs,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
   setDoc,
   getDoc,
@@ -78,9 +79,7 @@ export async function createUser(params: CreateUserParams) {
   }
 
   const companyId =
-    currentUser.role === "manager"
-      ? params.companyId
-      : currentUser.companyId;
+    currentUser.role === "manager" ? params.companyId : currentUser.companyId;
 
   const cred = await createUserWithEmailAndPassword(
     secondaryAuth,
@@ -129,6 +128,27 @@ export async function updateUser(userId: string, data: UpdateUserParams) {
     ...data,
     updatedAt: serverTimestamp(),
   });
+}
+
+export async function deleteUser(userId: string) {
+  const currentUser = useAuthStore.getState().user;
+
+  if (!currentUser) {
+    throw new Error("User bulunamadı");
+  }
+
+  const userRef = doc(db, COLLECTIONS.USERS, userId);
+
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) throw new Error("User bulunamadı");
+
+  const existing = snap.data() as UserDoc;
+
+  if (existing.role === "manager") {
+    throw new Error("Manager kullanıcı silinemez");
+  }
+
+  await deleteDoc(userRef);
 }
 
 export async function setUserGroupTag(userId: string, groupTagIds: string[]) {
