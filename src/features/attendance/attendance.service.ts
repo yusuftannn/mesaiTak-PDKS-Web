@@ -1,5 +1,16 @@
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  serverTimestamp,
+  where,
+} from "firebase/firestore";
+import { getDistanceMeters } from "@/lib/utils/distance";
+const suspiciousRef = collection(db, "suspicious_logs");
+
+const MAX_DISTANCE = 200;
 
 import { AttendanceWithLocation, AttendanceDoc } from "./attendance.types";
 import { COLLECTIONS } from "@/constants/collections";
@@ -40,5 +51,53 @@ export async function listAttendanceByDate(
       checkInLocation: data.checkInLocation,
       checkOutLocation: data.checkOutLocation,
     };
+  });
+}
+
+export async function checkSuspiciousCheckIn(params: {
+  userId: string;
+  userName: string;
+  branchId: string;
+  branchName: string;
+  userLat: number;
+  userLng: number;
+  branchLat: number;
+  branchLng: number;
+}) {
+  const distance = getDistanceMeters(
+    params.userLat,
+    params.userLng,
+    params.branchLat,
+    params.branchLng,
+  );
+
+  if (distance <= MAX_DISTANCE) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const companyId = getCompanyId();
+  const q = query(
+    suspiciousRef,
+    where("userId", "==", params.userId),
+    where("date", "==", today),
+    where("companyId", "==", companyId),
+  );
+
+  const existing = await getDocs(q);
+
+  if (!existing.empty) return;
+
+  await addDoc(suspiciousRef, {
+    userId: params.userId,
+    userName: params.userName,
+    branchId: params.branchId,
+    branchName: params.branchName,
+    distance,
+    allowedDistance: MAX_DISTANCE,
+    userLat: params.userLat,
+    userLng: params.userLng,
+    branchLat: params.branchLat,
+    branchLng: params.branchLng,
+    date: today,
+    createdAt: serverTimestamp(),
   });
 }

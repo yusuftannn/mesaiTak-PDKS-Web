@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import {
   LayoutDashboard,
-  Building2,
+  AlertTriangle,
   MapPin,
   Users,
   Clock,
@@ -29,6 +29,7 @@ const nav = [
   { href: "/users", label: "Kullanıcılar", icon: Users },
   { href: "/shifts", label: "Vardiya", icon: Clock },
   { href: "/leaves", label: "İzin Talepleri", icon: CalendarCheck },
+  { href: "/suspicious", label: "Şüpheli İşlemler", icon: AlertTriangle },  
 ];
 
 const reportItems = [
