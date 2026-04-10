@@ -5,21 +5,22 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import {
-  LayoutDashboard,
   AlertTriangle,
-  MapPin,
-  Users,
-  Clock,
-  CalendarCheck,
-  FileText,
+  BookOpenText,
   Calendar,
-  ClipboardList,
+  CalendarCheck,
   ChevronDown,
   ChevronUp,
-  Map,
+  ClipboardList,
+  Clock,
+  FileText,
+  LayoutDashboard,
   List,
+  Map,
+  MapPin,
   Tags,
   UserCheck,
+  Users,
 } from "lucide-react";
 import Button from "./ui/Button";
 
@@ -29,7 +30,8 @@ const nav = [
   { href: "/users", label: "Kullanıcılar", icon: Users },
   { href: "/shifts", label: "Vardiya", icon: Clock },
   { href: "/leaves", label: "İzin Talepleri", icon: CalendarCheck },
-  { href: "/suspicious", label: "Şüpheli İşlemler", icon: AlertTriangle },  
+  { href: "/suspicious", label: "Şüpheli İşlemler", icon: AlertTriangle },
+  { href: "/guide", label: "Kullanım Kılavuzu", icon: BookOpenText },
 ];
 
 const reportItems = [
@@ -64,7 +66,7 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 border-r p-4">
-      <div className="font-semibold text-lg">MesaiTak</div>
+      <div className="text-lg font-semibold">MesaiTak</div>
       <div className="text-xs text-gray-500">Admin Panel</div>
 
       <nav className="mt-6 space-y-1">
@@ -88,7 +90,6 @@ export default function Sidebar() {
           );
         })}
 
-        {/* LOCATION */}
         <div>
           <Button
             variant={isLocationsRoute ? "primary" : "ghost"}
@@ -134,14 +135,13 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* REPORTS */}
         <div>
           <Button
             variant={isReportRoute ? "primary" : "ghost"}
             size="nav"
             fullWidth
             justify="between"
-            onClick={() => setManualOpen(!manualOpen)}
+            onClick={() => setManualOpen((v) => !v)}
           >
             <div className="flex items-center gap-3">
               <FileText size={18} />
@@ -176,7 +176,6 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* GROUP TAGS */}
         <div>
           <Button
             variant={isGroupTagRoute ? "primary" : "ghost"}
