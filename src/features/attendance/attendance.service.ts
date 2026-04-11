@@ -7,10 +7,8 @@ import {
   serverTimestamp,
   where,
 } from "firebase/firestore";
-import { getDistanceMeters } from "@/lib/utils/distance";
+import { calculateDistanceMeters } from "@/lib/utils/distance";
 const suspiciousRef = collection(db, "suspicious_logs");
-
-const MAX_DISTANCE = 200;
 
 import { AttendanceWithLocation, AttendanceDoc } from "./attendance.types";
 import { COLLECTIONS } from "@/constants/collections";
@@ -54,7 +52,7 @@ export async function listAttendanceByDate(
   });
 }
 
-export async function checkSuspiciousCheckIn(params: {
+export async function checkSuspiciousAndLog(params: {
   userId: string;
   userName: string;
   branchId: string;
@@ -64,27 +62,18 @@ export async function checkSuspiciousCheckIn(params: {
   branchLat: number;
   branchLng: number;
 }) {
-  const distance = getDistanceMeters(
+  const distance = calculateDistanceMeters(
     params.userLat,
     params.userLng,
     params.branchLat,
     params.branchLng,
   );
 
-  if (distance <= MAX_DISTANCE) return;
+  const allowedDistance = 200;
 
-  const today = new Date().toISOString().slice(0, 10);
-  const companyId = getCompanyId();
-  const q = query(
-    suspiciousRef,
-    where("userId", "==", params.userId),
-    where("date", "==", today),
-    where("companyId", "==", companyId),
-  );
+  if (distance <= allowedDistance) return;
 
-  const existing = await getDocs(q);
-
-  if (!existing.empty) return;
+  const severity = distance > 1000 ? "high" : distance > 500 ? "medium" : "low";
 
   await addDoc(suspiciousRef, {
     userId: params.userId,
@@ -92,12 +81,12 @@ export async function checkSuspiciousCheckIn(params: {
     branchId: params.branchId,
     branchName: params.branchName,
     distance,
-    allowedDistance: MAX_DISTANCE,
+    allowedDistance,
+    severity,
     userLat: params.userLat,
     userLng: params.userLng,
     branchLat: params.branchLat,
     branchLng: params.branchLng,
-    date: today,
     createdAt: serverTimestamp(),
   });
 }

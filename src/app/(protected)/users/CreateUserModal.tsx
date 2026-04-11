@@ -14,6 +14,7 @@ type Props = {
 };
 
 type Errors = {
+  userName: string;
   name?: string;
   email?: string;
   password?: string;
@@ -24,6 +25,7 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
 
   const [form, setForm] = useState({
     name: "",
+    userName: "",
     email: "",
     password: "",
     phone: "",
@@ -32,7 +34,9 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
     country: "Turkiye",
   });
 
-  const [errors, setErrors] = useState<Errors>({});
+  const [errors, setErrors] = useState<Errors>({
+    userName: "",
+  });
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -41,10 +45,16 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
   }, []);
 
   function validate(): Errors {
-    const newErrors: Errors = {};
+    const newErrors: Errors = {
+      userName: "",
+    };
 
     if (!form.name.trim()) {
       newErrors.name = "Ad soyad zorunlu";
+    }
+
+    if (!form.userName.trim()) {
+      newErrors.userName = "Kullanıcı adı zorunlu";
     }
 
     if (!form.email.trim()) {
@@ -66,13 +76,15 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
     const validationErrors = validate();
     setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length > 0) return;
+    const hasError = Object.values(validationErrors).some(Boolean);
+    if (hasError) return;
 
     setLoading(true);
 
     try {
       await createUser({
         name: form.name,
+        userName: form.userName,
         email: form.email,
         password: form.password,
         phone: form.phone,
@@ -96,7 +108,8 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
     }
   };
 
-  const isDisabled = !form.name || !form.email || !form.password || loading;
+  const isDisabled =
+    !form.name || !form.email || !form.password || !form.userName || loading;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -108,7 +121,7 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
             Ad Soyad <span className="text-red-500">*</span>
           </label>
           <input
-            className="border rounded p-2 w-full mt-1"
+            className="border rounded p-1 w-full mt-1"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
@@ -119,10 +132,24 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
 
         <div>
           <label className="text-sm font-medium">
+            Kullanıcı Adı <span className="text-red-500">*</span>
+          </label>
+          <input
+            className="border rounded p-1 w-full mt-1"
+            value={form.userName}
+            onChange={(e) => setForm({ ...form, userName: e.target.value })}
+          />
+          {errors.userName && (
+            <p className="text-xs text-red-500 mt-1">{errors.userName}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">
             E-posta <span className="text-red-500">*</span>
           </label>
           <input
-            className="border rounded p-2 w-full mt-1"
+            className="border rounded p-1 w-full mt-1"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
@@ -137,7 +164,7 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
           </label>
           <input
             type="password"
-            className="border rounded p-2 w-full mt-1"
+            className="border rounded p-1 w-full mt-1"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
@@ -149,7 +176,7 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
         <div>
           <label className="text-sm font-medium">Telefon</label>
           <input
-            className="border rounded p-2 w-full mt-1"
+            className="border rounded p-1 w-full mt-1"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
           />
@@ -158,7 +185,7 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
         <div>
           <label className="text-sm font-medium">Ülke</label>
           <input
-            className="border rounded p-2 w-full mt-1"
+            className="border rounded p-1 w-full mt-1"
             value={form.country}
             onChange={(e) => setForm({ ...form, country: e.target.value })}
           />
@@ -167,7 +194,7 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
         <div>
           <label className="text-sm font-medium">Rol</label>
           <select
-            className="border rounded p-2 w-full mt-1"
+            className="border rounded p-1 w-full mt-1"
             value={form.role}
             onChange={(e) =>
               setForm({
@@ -184,7 +211,7 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
         <div>
           <label className="text-sm font-medium">Şube</label>
           <select
-            className="border rounded p-2 w-full mt-1"
+            className="border rounded p-1 w-full mt-1"
             value={form.branchId}
             onChange={(e) => setForm({ ...form, branchId: e.target.value })}
           >

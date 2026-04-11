@@ -72,6 +72,16 @@ export async function listUsers(): Promise<AppUser[]> {
 }
 
 export async function createUser(params: CreateUserParams) {
+  const q = query(
+    collection(db, COLLECTIONS.USERS),
+    where("userName", "==", params.userName),
+  );
+
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    throw new Error("Bu kullanıcı adı zaten alınmış");
+  }
   const currentUser = useAuthStore.getState().user;
 
   if (!currentUser) {
@@ -92,6 +102,7 @@ export async function createUser(params: CreateUserParams) {
   await setDoc(doc(db, "users", uid), {
     uid,
     name: params.name,
+    userName: params.userName,
     email: params.email,
     phone: params.phone ?? null,
 
@@ -162,6 +173,7 @@ export async function saveUserDocument(uid: string, params: CreateUserParams) {
   await setDoc(doc(db, COLLECTIONS.USERS, uid), {
     uid,
     name: params.name,
+    userName: params.userName,
     email: params.email,
     phone: params.phone ?? null,
 

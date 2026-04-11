@@ -18,6 +18,7 @@ type UserRole = "employee" | "admin" | "manager";
 
 export default function CreateUserModal({ onClose, onCreated }: Props) {
   const [name, setName] = useState("");
+  const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
@@ -49,7 +50,7 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
   }, [companyId]);
 
   const onSubmit = async () => {
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !userName) {
       setError("Zorunlu alanlar boş");
       return;
     }
@@ -64,6 +65,7 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
     try {
       await createUser({
         name,
+        userName,
         email,
         password,
         phone,
@@ -97,6 +99,13 @@ export default function CreateUserModal({ onClose, onCreated }: Props) {
           placeholder="Ad Soyad"
           value={name}
           onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          className="border rounded p-2 w-full"
+          placeholder="Kullanıcı Adı"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
         />
 
         <input

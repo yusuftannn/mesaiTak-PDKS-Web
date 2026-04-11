@@ -6,6 +6,7 @@ export type UserStatus = "active" | "passive";
 export type AuthUserDoc = {
   uid: string;
   email: string | null;
+  userName: string;
   name?: string | null;
   role: Role;
   companyId?: string | null;

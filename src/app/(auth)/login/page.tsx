@@ -9,6 +9,8 @@ import { auth } from "@/lib/firebase";
 import { mapFirebaseError } from "@/lib/auth/firebaseError";
 import { useToastStore } from "@/lib/ui/toast.store";
 import { useAuthStore } from "@/features/auth/auth.store";
+import { getEmailByUsername } from "@/features/auth/auth.service";
+
 import Button from "@/components/ui/Button";
 
 export default function LoginPage() {
@@ -20,7 +22,7 @@ export default function LoginPage() {
   const authError = useAuthStore((s) => s.authError);
   const setAuthError = useAuthStore((s) => s.setAuthError);
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -47,14 +49,16 @@ export default function LoginPage() {
     }
   }, [authError, showToast, setAuthError]);
 
+  const isEmail = (value: string) => value.includes("@");
+
   const onLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       showToast({
         type: "error",
         title: "Eksik Bilgi",
-        message: "Email ve şifre zorunludur.",
+        message: "Email/Username ve şifre zorunludur.",
       });
       return;
     }
@@ -62,7 +66,24 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      let emailToUse = identifier;
+
+      if (!isEmail(identifier)) {
+        const foundEmail = await getEmailByUsername(identifier);
+
+        if (!foundEmail) {
+          showToast({
+            type: "error",
+            title: "Kullanıcı bulunamadı",
+            message: "Böyle bir kullanıcı adı yok.",
+          });
+          return;
+        }
+
+        emailToUse = foundEmail;
+      }
+
+      await signInWithEmailAndPassword(auth, emailToUse, password);
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
         showToast({
@@ -96,16 +117,13 @@ export default function LoginPage() {
         onSubmit={onLogin}
         className="w-full max-w-sm border rounded-xl p-6 space-y-4 shadow-sm"
       >
-        <h1 className="text-xl font-semibold text-center">
-          MesaiTak Login
-        </h1>
+        <h1 className="text-xl font-semibold text-center">MesaiTak Login</h1>
 
         <input
           className="w-full border rounded-lg p-3"
-          placeholder="E-posta adresiniz"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="E-posta veya kullanıcı adı"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
         />
 
         <input

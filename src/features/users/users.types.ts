@@ -7,6 +7,7 @@ export type AppUser = {
   uid: string;
 
   name: string;
+  userName: string;
   email: string;
   phone?: string;
 
@@ -24,6 +25,7 @@ export type AppUser = {
 
 export type CreateUserParams = {
   name: string;
+  userName: string;
   email: string;
   password: string;
 
@@ -42,6 +44,13 @@ export type CreateUserParams = {
 export type UpdateUserParams = Partial<
   Pick<
     AppUser,
-    "role" | "companyId" | "branchId" | "status" | "phone" | "name" | "country"
+    | "role"
+    | "companyId"
+    | "branchId"
+    | "status"
+    | "phone"
+    | "name"
+    | "userName"
+    | "country"
   >
 >;
