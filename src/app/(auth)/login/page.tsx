@@ -105,39 +105,60 @@ export default function LoginPage() {
 
   if (initializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Yükleniyor...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500 animate-pulse">Yükleniyor...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <form
-        onSubmit={onLogin}
-        className="w-full max-w-sm border rounded-xl p-6 space-y-4 shadow-sm"
-      >
-        <h1 className="text-xl font-semibold text-center">MesaiTak Login</h1>
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-indigo-50 via-white to-indigo-100 px-4">
+      <div className="w-full max-w-md">
+        <form
+          onSubmit={onLogin}
+          className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-2xl p-8 space-y-6 transition-all"
+        >
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-semibold text-gray-800">
+              MesaiTak
+            </h1>
+            <p className="text-sm text-gray-500">
+              Hesabınıza giriş yapın
+            </p>
+          </div>
 
-        <input
-          className="w-full border rounded-lg p-3"
-          placeholder="E-posta veya kullanıcı adı"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
-        />
+          <div className="space-y-4">
+            <input
+              className="w-full border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none rounded-xl px-4 py-3 text-sm transition"
+              placeholder="E-posta veya kullanıcı adı"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+            />
 
-        <input
-          className="w-full border rounded-lg p-3"
-          placeholder="Şifreniz"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+            <input
+              className="w-full border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none rounded-xl px-4 py-3 text-sm transition"
+              placeholder="Şifreniz"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-        <Button type="submit" fullWidth loading={loading} disabled={loading}>
-          {loading ? "Oturum açılıyor…" : "Giriş Yap"}
-        </Button>
-      </form>
+          <Button
+            type="submit"
+            fullWidth
+            loading={loading}
+            disabled={loading}
+            className="rounded-xl h-12 text-sm font-medium"
+          >
+            {loading ? "Oturum açılıyor…" : "Giriş Yap"}
+          </Button>
+
+          <div className="text-center text-xs text-gray-400">
+            © {new Date().getFullYear()} MesaiTak
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
