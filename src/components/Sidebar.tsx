@@ -31,7 +31,6 @@ const nav = [
   { href: "/shifts", label: "Vardiya", icon: Clock },
   { href: "/leaves", label: "İzin Talepleri", icon: CalendarCheck },
   { href: "/suspicious", label: "Şüpheli İşlemler", icon: AlertTriangle },
-  { href: "/guide", label: "Kullanım Kılavuzu", icon: BookOpenText },
 ];
 
 const reportItems = [
@@ -219,6 +218,20 @@ export default function Sidebar() {
               })}
             </div>
           )}
+        </div>
+        {/* GUIDE */}
+        <div className="pt-4 mt-4 border-t">
+          <Link
+            href="/guide"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition ${
+              path.startsWith("/guide")
+                ? "bg-black text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <BookOpenText size={18} />
+            Kullanım Kılavuzu
+          </Link>
         </div>
       </nav>
     </aside>
