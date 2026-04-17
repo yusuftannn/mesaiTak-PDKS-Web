@@ -11,17 +11,12 @@ import {
   Timestamp,
   getDoc,
 } from "firebase/firestore";
-import { Subscription, SubscriptionStatus } from "./subscriptions.types";
+import {
+  Subscription,
+  SubscriptionStatus,
+  SubscriptionDoc,
+} from "./subscriptions.types";
 import { PlanId, Plan } from "../plans/plans.types";
-
-type SubscriptionDoc = {
-  companyId: string;
-  planId: PlanId;
-  status: SubscriptionStatus;
-  startDate: Timestamp;
-  endDate: Timestamp | null;
-  createdAt: Timestamp;
-};
 
 function mapSubscription(id: string, data: SubscriptionDoc): Subscription {
   return {

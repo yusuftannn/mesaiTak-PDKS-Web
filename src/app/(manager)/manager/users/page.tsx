@@ -1,8 +1,12 @@
 "use client";
 
-import { Power, UserPlus, Pencil } from "lucide-react";
+import { Power, UserPlus, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { listUsers, updateUser } from "@/features/users/users.service";
+import {
+  listUsers,
+  updateUser,
+  deleteUser,
+} from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
 import { Company } from "@/features/companies/companies.types";
 import { listCompanies } from "@/features/companies/companies.service";
@@ -104,6 +108,15 @@ export default function UsersPage() {
     setUsers((prev) =>
       prev.map((u) => (u.id === user.id ? { ...u, status: next } : u)),
     );
+  };
+
+  const onDeleteUser = async (user: AppUser) => {
+    if (!confirm(`${user.name} adlı kullanıcı kalıcı olarak silinsin mi?`))
+      return;
+
+    await deleteUser(user.id);
+
+    setUsers((prev) => prev.filter((u) => u.id !== user.id));
   };
 
   if (loading) {
@@ -292,12 +305,20 @@ export default function UsersPage() {
                     </Button>
                   </td>
 
-                  <td className="p-3 text-center">
+                  <td className="p-3 text-center flex gap-2 justify-center">
                     <Button
                       variant="secondary"
                       size="sm"
                       icon={<Pencil size={16} />}
                       onClick={() => setEditingUser(u)}
+                    />
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={<Trash2 size={16} />}
+                      className="text-red-600 hover:bg-red-100"
+                      onClick={() => onDeleteUser(u)}
                     />
                   </td>
                 </tr>

@@ -1,5 +1,5 @@
 import { PlanId } from "../plans/plans.types";
-
+import {Timestamp} from "firebase/firestore";
 export type SubscriptionStatus = "trial" | "active" | "canceled" | "expired";
 
 export interface Subscription {
@@ -32,4 +32,13 @@ export type Props = {
     endDate: Date | null;
   }) => Promise<void>;
   editing?: Subscription | null;
+};
+
+export type SubscriptionDoc = {
+  companyId: string;
+  planId: PlanId;
+  status: SubscriptionStatus;
+  startDate: Timestamp;
+  endDate: Timestamp | null;
+  createdAt: Timestamp;
 };

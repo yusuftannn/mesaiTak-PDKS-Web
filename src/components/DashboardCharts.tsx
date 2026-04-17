@@ -74,12 +74,19 @@ export default function DashboardCharts({ stats }: Props) {
       },
     ],
   };
-
+  const total = values.reduce((a, b) => a + b, 0);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="bg-white rounded-xl shadow-sm p-6">
         <h3 className="text-lg font-semibold mb-4">Genel Dağılım</h3>
-        <Pie data={pieData} />
+
+        {total === 0 ? (
+          <div className="h-62.5 flex items-center justify-center text-gray-400 text-sm">
+            Henüz veri yok
+          </div>
+        ) : (
+          <Pie data={pieData} />
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-6">

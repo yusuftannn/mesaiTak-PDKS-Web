@@ -21,6 +21,7 @@ export interface SuspiciousLog {
 }
 
 export type SuspiciousLogDoc = {
+    companyId: string;
   userId: string;
   userName: string;
   branchId: string;

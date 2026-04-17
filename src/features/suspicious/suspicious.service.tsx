@@ -1,11 +1,17 @@
 import { db } from "@/lib/firebase";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { SuspiciousLog, SuspiciousLogDoc } from "./suspicious.types";
+import { getCompanyId } from "@/lib/utils/company";
 
 const ref = collection(db, "suspicious_logs");
 
 export async function listSuspiciousLogs(): Promise<SuspiciousLog[]> {
-  const q = query(ref, orderBy("createdAt", "desc"));
+  const companyId = getCompanyId();
+  const q = query(
+    ref,
+    where("companyId", "==", companyId),
+    orderBy("createdAt", "desc"),
+  );
   const snap = await getDocs(q);
 
   return snap.docs.map((d) => {
