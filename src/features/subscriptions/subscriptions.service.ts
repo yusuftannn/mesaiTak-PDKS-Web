@@ -81,8 +81,21 @@ export async function getActiveSubscriptionByCompany(
   );
 
   const d = sorted[0];
+  const sub = mapSubscription(d.id, d.data() as SubscriptionDoc);
 
-  return mapSubscription(d.id, d.data() as SubscriptionDoc);
+  try {
+    const planRef = doc(db, "plans", sub.planId);
+    const planSnap = await getDoc(planRef);
+
+    if (planSnap.exists()) {
+      const planData = planSnap.data() as Plan;
+      sub.planName = planData.name;
+    }
+  } catch (err) {
+    console.error("Plan fetch error:", err);
+  }
+
+  return sub;
 }
 
 export async function listSubscriptions(): Promise<Subscription[]> {

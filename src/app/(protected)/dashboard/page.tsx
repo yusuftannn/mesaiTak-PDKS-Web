@@ -67,7 +67,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-8 space-y-10 bg-linear-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div className="p-8 space-y-10 min-h-screen">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Günlük Özet</h1>
@@ -82,7 +82,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
         <Stat label="Bugün işe gelen" value={stats.arrived} icon={UserCheck} />
         <Stat label="Geç kalan" value={stats.late} icon={ClockAlert} />
         <Stat label="Şu an çalışan" value={stats.working} icon={Activity} />
@@ -108,7 +108,7 @@ function Stat({
   icon: React.ElementType;
 }) {
   return (
-    <div className="group relative bg-white/80 backdrop-blur border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl p-6 flex flex-col">
+    <div className="group relative bg-white/80 backdrop-blur border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl p-6 flex flex-col h-65 sm:h-70 xl:h-75">
       <div className="absolute top-4 right-4 bg-gray-100 group-hover:bg-black text-gray-500 group-hover:text-white p-2 rounded-lg transition">
         <Icon size={20} />
       </div>
@@ -119,18 +119,25 @@ function Stat({
         {value.count}
       </div>
 
-      {value.users.length > 0 && (
-        <div className="mt-5 max-h-40 overflow-y-auto space-y-2 pr-1 border-t pt-4 border-gray-200 scrollbar-thin">
-          {value.users.map((user) => (
-            <div
-              key={user.id}
-              className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition"
-            >
-              <UserRow user={user} />
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="mt-5 flex-1 border-t pt-4 border-gray-200 overflow-hidden">
+        {value.users.length > 0 ? (
+          <div className="h-full overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+            {value.users.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition"
+              >
+                <UserRow user={user} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-gray-400 text-xs gap-2">
+            <Icon size={18} className="opacity-50" />
+            <span>Kayıt yok</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

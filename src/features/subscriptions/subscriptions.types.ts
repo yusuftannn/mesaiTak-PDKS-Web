@@ -6,6 +6,7 @@ export interface Subscription {
   id: string;
   companyId: string;
   planId: PlanId;
+  planName?: string;
   status: SubscriptionStatus;
   startDate: Date;
   endDate: Date | null;
