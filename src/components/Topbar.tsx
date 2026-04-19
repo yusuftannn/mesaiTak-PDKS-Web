@@ -67,7 +67,7 @@ export default function Topbar({ onOpenSidebar }: TopbarProps) {
             <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
               <span className="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
                 <Sparkles size={14} />
-                Premium Workspace
+                Operasyon Paneli
               </span>
               <span className="hidden text-slate-300 sm:inline">/</span>
               <span className="inline-flex items-center gap-2">

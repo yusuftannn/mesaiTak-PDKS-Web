@@ -89,11 +89,11 @@ export default function LeavesPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6 max-w-7xl">
+      <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">İzin Talepleri</h2>
       </div>
 
-      <div className="space-y-4 max-w-7xl">
+      <div className="space-y-4">
         <div className="bg-white border rounded-xl p-4 shadow-sm flex flex-wrap gap-4 items-center">
           <input
             type="text"

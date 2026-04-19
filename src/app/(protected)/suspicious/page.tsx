@@ -83,7 +83,7 @@ export default function SuspiciousPage() {
         <div className="text-gray-500 text-sm">Kayıt bulunamadı</div>
       )}
 
-      {!loading && filteredLogs.length > 0 && (
+      {!loading && (
         <div className="overflow-x-auto border rounded-xl">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600">
@@ -97,36 +97,47 @@ export default function SuspiciousPage() {
             </thead>
 
             <tbody>
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="border-t hover:bg-gray-50">
-                  <td className="p-3 font-medium">{log.userName}</td>
-
-                  <td className="p-3 text-gray-500">{log.branchName}</td>
-
-                  <td className="p-3">
-                    <span className="text-red-600 font-semibold">
-                      {Math.round(log.distance)} m
-                    </span>
-                    <div className="text-xs text-gray-400">
-                      izin: {log.allowedDistance} m
-                    </div>
-                  </td>
-
-                  <td className="p-3">
-                    <span
-                      className={`text-xs px-2 py-1 rounded ${getSeverityColor(
-                        log.severity,
-                      )}`}
-                    >
-                      {log.severity.toUpperCase()}
-                    </span>
-                  </td>
-
-                  <td className="p-3 text-gray-400">
-                    {log.createdAt.toLocaleString("tr-TR")}
+              {filteredLogs.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="p-6 text-sm text-gray-500 text-center bg-white"
+                  >
+                    Şüpheli işlem bulunamadı
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredLogs.map((log) => (
+                  <tr key={log.id} className="border-t hover:bg-gray-50">
+                    <td className="p-3 font-medium">{log.userName}</td>
+
+                    <td className="p-3 text-gray-500">{log.branchName}</td>
+
+                    <td className="p-3">
+                      <span className="text-red-600 font-semibold">
+                        {Math.round(log.distance)} m
+                      </span>
+                      <div className="text-xs text-gray-400">
+                        izin: {log.allowedDistance} m
+                      </div>
+                    </td>
+
+                    <td className="p-3">
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${getSeverityColor(
+                          log.severity,
+                        )}`}
+                      >
+                        {log.severity.toUpperCase()}
+                      </span>
+                    </td>
+
+                    <td className="p-3 text-gray-400">
+                      {log.createdAt.toLocaleString("tr-TR")}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

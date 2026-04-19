@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, LogOut } from "lucide-react";
 import { listAttendanceByDate } from "@/features/attendance/attendance.service";
 import { AttendanceWithLocation } from "@/features/attendance/attendance.types";
 import { listUsers } from "@/features/users/users.service";
@@ -215,10 +216,6 @@ export default function LocationsListPage() {
 
       {loading ? (
         <div>Yükleniyor...</div>
-      ) : filtered.length === 0 ? (
-        <div className="border rounded-2xl p-6 text-gray-600">
-          Kayıt bulunamadı.
-        </div>
       ) : (
         <>
           <div className="hidden lg:block border rounded-2xl overflow-hidden">
@@ -235,50 +232,69 @@ export default function LocationsListPage() {
               </thead>
 
               <tbody>
-                {filtered.map((x, index) => {
-                  const hasLoc = !!x.checkInLocation || !!x.checkOutLocation;
-
-                  return (
-                    <tr
-                      key={x.id}
-                      className="border-t hover:bg-gray-50 transition"
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="p-10 text-center text-gray-500 bg-white"
                     >
-                      <td className="p-3">{index + 1}</td>
+                      Kayıt bulunamadı
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((x, index) => {
+                    const hasLoc = !!x.checkInLocation || !!x.checkOutLocation;
 
-                      <td className="p-3">
-                        <div className="font-medium">{x.userName}</div>
-                      </td>
+                    return (
+                      <tr
+                        key={x.id}
+                        className="border-t hover:bg-gray-50 transition"
+                      >
+                        <td className="p-3">{index + 1}</td>
 
-                      <td className="p-3">
-                        {hasLoc ? (
-                          <span className="text-green-700 font-medium">
-                            Var
-                          </span>
-                        ) : (
-                          <span className="text-gray-500">Yok</span>
-                        )}
-                      </td>
+                        <td className="p-3">
+                          <div className="font-medium">{x.userName}</div>
+                        </td>
 
-                      <td className="p-3" title={formatDateTime(x.checkInAt)}>
-                        🟢 {formatTime(x.checkInAt)}
-                      </td>
+                        <td className="p-3">
+                          {hasLoc ? (
+                            <span className="text-green-700 font-medium">
+                              Var
+                            </span>
+                          ) : (
+                            <span className="text-gray-500">Yok</span>
+                          )}
+                        </td>
 
-                      <td className="p-3" title={formatDateTime(x.checkOutAt)}>
-                        🔴 {formatTime(x.checkOutAt)}
-                      </td>
-
-                      <td className="p-3">
-                        <span
-                          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${getStatusBadge(
-                            x.status,
-                          )}`}
+                        <td className="p-3" title={formatDateTime(x.checkInAt)}>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                            <span>{formatTime(x.checkInAt)}</span>
+                          </div>
+                        </td>
+                        <td
+                          className="p-3"
+                          title={formatDateTime(x.checkOutAt)}
                         >
-                          {x.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                          <div className="flex items-center gap-2">
+                            <LogOut className="w-4 h-4 text-red-500" />
+                            <span>{formatTime(x.checkOutAt)}</span>
+                          </div>
+                        </td>
+
+                        <td className="p-3">
+                          <span
+                            className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${getStatusBadge(
+                              x.status,
+                            )}`}
+                          >
+                            {x.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -287,3 +303,4 @@ export default function LocationsListPage() {
     </div>
   );
 }
+

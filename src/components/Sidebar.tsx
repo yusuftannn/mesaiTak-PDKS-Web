@@ -110,19 +110,19 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   MesaiTak
                 </div>
                 <div className="text-xs font-medium uppercase tracking-[0.22em] text-slate-400">
-                  Admin Panel
+                  ADMIN PANEL
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-sky-100 bg-[linear-gradient(135deg,rgba(14,165,233,0.12),rgba(15,23,42,0.03))] px-4 py-3">
+            {/* <div className="mt-4 rounded-2xl border border-sky-100 bg-[linear-gradient(135deg,rgba(14,165,233,0.12),rgba(15,23,42,0.03))] px-4 py-3">
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-                Workspace
+                Kontrol Merkezi
               </div>
               <p className="mt-1 text-sm leading-6 text-slate-600">
-                Operasyonlari tek panelden daha hizli ve daha net yonetin.
+                Tüm ekip operasyonlarını tek merkezden yönetin ve takip edin.
               </p>
-            </div>
+            </div> */}
           </div>
 
           <button

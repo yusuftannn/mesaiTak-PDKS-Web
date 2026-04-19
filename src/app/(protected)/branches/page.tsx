@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import Button from "@/components/ui/Button";
 import { useToastStore } from "@/lib/ui/toast.store";
 import { useAuthStore } from "@/features/auth/auth.store";
@@ -205,7 +206,7 @@ export default function BranchesPage() {
     <div className="p-6">
       <h2 className="text-lg font-semibold mb-6">Şubeler</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white border rounded-xl p-5 shadow-sm space-y-4 h-fit">
           <h3 className="text-sm font-semibold text-gray-700">Yeni Şube</h3>
 
@@ -310,9 +311,11 @@ export default function BranchesPage() {
                       className="p-2 rounded-lg hover:bg-gray-100"
                       title="PNG indir"
                     >
-                      <img
+                      <Image
                         src="/icons/png-icon.png"
                         alt="png"
+                        width={20}
+                        height={20}
                         className="w-5 h-5"
                       />
                     </button>
@@ -322,9 +325,11 @@ export default function BranchesPage() {
                       className="p-2 rounded-lg hover:bg-gray-100"
                       title="PDF indir"
                     >
-                      <img
+                      <Image
                         src="/icons/pdf-icon.png"
                         alt="pdf"
+                        width={20}
+                        height={20}
                         className="w-5 h-5"
                       />
                     </button>
