@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <body>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Providers>
           <Toast />
           {children}
