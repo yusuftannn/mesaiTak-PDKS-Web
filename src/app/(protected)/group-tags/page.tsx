@@ -7,6 +7,7 @@ import GroupTagModal from "./GroupTagModal";
 import { GroupTag } from "@/features/group-tags/group-tags.types";
 import { useAuthStore } from "@/features/auth/auth.store";
 import Button from "@/components/ui/Button";
+import { confirm } from "@/components/ui/Confirm";
 
 export default function GroupTagsPage() {
   const { tags, fetchTags, removeTag, addTag, editTag } = useGroupTagStore();
@@ -105,11 +106,16 @@ export default function GroupTagsPage() {
                         size="sm"
                         variant="danger"
                         onClick={() => {
-                          if (
-                            confirm("Bu etiketi silmek istediğine emin misin?")
-                          ) {
-                            removeTag(tag.id);
-                          }
+                          confirm({
+                            title: "Etiket silinsin mi?",
+                            description: `"${tag.name}" etiketi kalıcı olarak silinecek.`,
+                            confirmText: "Sil",
+                            cancelText: "Vazgeç",
+                            variant: "danger",
+                            onConfirm: async () => {
+                              await removeTag(tag.id);
+                            },
+                          });
                         }}
                       >
                         Sil

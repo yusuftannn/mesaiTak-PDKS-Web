@@ -16,6 +16,7 @@ import Button from "@/components/ui/Button";
 import { useToastStore } from "@/lib/ui/toast.store";
 import { listUsers } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
+import { confirm } from "@/components/ui/Confirm";
 
 import { useAuthStore } from "../../../features/auth/auth.store";
 import { LEAVE_STATUS_LABEL } from "../../../features/leaves/leaves.types";
@@ -289,29 +290,37 @@ export default function LeavesPage() {
                           variant="ghost"
                           size="sm"
                           className="text-gray-500 hover:text-red-600"
-                          onClick={async () => {
-                            if (!confirm("Bu izin silinsin mi?")) return;
+                          onClick={() => {
+                            confirm({
+                              title: "İzin silinsin mi?",
+                              description:
+                                "Bu izin talebi kalıcı olarak silinecek. Bu işlem geri alınamaz.",
+                              confirmText: "Sil",
+                              cancelText: "Vazgeç",
+                              variant: "danger",
+                              onConfirm: async () => {
+                                try {
+                                  await deleteLeave(l.id);
 
-                            try {
-                              await deleteLeave(l.id);
+                                  setLeaves((prev) =>
+                                    prev.filter((x) => x.id !== l.id),
+                                  );
 
-                              setLeaves((prev) =>
-                                prev.filter((x) => x.id !== l.id),
-                              );
-
-                              showToast({
-                                type: "success",
-                                title: "Silindi",
-                                message: "İzin talebi silindi.",
-                              });
-                            } catch (err) {
-                              console.error(err);
-                              showToast({
-                                type: "error",
-                                title: "Hata",
-                                message: "Silme sırasında hata oluştu.",
-                              });
-                            }
+                                  showToast({
+                                    type: "success",
+                                    title: "Silindi",
+                                    message: "İzin talebi silindi.",
+                                  });
+                                } catch (err) {
+                                  console.error(err);
+                                  showToast({
+                                    type: "error",
+                                    title: "Hata",
+                                    message: "Silme sırasında hata oluştu.",
+                                  });
+                                }
+                              },
+                            });
                           }}
                         >
                           Sil

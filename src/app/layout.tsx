@@ -4,6 +4,7 @@ import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import Toast from "@/components/ui/Toast";
 import Providers from "./providers";
+import { ConfirmDialog } from "@/components/ui/Confirm";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Providers>
           <Toast />
+          <ConfirmDialog />
           {children}
         </Providers>
       </body>

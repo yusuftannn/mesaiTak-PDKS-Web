@@ -13,6 +13,7 @@ import { listCompanies } from "@/features/companies/companies.service";
 import { Branch } from "@/features/branches/branches.types";
 import { listBranches } from "@/features/branches/branches.service";
 import { getCompanyId } from "@/lib/utils/company";
+import { confirm } from "@/components/ui/Confirm";
 
 import Button from "@/components/ui/Button";
 import CreateUserModal from "./CreateUserModal";
@@ -77,31 +78,39 @@ export default function UsersPage() {
     );
   };
 
-  const onDeleteUser = async (user: AppUser) => {
-    if (!confirm(`${user.name} silinsin mi?`)) return;
+  const onDeleteUser = (user: AppUser) => {
+    confirm({
+      title: "Kullanıcı silinsin mi?",
+      description: `"${user.name}" kalıcı olarak silinecek. Bu işlem geri alınamaz.`,
+      confirmText: "Sil",
+      variant: "danger",
+      onConfirm: async () => {
+        await deleteUser(user.id);
 
-    await deleteUser(user.id);
-
-    setUsers((prev) => prev.filter((u) => u.id !== user.id));
+        setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      },
+    });
   };
 
-  const onToggleStatus = async (user: AppUser) => {
+  const onToggleStatus = (user: AppUser) => {
     const next = user.status === "active" ? "passive" : "active";
 
-    if (
-      !confirm(
-        `Kullanıcı ${
-          next === "passive" ? "pasife alınsın mı?" : "aktif edilsin mi?"
-        }`,
-      )
-    )
-      return;
+    confirm({
+      title:
+        next === "passive"
+          ? "Kullanıcı pasife alınsın mı?"
+          : "Kullanıcı aktif edilsin mi?",
+      description: `"${user.name}" kullanıcısının durumu değiştirilecek.`,
+      confirmText: "Onayla",
+      variant: next === "passive" ? "danger" : "default",
+      onConfirm: async () => {
+        await updateUser(user.id, { status: next });
 
-    await updateUser(user.id, { status: next });
-
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, status: next } : u)),
-    );
+        setUsers((prev) =>
+          prev.map((u) => (u.id === user.id ? { ...u, status: next } : u)),
+        );
+      },
+    });
   };
 
   if (loading) {

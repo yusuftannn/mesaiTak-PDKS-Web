@@ -11,6 +11,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import { createRoot } from "react-dom/client";
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
 import MapModal from "@/components/maps/MapModal";
+import { confirm } from "@/components/ui/Confirm";
 
 export default function BranchesPage() {
   const showToast = useToastStore((s) => s.showToast);
@@ -82,23 +83,30 @@ export default function BranchesPage() {
     }
   };
 
-  const onRemove = async (branchId: string) => {
-    if (!confirm("Şube silinsin mi?")) return;
+  const onRemove = (branchId: string, branchName: string) => {
+    confirm({
+      title: "Şube silinsin mi?",
+      description: `"${branchName}" şubesi kalıcı olarak silinecek.`,
+      confirmText: "Sil",
+      cancelText: "Vazgeç",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await deleteBranch(branchId);
 
-    try {
-      await deleteBranch(branchId);
-
-      showToast({
-        type: "success",
-        title: "Şube Silindi",
-      });
-    } catch {
-      showToast({
-        type: "error",
-        title: "Hata",
-        message: "Silme başarısız",
-      });
-    }
+          showToast({
+            type: "success",
+            title: "Şube Silindi",
+          });
+        } catch {
+          showToast({
+            type: "error",
+            title: "Hata",
+            message: "Silme başarısız",
+          });
+        }
+      },
+    });
   };
 
   const onUpdate = async (branchId: string) => {
@@ -373,7 +381,7 @@ export default function BranchesPage() {
                         <Button
                           size="sm"
                           variant="danger"
-                          onClick={() => onRemove(b.branchId)}
+                          onClick={() => onRemove(b.branchId, b.name)}
                         >
                           Sil
                         </Button>

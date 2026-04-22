@@ -20,6 +20,7 @@ type Props = {
 
 export default function EditUserModal({ user, onClose, onUpdated }: Props) {
   const [name, setName] = useState(user.name);
+  const [userName, setUserName] = useState<string>(user.userName ?? "");
   const [phone, setPhone] = useState(user.phone ?? "");
   const [country, setCountry] = useState(user.country ?? "Turkiye");
 
@@ -53,6 +54,7 @@ export default function EditUserModal({ user, onClose, onUpdated }: Props) {
       await updateUser(user.id, {
         name,
         phone,
+        userName,
         country: country || "Turkiye",
         role,
         companyId,
@@ -75,6 +77,13 @@ export default function EditUserModal({ user, onClose, onUpdated }: Props) {
           className="border rounded p-2 w-full"
           value={name}
           onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          className="border rounded p-2 w-full"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          placeholder="Kullanıcı Adı"
         />
 
         <input

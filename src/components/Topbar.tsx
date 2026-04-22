@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import { useAuthStore } from "@/features/auth/auth.store";
 import { useSubscriptionsStore } from "@/features/subscriptions/subscriptions.store";
 import { auth } from "@/lib/firebase";
+import { confirm } from "@/components/ui/Confirm";
 
 function getPlanBadgeColor(planId: string) {
   if (planId.toLowerCase().includes("pro")) {
@@ -43,9 +44,16 @@ export default function Topbar({ onOpenSidebar }: TopbarProps) {
     }
   }, [fetchCompanySubscription, user?.companyId]);
 
-  const handleLogout = async () => {
-    if (!confirm("Cikis yapmak istediginize emin misiniz?")) return;
-    await auth.signOut();
+  const handleLogout = () => {
+    confirm({
+      title: "Çıkış yapmak istiyor musun?",
+      description: "Oturumun sonlandırılacak.",
+      confirmText: "Çıkış Yap",
+      variant: "danger",
+      onConfirm: async () => {
+        await auth.signOut();
+      },
+    });
   };
 
   return (
@@ -118,7 +126,7 @@ export default function Topbar({ onOpenSidebar }: TopbarProps) {
             icon={<LogOut size={16} />}
             className="h-11 rounded-2xl bg-red px-4 text-red-600 shadow-[0_16px_30px_-24px_rgba(220,38,38,0.7)] hover:bg-red-50"
           >
-            Cikis
+            Çıkış
           </Button>
         </div>
       </div>
