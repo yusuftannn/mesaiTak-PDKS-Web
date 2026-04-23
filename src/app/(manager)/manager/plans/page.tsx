@@ -6,32 +6,16 @@ import { upsertPlan, deletePlan } from "@/features/plans/plans.service";
 import { Plan, PlanInput, PlanId } from "@/features/plans/plans.types";
 import PlanModal from "./PlanModal";
 
-function formatDuration(duration: number | null, type: string) {
-  if (!duration || type === "unlimited") return "Sınırsız";
-
-  switch (type) {
-    case "days":
-      return `${duration} gün`;
-    case "months":
-      return `${duration} ay`;
-    case "years":
-      return `${duration} yıl`;
-    default:
-      return "-";
-  }
-}
-
 export default function PlansPage() {
   const { plans, loading, fetchPlans } = usePlansStore();
 
   const [form, setForm] = useState<PlanInput>({
     id: undefined,
     name: "",
-    price: 0,
-    userLimit: 1,
-    features: [],
-    duration: null,
-    durationType: "unlimited",
+    pricePerUser: 0,
+    pricePerBranch: 0,
+    minUser: undefined,
+    maxUser: undefined,
   });
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,18 +25,17 @@ export default function PlansPage() {
   }, [fetchPlans]);
 
   const sortedPlans = useMemo(() => {
-    return [...plans].sort((a, b) => a.price - b.price);
+    return [...plans].sort((a, b) => a.pricePerUser - b.pricePerUser);
   }, [plans]);
 
   const openCreate = () => {
     setForm({
       id: undefined,
       name: "",
-      price: 0,
-      userLimit: 1,
-      features: [],
-      duration: null,
-      durationType: "unlimited",
+      pricePerUser: 0,
+      pricePerBranch: 0,
+      minUser: undefined,
+      maxUser: undefined,
     });
     setModalOpen(true);
   };
@@ -61,11 +44,10 @@ export default function PlansPage() {
     setForm({
       id: plan.id,
       name: plan.name,
-      price: plan.price,
-      userLimit: plan.userLimit,
-      features: plan.features,
-      duration: plan.duration ?? null,
-      durationType: plan.durationType,
+      pricePerUser: plan.pricePerUser,
+      pricePerBranch: plan.pricePerBranch,
+      minUser: plan.minUser,
+      maxUser: plan.maxUser,
     });
     setModalOpen(true);
   };
@@ -73,10 +55,11 @@ export default function PlansPage() {
   const handleSave = async (data: PlanInput) => {
     await upsertPlan(data);
     await fetchPlans();
+    setModalOpen(false);
   };
 
   const handleDelete = async (id: PlanId) => {
-    if (!confirm("Silinsin mi?")) return;
+    if (!confirm("Plan silinsin mi?")) return;
 
     await deletePlan(id);
     await fetchPlans();
@@ -91,12 +74,14 @@ export default function PlansPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Planlar</h1>
-          <p className="text-sm text-gray-500">Tüm planları buradan yönet</p>
+          <p className="text-sm text-gray-500">
+            Kullanıcı ve şube bazlı fiyatlandırma yönetimi
+          </p>
         </div>
 
         <button
           onClick={openCreate}
-          className="bg-black text-white px-4 py-2 rounded"
+          className="bg-black text-white px-4 py-2 rounded hover:opacity-90"
         >
           + Yeni Plan
         </button>
@@ -107,10 +92,9 @@ export default function PlansPage() {
           <thead className="bg-gray-50 text-left">
             <tr>
               <th className="p-3">Plan</th>
-              <th>Fiyat</th>
-              <th>Kullanıcı</th>
-              <th>Süre</th>
-              <th>Features</th>
+              <th>Kullanıcı ₺</th>
+              <th>Şube ₺</th>
+              <th>Kullanıcı Aralığı</th>
               <th className="text-right p-3">İşlem</th>
             </tr>
           </thead>
@@ -119,30 +103,53 @@ export default function PlansPage() {
             {sortedPlans.map((p) => (
               <tr key={p.id} className="border-t">
                 <td className="p-3 font-medium">{p.name}</td>
-                <td>{p.price === 0 ? "Ücretsiz" : `${p.price} ₺`}</td>
-                <td>{p.userLimit}</td>
-                <td>{formatDuration(p.duration ?? null, p.durationType)}</td>
-                <td className="text-xs text-gray-500">
-                  {p.features.join(", ")}
+
+                <td>
+                  {p.pricePerUser === 0 ? "Ücretsiz" : `${p.pricePerUser} ₺`}
                 </td>
+
+                <td>
+                  {p.pricePerBranch === 0
+                    ? "Ücretsiz"
+                    : `${p.pricePerBranch} ₺`}
+                </td>
+
+                <td className="text-xs text-gray-500">
+                  {p.minUser || p.maxUser
+                    ? `${p.minUser ?? 0} - ${p.maxUser ?? "∞"}`
+                    : "-"}
+                </td>
+
                 <td className="p-3 text-right space-x-3">
-                  <button onClick={() => openEdit(p)} className="text-blue-600">
+                  <button
+                    onClick={() => openEdit(p)}
+                    className="text-blue-600 hover:underline"
+                  >
                     Düzenle
                   </button>
+
                   <button
                     onClick={() => handleDelete(p.id)}
-                    className="text-red-600"
+                    className="text-red-600 hover:underline"
                   >
                     Sil
                   </button>
                 </td>
               </tr>
             ))}
+
+            {sortedPlans.length === 0 && (
+              <tr>
+                <td colSpan={5} className="p-6 text-center text-gray-500">
+                  Henüz plan oluşturulmamış
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {modalOpen && form && (
+      {modalOpen && (
         <PlanModal
           open={modalOpen}
           form={form}

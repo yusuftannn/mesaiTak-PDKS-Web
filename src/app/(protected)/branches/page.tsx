@@ -12,6 +12,7 @@ import { createRoot } from "react-dom/client";
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
 import MapModal from "@/components/maps/MapModal";
 import { confirm } from "@/components/ui/Confirm";
+import { getCompanyLimits } from "@/features/limits/limits.service";
 
 export default function BranchesPage() {
   const showToast = useToastStore((s) => s.showToast);
@@ -31,6 +32,7 @@ export default function BranchesPage() {
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [mapOpen, setMapOpen] = useState(false);
+  const [branchLimit, setBranchLimit] = useState<number | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number;
     lng: number;
@@ -43,6 +45,19 @@ export default function BranchesPage() {
   useEffect(() => {
     fetchBranches();
   }, [fetchBranches]);
+
+  useEffect(() => {
+    async function loadLimits() {
+      if (!companyId) return;
+
+      const limits = await getCompanyLimits(companyId);
+      setBranchLimit(limits.branches ?? null);
+    }
+
+    loadLimits();
+  }, [companyId]);
+
+  const isLimitReached = branchLimit !== null && branches.length >= branchLimit;
 
   const onCreate = async () => {
     if (!branchName.trim() || !companyId) {
@@ -68,6 +83,7 @@ export default function BranchesPage() {
         selectedLocation.lng,
       );
       setBranchName("");
+      setSelectedLocation(null);
 
       showToast({
         type: "success",
@@ -75,10 +91,14 @@ export default function BranchesPage() {
       });
     } catch (error) {
       console.log("createBranch error:", error);
+
+      const message =
+        error instanceof Error ? error.message : "Şube eklenemedi";
+
       showToast({
         type: "error",
         title: "Hata",
-        message: "Şube eklenemedi",
+        message,
       });
     }
   };
@@ -217,7 +237,11 @@ export default function BranchesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white border rounded-xl p-5 shadow-sm space-y-4 h-fit">
           <h3 className="text-sm font-semibold text-gray-700">Yeni Şube</h3>
-
+          {branchLimit !== null && (
+            <div className="text-xs text-gray-500">
+              {branches.length} / {branchLimit} şube kullanıldı
+            </div>
+          )}
           <input
             className="w-full border rounded-lg px-4 py-2 text-sm"
             placeholder="Şube adı"
@@ -234,12 +258,13 @@ export default function BranchesPage() {
             variant="secondary"
             fullWidth
             onClick={() => setMapOpen(true)}
+            disabled={isLimitReached}
           >
             Konum Seç
           </Button>
 
-          <Button fullWidth onClick={onCreate}>
-            Şube Ekle
+          <Button fullWidth onClick={onCreate} disabled={isLimitReached}>
+            {isLimitReached ? "Limit dolu" : "Şube Ekle"}
           </Button>
         </div>
 

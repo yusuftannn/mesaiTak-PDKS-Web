@@ -36,8 +36,13 @@ export const useBranchesStore = create<BranchStore>((set, get) => ({
   },
 
   createBranch: async (name: string, lat: number, lng: number) => {
-    await createBranch(name, lat, lng);
-    await get().fetchBranches();
+    try {
+      await createBranch(name, lat, lng);
+      await get().fetchBranches();
+    } catch (e) {
+      console.error(e);
+      throw e; 
+    }
   },
 
   updateBranch: async (id, name) => {

@@ -4,18 +4,21 @@ import { useEffect, useState } from "react";
 import { useSubscriptionsStore } from "@/features/subscriptions/subscriptions.store";
 import {
   createSubscription,
-  updateSubscriptionPlanWithDates,
-  updateSubscriptionStatus,
+  updateSubscription,
   deleteSubscription,
 } from "@/features/subscriptions/subscriptions.service";
+
 import {
   Subscription,
   SubscriptionStatus,
 } from "@/features/subscriptions/subscriptions.types";
+
 import { PlanId, Plan } from "@/features/plans/plans.types";
 import { Company } from "@/features/companies/companies.types";
+
 import { listPlans } from "@/features/plans/plans.service";
 import { listCompanies } from "@/features/companies/companies.service";
+
 import SubscriptionModal from "./SubscriptionModal";
 
 export default function SubscriptionsPage() {
@@ -43,12 +46,23 @@ export default function SubscriptionsPage() {
     fetchMeta();
   }, [fetchSubscriptions]);
 
+  const calculatePrice = (
+    plan: Plan | undefined,
+    userCount: number,
+    branchCount: number,
+  ) => {
+    if (!plan) return 0;
+
+    return userCount * plan.pricePerUser + branchCount * plan.pricePerBranch;
+  };
+
   const handleCreate = async (data: {
     companyId: string;
     planId: PlanId;
+    userCount: number;
+    branchCount: number;
+    billingPeriod: "monthly" | "yearly";
     status: SubscriptionStatus;
-    startDate: Date;
-    endDate: Date | null;
   }) => {
     await createSubscription(data);
     await fetchSubscriptions();
@@ -57,22 +71,20 @@ export default function SubscriptionsPage() {
   const handleUpdate = async (data: {
     companyId: string;
     planId: PlanId;
+    userCount: number;
+    branchCount: number;
+    billingPeriod: "monthly" | "yearly";
     status: SubscriptionStatus;
-    startDate: Date;
-    endDate: Date | null;
   }) => {
     if (!editing) return;
 
-    const selectedPlan = plans.find((p) => p.id === data.planId);
-    if (!selectedPlan) return;
-
-    await updateSubscriptionPlanWithDates(
-      editing.id,
-      selectedPlan,
-      data.startDate,
-    );
-
-    await updateSubscriptionStatus(editing.id, data.status);
+    await updateSubscription(editing.id, {
+      planId: data.planId,
+      userCount: data.userCount,
+      branchCount: data.branchCount,
+      billingPeriod: data.billingPeriod,
+      status: data.status,
+    });
 
     await fetchSubscriptions();
   };
@@ -89,8 +101,21 @@ export default function SubscriptionsPage() {
     setModalOpen(true);
   };
 
+  const getRemainingDays = (endDate: Date | null) => {
+    if (!endDate) return null;
+
+    const now = new Date();
+    const diff = endDate.getTime() - now.getTime();
+
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
+
   const getCompanyName = (companyId: string) => {
     return companies.find((c) => c.id === companyId)?.name ?? companyId;
+  };
+
+  const getPlan = (planId: string) => {
+    return plans.find((p) => p.id === planId);
   };
 
   const getStatusBadge = (status: SubscriptionStatus) => {
@@ -115,7 +140,9 @@ export default function SubscriptionsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Subscriptions</h1>
-          <p className="text-sm text-gray-500">Abonelikleri buradan yönet</p>
+          <p className="text-sm text-gray-500">
+            Kullanım bazlı abonelik yönetimi
+          </p>
         </div>
 
         <button
@@ -132,55 +159,81 @@ export default function SubscriptionsPage() {
             <tr>
               <th className="p-3">Company</th>
               <th>Plan</th>
-              <th>Status</th>
+              <th>Kullanıcı</th>
+              <th>Şube</th>
+              <th>Fiyat</th>
               <th>Başlangıç</th>
               <th>Bitiş</th>
+              <th>Kalan</th>
+              <th>Status</th>
             </tr>
           </thead>
 
           <tbody>
             {subscriptions.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center p-6 text-gray-500">
+                <td colSpan={6} className="text-center p-6 text-gray-500">
                   Henüz abonelik yok
                 </td>
               </tr>
             ) : (
-              subscriptions.map((s) => (
-                <tr key={s.id} className="border-t">
-                  <td className="p-3 font-medium">
-                    {getCompanyName(s.companyId)}
-                  </td>
+              subscriptions.map((s) => {
+                const plan = getPlan(s.planId);
+                const price = calculatePrice(plan, s.userCount, s.branchCount);
 
-                  <td>
-                    {plans.find((p) => p.id === s.planId)?.name ?? s.planId}
-                  </td>
+                return (
+                  <tr key={s.id} className="border-t">
+                    <td className="p-3 font-medium">
+                      {getCompanyName(s.companyId)}
+                    </td>
 
-                  <td>{getStatusBadge(s.status)}</td>
+                    <td>{plan?.name ?? s.planId}</td>
 
-                  <td>{s.startDate.toLocaleDateString("tr-TR")}</td>
+                    <td>{s.userCount}</td>
 
-                  <td>
-                    {s.endDate ? s.endDate.toLocaleDateString("tr-TR") : "-"}
-                  </td>
+                    <td>{s.branchCount}</td>
 
-                  <td className="p-3 text-right space-x-3">
-                    <button
-                      onClick={() => handleEdit(s)}
-                      className="text-blue-600 text-xs"
-                    >
-                      Düzenle
-                    </button>
+                    <td className="font-medium">{price} ₺</td>
+                    <td>{s.startDate.toLocaleDateString("tr-TR")}</td>
 
-                    <button
-                      onClick={() => handleDelete(s.id)}
-                      className="text-red-600 text-xs"
-                    >
-                      Sil
-                    </button>
-                  </td>
-                </tr>
-              ))
+                    <td>
+                      {s.endDate ? s.endDate.toLocaleDateString("tr-TR") : "-"}
+                    </td>
+                    <td>
+                      {(() => {
+                        const days = getRemainingDays(s.endDate);
+
+                        if (days === null) return "-";
+                        if (days <= 0)
+                          return (
+                            <span className="text-red-600">Süresi doldu</span>
+                          );
+
+                        return (
+                          <span className="text-green-600">{days} gün</span>
+                        );
+                      })()}
+                    </td>
+                    <td>{getStatusBadge(s.status)}</td>
+
+                    <td className="p-3 text-right space-x-3">
+                      <button
+                        onClick={() => handleEdit(s)}
+                        className="text-blue-600 text-xs"
+                      >
+                        Düzenle
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(s.id)}
+                        className="text-red-600 text-xs"
+                      >
+                        Sil
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

@@ -14,14 +14,17 @@ import { Plan, PlanId, PlanDoc, PlanInput } from "./plans.types";
 function mapPlanDoc(id: string, data: PlanDoc): Plan {
   return {
     id: id as PlanId,
+
     name: data.name,
-    price: data.price,
-    userLimit: data.userLimit,
-    features: data.features,
+
+    pricePerUser: data.pricePerUser,
+    pricePerBranch: data.pricePerBranch,
+
+    minUser: data.minUser,
+    maxUser: data.maxUser,
+
     createdAt: data.createdAt.toDate(),
     updatedAt: data.updatedAt ? data.updatedAt.toDate() : null,
-    duration: data.duration,
-    durationType: data.durationType,
   };
 }
 
@@ -40,17 +43,19 @@ export async function getPlan(planId: PlanId): Promise<Plan | null> {
   return mapPlanDoc(snap.id, snap.data() as PlanDoc);
 }
 
-export async function upsertPlan(data: PlanInput) {
+export async function upsertPlan(data: PlanInput): Promise<PlanId> {
   if (data.id) {
     const ref = doc(db, "plans", data.id);
 
     await updateDoc(ref, {
       name: data.name,
-      price: data.price,
-      userLimit: data.userLimit,
-      features: data.features,
-      duration: data.duration,
-      durationType: data.durationType,
+
+      pricePerUser: data.pricePerUser,
+      pricePerBranch: data.pricePerBranch,
+
+      minUser: data.minUser ?? null,
+      maxUser: data.maxUser ?? null,
+
       updatedAt: serverTimestamp(),
     });
 
@@ -59,11 +64,13 @@ export async function upsertPlan(data: PlanInput) {
 
   const ref = await addDoc(collection(db, "plans"), {
     name: data.name,
-    price: data.price,
-    userLimit: data.userLimit,
-    features: data.features,
-    duration: data.duration,
-    durationType: data.durationType,
+
+    pricePerUser: data.pricePerUser,
+    pricePerBranch: data.pricePerBranch,
+
+    minUser: data.minUser ?? null,
+    maxUser: data.maxUser ?? null,
+
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

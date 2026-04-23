@@ -14,6 +14,7 @@ import { Branch } from "@/features/branches/branches.types";
 import { listBranches } from "@/features/branches/branches.service";
 import { getCompanyId } from "@/lib/utils/company";
 import { confirm } from "@/components/ui/Confirm";
+import { getCompanyLimits } from "@/features/limits/limits.service";
 
 import Button from "@/components/ui/Button";
 import CreateUserModal from "./CreateUserModal";
@@ -25,7 +26,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
-
+  const [userLimit, setUserLimit] = useState<number | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState("");
   const [editingUser, setEditingUser] = useState<AppUser | null>(null);
@@ -62,6 +63,17 @@ export default function UsersPage() {
     return () => {
       mounted = false;
     };
+  }, [companyId]);
+
+  useEffect(() => {
+    async function loadLimits() {
+      if (!companyId) return;
+
+      const limits = await getCompanyLimits(companyId);
+      setUserLimit(limits.users);
+    }
+
+    loadLimits();
   }, [companyId]);
 
   const onChangeRole = async (userId: string, role: AppUser["role"]) => {
@@ -132,20 +144,33 @@ export default function UsersPage() {
     return matchesSearch && matchesRole && matchesStatus && matchesBranch;
   });
 
+  const activeUsersCount = users.filter(
+    (u) => u.status === "active" && u.role !== "manager",
+  ).length;
+
+  const isLimitReached = userLimit !== null && activeUsersCount >= userLimit;
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold">Kullanıcılar</h2>
-          <div className="text-xs text-gray-500">{companyName}</div>
+          {userLimit !== null && (
+            <div className="text-xs text-gray-500 mt-1">
+              {activeUsersCount} / {userLimit} aktif kullanıcı
+            </div>
+          )}
         </div>
 
         <Button
-          onClick={() => setShowCreate(true)}
+          onClick={() => {
+            if (isLimitReached) return;
+            setShowCreate(true);
+          }}
+          disabled={isLimitReached}
           className="flex items-center gap-2"
           icon={<UserPlus size={16} />}
         >
-          Kullanıcı Ekle
+          {isLimitReached ? "Limit dolu" : "Kullanıcı Ekle"}
         </Button>
       </div>
 

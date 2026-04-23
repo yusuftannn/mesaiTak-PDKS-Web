@@ -17,6 +17,7 @@ import { Branch, BranchDoc } from "./branches.types";
 import { COLLECTIONS } from "@/constants/collections";
 import { getCompanyId } from "@/lib/utils/company";
 import { useAuthStore } from "../auth/auth.store";
+import { assertLimitNotExceeded } from "@/features/limits/limits.service";
 
 export async function listBranches(): Promise<Branch[]> {
   const currentUser = useAuthStore.getState().user;
@@ -90,6 +91,10 @@ export async function listBranchesByCompany(
 export async function createBranch(name: string, lat: number, lng: number) {
   const companyId = getCompanyId();
   if (!companyId) throw new Error("Company bulunamadı");
+
+  const branches = await listBranchesByCompany(companyId);
+
+  await assertLimitNotExceeded(companyId, "branches", branches.length);
 
   const branchId = uuid();
 

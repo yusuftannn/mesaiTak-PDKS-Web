@@ -60,7 +60,7 @@ export default function Button({
         variantClasses[variant],
         sizeClasses[size],
         fullWidth && "w-full",
-        (disabled || loading) && "opacity-60 cursor-not-allowed",
+        "disabled:opacity-60 disabled:cursor-not-allowed",
         className,
       )}
       {...props}

@@ -9,6 +9,7 @@ interface PlansState {
 
   fetchPlans: () => Promise<void>;
   fetchPlan: (id: PlanId) => Promise<void>;
+  clearSelectedPlan: () => void;
 }
 
 export const usePlansStore = create<PlansState>((set) => ({
@@ -18,13 +19,27 @@ export const usePlansStore = create<PlansState>((set) => ({
 
   fetchPlans: async () => {
     set({ loading: true });
-    const data = await listPlans();
-    set({ plans: data, loading: false });
+
+    try {
+      const data = await listPlans();
+      set({ plans: data, loading: false });
+    } catch (e) {
+      console.error(e);
+      set({ loading: false });
+    }
   },
 
   fetchPlan: async (id) => {
     set({ loading: true });
-    const plan = await getPlan(id);
-    set({ selectedPlan: plan, loading: false });
+
+    try {
+      const plan = await getPlan(id);
+      set({ selectedPlan: plan, loading: false });
+    } catch (e) {
+      console.error(e);
+      set({ loading: false });
+    }
   },
+
+  clearSelectedPlan: () => set({ selectedPlan: null }),
 }));

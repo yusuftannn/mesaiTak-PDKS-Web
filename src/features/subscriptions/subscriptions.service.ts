@@ -11,52 +11,60 @@ import {
   Timestamp,
   getDoc,
 } from "firebase/firestore";
+
 import {
   Subscription,
   SubscriptionStatus,
   SubscriptionDoc,
+  BillingPeriod,
 } from "./subscriptions.types";
+
 import { PlanId, Plan } from "../plans/plans.types";
+
 
 function mapSubscription(id: string, data: SubscriptionDoc): Subscription {
   return {
     id,
     companyId: data.companyId,
     planId: data.planId,
+
+    userCount: data.userCount,
+    branchCount: data.branchCount,
+
+    billingPeriod: data.billingPeriod,
+
     status: data.status,
+
     startDate: data.startDate.toDate(),
     endDate: data.endDate ? data.endDate.toDate() : null,
     createdAt: data.createdAt.toDate(),
   };
 }
 
-function calculateEndDate(
-  startDate: Date,
-  duration: number | null,
-  durationType: "days" | "months" | "years" | "unlimited",
-): Date | null {
-  if (durationType === "unlimited" || duration === null) {
-    return null;
+
+function calculateEndDate(startDate: Date, period: BillingPeriod): Date {
+  const d = new Date(startDate);
+
+  if (period === "monthly") {
+    d.setMonth(d.getMonth() + 1);
   }
 
-  const date = new Date(startDate);
-
-  switch (durationType) {
-    case "days":
-      date.setDate(date.getDate() + duration);
-      break;
-
-    case "months":
-      date.setMonth(date.getMonth() + duration);
-      break;
-
-    case "years":
-      date.setFullYear(date.getFullYear() + duration);
-      break;
+  if (period === "yearly") {
+    d.setFullYear(d.getFullYear() + 1);
   }
 
-  return date;
+  return d;
 }
+
+
+export async function listSubscriptions(): Promise<Subscription[]> {
+  const snap = await getDocs(collection(db, "subscriptions"));
+
+  return snap.docs.map((d) =>
+    mapSubscription(d.id, d.data() as SubscriptionDoc),
+  );
+}
+
 
 export async function getActiveSubscriptionByCompany(
   companyId: string,
@@ -72,7 +80,9 @@ export async function getActiveSubscriptionByCompany(
   if (snap.empty) return null;
 
   const sorted = snap.docs.sort(
-    (a, b) => b.data().createdAt.toMillis() - a.data().createdAt.toMillis(),
+    (a, b) =>
+      (b.data() as SubscriptionDoc).createdAt.toMillis() -
+      (a.data() as SubscriptionDoc).createdAt.toMillis(),
   );
 
   const d = sorted[0];
@@ -93,27 +103,34 @@ export async function getActiveSubscriptionByCompany(
   return sub;
 }
 
-export async function listSubscriptions(): Promise<Subscription[]> {
-  const snap = await getDocs(collection(db, "subscriptions"));
-
-  return snap.docs.map((d) =>
-    mapSubscription(d.id, d.data() as SubscriptionDoc),
-  );
-}
-
 export async function createSubscription(params: {
   companyId: string;
   planId: PlanId;
-  startDate?: Date;
-  endDate?: Date | null;
+
+  userCount: number;
+  branchCount: number;
+
+  billingPeriod: BillingPeriod;
+
   status?: SubscriptionStatus;
 }): Promise<void> {
+  const startDate = new Date();
+  const endDate = calculateEndDate(startDate, params.billingPeriod);
+
   await addDoc(collection(db, "subscriptions"), {
     companyId: params.companyId,
     planId: params.planId,
+
+    userCount: params.userCount,
+    branchCount: params.branchCount,
+
+    billingPeriod: params.billingPeriod,
+
     status: params.status ?? "trial",
-    startDate: Timestamp.fromDate(params.startDate ?? new Date()),
-    endDate: params.endDate ? Timestamp.fromDate(params.endDate) : null,
+
+    startDate: Timestamp.fromDate(startDate),
+    endDate: Timestamp.fromDate(endDate),
+
     createdAt: Timestamp.now(),
   });
 
@@ -122,107 +139,48 @@ export async function createSubscription(params: {
   await updateDoc(companyRef, {
     currentPlanId: params.planId,
     subscriptionStatus: params.status ?? "trial",
-    subscriptionEndDate: params.endDate
-      ? Timestamp.fromDate(params.endDate)
-      : null,
+    subscriptionEndDate: Timestamp.fromDate(endDate),
   });
 }
 
-export async function updateSubscriptionPlanWithDates(
+export async function updateSubscription(
   subscriptionId: string,
-  plan: Plan,
-  currentStartDate: Date,
+  params: {
+    planId: PlanId;
+    userCount: number;
+    branchCount: number;
+    billingPeriod: BillingPeriod;
+    status: SubscriptionStatus;
+  },
 ): Promise<void> {
   const ref = doc(db, "subscriptions", subscriptionId);
 
-  const newEndDate = calculateEndDate(
-    currentStartDate,
-    plan.duration,
-    plan.durationType,
-  );
+  const startDateSnap = await getDoc(ref);
+
+  if (!startDateSnap.exists()) {
+    throw new Error("Subscription not found");
+  }
+
+  const currentData = startDateSnap.data() as SubscriptionDoc;
+
+  const startDate = currentData.startDate.toDate();
+  const newEndDate = calculateEndDate(startDate, params.billingPeriod);
 
   await updateDoc(ref, {
-    planId: plan.id,
-    endDate: newEndDate ? Timestamp.fromDate(newEndDate) : null,
-  });
-}
-
-export async function updateSubscriptionStatus(
-  subscriptionId: string,
-  status: SubscriptionStatus,
-): Promise<void> {
-  const ref = doc(db, "subscriptions", subscriptionId);
-
-  await updateDoc(ref, {
-    status,
+    planId: params.planId,
+    userCount: params.userCount,
+    branchCount: params.branchCount,
+    billingPeriod: params.billingPeriod,
+    status: params.status,
+    endDate: Timestamp.fromDate(newEndDate),
   });
 }
 
 export async function deleteSubscription(
   subscriptionId: string,
 ): Promise<void> {
-  if (!subscriptionId) {
-    throw new Error("subscriptionId is required");
-  }
+  if (!subscriptionId) throw new Error("subscriptionId is required");
 
-  const subRef = doc(db, "subscriptions", subscriptionId);
-  const subSnap = await getDoc(subRef);
-
-  if (!subSnap.exists()) {
-    throw new Error("Subscription not found");
-  }
-
-  const subData = subSnap.data() as SubscriptionDoc;
-  const companyId = subData.companyId;
-
-  if (!companyId) {
-    throw new Error("companyId missing in subscription");
-  }
-
-  await deleteDoc(subRef);
-
-  const q = query(
-    collection(db, "subscriptions"),
-    where("companyId", "==", companyId),
-    where("status", "in", ["trial", "active"]),
-  );
-
-  const snap = await getDocs(q);
-
-  const companyRef = doc(db, "companies", companyId);
-
-  if (!snap.empty) {
-    const sorted = snap.docs.sort(
-      (a, b) =>
-        (b.data() as SubscriptionDoc).createdAt.toMillis() -
-        (a.data() as SubscriptionDoc).createdAt.toMillis(),
-    );
-
-    const latest = sorted[0].data() as SubscriptionDoc;
-
-    await updateDoc(companyRef, {
-      currentPlanId: latest.planId,
-      subscriptionStatus: latest.status,
-      subscriptionEndDate: latest.endDate ?? null,
-    });
-  } else {
-    const freePlanQuery = query(
-      collection(db, "plans"),
-      where("name", "==", "FREE"),
-    );
-
-    const freeSnap = await getDocs(freePlanQuery);
-
-    if (freeSnap.empty) {
-      throw new Error("FREE plan not found in plans collection");
-    }
-
-    const freePlanDoc = freeSnap.docs[0];
-
-    await updateDoc(companyRef, {
-      currentPlanId: freePlanDoc.id,
-      subscriptionStatus: "expired" as SubscriptionStatus,
-      subscriptionEndDate: null,
-    });
-  }
+  const ref = doc(db, "subscriptions", subscriptionId);
+  await deleteDoc(ref);
 }

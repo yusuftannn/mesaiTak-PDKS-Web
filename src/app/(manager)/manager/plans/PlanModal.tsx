@@ -1,11 +1,7 @@
 "use client";
 
-import {
-  PlanInput,
-  PlanDurationType,
-  Props,
-} from "@/features/plans/plans.types";
-import { useState, useEffect } from "react";
+import { Props, PlanInput } from "@/features/plans/plans.types";
+import { useState } from "react";
 
 export default function PlanModal({
   open,
@@ -14,11 +10,7 @@ export default function PlanModal({
   form,
   setForm,
 }: Props) {
-  const [featuresText, setFeaturesText] = useState("");
-
-  useEffect(() => {
-    setFeaturesText(form.features.join(", "));
-  }, [form]);
+  const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
@@ -32,17 +24,34 @@ export default function PlanModal({
     }));
   };
 
+  const validate = () => {
+    if (!form.name.trim()) return "Plan adı zorunlu";
+
+    if (form.pricePerUser < 0) return "Kullanıcı fiyatı negatif olamaz";
+    if (form.pricePerBranch < 0) return "Şube fiyatı negatif olamaz";
+
+    if (
+      form.minUser !== undefined &&
+      form.maxUser !== undefined &&
+      form.minUser > form.maxUser
+    ) {
+      return "Min kullanıcı, max kullanıcıdan büyük olamaz";
+    }
+
+    return null;
+  };
+
   const handleSubmit = async () => {
-    const parsed = featuresText
-      .split(",")
-      .map((f) => f.trim())
-      .filter(Boolean);
+    const err = validate();
 
-    await onSave({
-      ...form,
-      features: parsed,
-    });
+    if (err) {
+      setError(err);
+      return;
+    }
 
+    await onSave(form);
+
+    setError(null);
     onClose();
   };
 
@@ -53,65 +62,84 @@ export default function PlanModal({
           {form.id ? "Plan Güncelle" : "Yeni Plan"}
         </h2>
 
-        <div className="space-y-3">
-          <label className="text-sm text-gray-600">Plan Adı:</label>
-          <input
-            value={form.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            className="border p-2 w-full rounded"
-          />
-
-          <label className="text-sm text-gray-600">Fiyat:</label>
-          <input
-            type="number"
-            value={form.price}
-            onChange={(e) => handleChange("price", Number(e.target.value))}
-            className="border p-2 w-full rounded"
-          />
-
-          <label className="text-sm text-gray-600">Kullanıcı Limiti:</label>
-          <input
-            type="number"
-            value={form.userLimit}
-            onChange={(e) => handleChange("userLimit", Number(e.target.value))}
-            className="border p-2 w-full rounded"
-          />
-
-          <label className="text-sm text-gray-600">Süre:</label>
-          <div className="flex gap-2">
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm text-gray-600">Plan Adı</label>
             <input
-              type="number"
-              value={form.duration ?? ""}
-              onChange={(e) => handleChange("duration", Number(e.target.value))}
-              disabled={form.durationType === "unlimited"}
+              value={form.name}
+              onChange={(e) => handleChange("name", e.target.value)}
               className="border p-2 w-full rounded"
             />
-
-            <select
-              value={form.durationType}
-              onChange={(e) =>
-                handleChange("durationType", e.target.value as PlanDurationType)
-              }
-              className="border p-2 rounded"
-            >
-              <option value="days">Gün</option>
-              <option value="months">Ay</option>
-              <option value="years">Yıl</option>
-              <option value="unlimited">Sınırsız</option>
-            </select>
           </div>
 
-          <label className="text-sm text-gray-600">Özellikler</label>
-          <textarea
-            value={featuresText}
-            onChange={(e) => setFeaturesText(e.target.value)}
-            className="border p-2 w-full rounded min-h-20"
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm text-gray-600">Kullanıcı ₺</label>
+              <input
+                type="number"
+                value={form.pricePerUser}
+                onChange={(e) =>
+                  handleChange("pricePerUser", Number(e.target.value))
+                }
+                className="border p-2 w-full rounded"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-600">Şube ₺</label>
+              <input
+                type="number"
+                value={form.pricePerBranch}
+                onChange={(e) =>
+                  handleChange("pricePerBranch", Number(e.target.value))
+                }
+                className="border p-2 w-full rounded"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm text-gray-600">Min Kullanıcı</label>
+              <input
+                type="number"
+                value={form.minUser ?? ""}
+                onChange={(e) =>
+                  handleChange(
+                    "minUser",
+                    e.target.value ? Number(e.target.value) : undefined,
+                  )
+                }
+                className="border p-2 w-full rounded"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-600">Max Kullanıcı</label>
+              <input
+                type="number"
+                value={form.maxUser ?? ""}
+                onChange={(e) =>
+                  handleChange(
+                    "maxUser",
+                    e.target.value ? Number(e.target.value) : undefined,
+                  )
+                }
+                className="border p-2 w-full rounded"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="text-red-600 text-sm bg-red-50 p-2 rounded">
+              {error}
+            </div>
+          )}
 
           <div className="flex gap-2 pt-2">
             <button
               onClick={handleSubmit}
-              className="bg-black text-white px-4 py-2 rounded w-full"
+              className="bg-black text-white px-4 py-2 rounded w-full hover:opacity-90"
             >
               Kaydet
             </button>

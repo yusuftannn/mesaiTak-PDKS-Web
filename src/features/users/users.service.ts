@@ -17,6 +17,7 @@ import { AppUser, CreateUserParams, UpdateUserParams } from "./users.types";
 import { COLLECTIONS } from "@/constants/collections";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useAuthStore } from "@/features/auth/auth.store";
+import { assertLimitNotExceeded } from "@/features/limits/limits.service";
 
 type UserDoc = Omit<AppUser, "id">;
 
@@ -82,6 +83,7 @@ export async function createUser(params: CreateUserParams) {
   if (!snap.empty) {
     throw new Error("Bu kullanıcı adı zaten alınmış");
   }
+
   const currentUser = useAuthStore.getState().user;
 
   if (!currentUser) {
@@ -91,34 +93,62 @@ export async function createUser(params: CreateUserParams) {
   const companyId =
     currentUser.role === "manager" ? params.companyId : currentUser.companyId;
 
-  const cred = await createUserWithEmailAndPassword(
-    secondaryAuth,
-    params.email,
-    params.password,
+  if (!companyId) {
+    throw new Error("Company bulunamadı");
+  }
+
+  const usersSnap = await getDocs(
+    query(
+      collection(db, COLLECTIONS.USERS),
+      where("companyId", "==", companyId),
+    ),
   );
 
-  const uid = cred.user.uid;
+  const activeUsersCount = usersSnap.docs.filter((d) => {
+    const u = d.data() as UserDoc;
+    return u.status === "active" && u.role !== "manager";
+  }).length;
 
-  await setDoc(doc(db, "users", uid), {
-    uid,
-    name: params.name,
-    userName: params.userName,
-    email: params.email,
-    phone: params.phone ?? null,
+  await assertLimitNotExceeded(companyId, "users", activeUsersCount);
 
-    role: params.role,
+  const uid: string | null = null;
 
-    companyId,
-    branchId: params.branchId,
+  try {
+    const cred = await createUserWithEmailAndPassword(
+      secondaryAuth,
+      params.email,
+      params.password,
+    );
 
-    groupTagIds: params.groupTagIds ?? [],
+    const uid = cred.user.uid;
 
-    country: params.country ?? "Turkiye",
+    await setDoc(doc(db, "users", uid), {
+      uid,
+      name: params.name,
+      userName: params.userName,
+      email: params.email,
+      phone: params.phone ?? null,
 
-    status: "active",
+      role: params.role,
 
-    createdAt: serverTimestamp(),
-  });
+      companyId,
+      branchId: params.branchId,
+
+      groupTagIds: params.groupTagIds ?? [],
+
+      country: params.country ?? "Turkiye",
+
+      status: "active",
+
+      createdAt: serverTimestamp(),
+    });
+  } catch (err) {
+    if (uid) {
+      console.warn("Auth user created but firestore failed");
+    }
+
+    throw err;
+  }
 }
 
 export async function updateUser(userId: string, data: UpdateUserParams) {

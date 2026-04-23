@@ -12,6 +12,7 @@ interface SubscriptionsState {
 
   fetchSubscriptions: () => Promise<void>;
   fetchCompanySubscription: (companyId: string) => Promise<void>;
+  clearCurrent: () => void;
 }
 
 export const useSubscriptionsStore = create<SubscriptionsState>((set) => ({
@@ -21,13 +22,27 @@ export const useSubscriptionsStore = create<SubscriptionsState>((set) => ({
 
   fetchSubscriptions: async () => {
     set({ loading: true });
-    const data = await listSubscriptions();
-    set({ subscriptions: data, loading: false });
+
+    try {
+      const data = await listSubscriptions();
+      set({ subscriptions: data, loading: false });
+    } catch (e) {
+      console.error(e);
+      set({ loading: false });
+    }
   },
 
   fetchCompanySubscription: async (companyId) => {
     set({ loading: true });
-    const sub = await getActiveSubscriptionByCompany(companyId);
-    set({ currentSubscription: sub, loading: false });
+
+    try {
+      const sub = await getActiveSubscriptionByCompany(companyId);
+      set({ currentSubscription: sub, loading: false });
+    } catch (e) {
+      console.error(e);
+      set({ loading: false });
+    }
   },
+
+  clearCurrent: () => set({ currentSubscription: null }),
 }));
