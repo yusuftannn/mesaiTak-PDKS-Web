@@ -5,4 +5,5 @@ export const COLLECTIONS = {
   ATTENDANCE: "attendance",
   SHIFTS: "shifts",
   LEAVES: "leaves",
+  ANNOUNCEMENTS: "announcements",
 };

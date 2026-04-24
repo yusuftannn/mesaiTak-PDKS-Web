@@ -142,7 +142,7 @@ export default function UsersPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6 max-w-7xl">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold">Kullanıcılar</h2>
           <div className="text-xs text-gray-500">{headerCompanyName}</div>
@@ -157,7 +157,7 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      <div className="space-y-4 max-w-7xl">
+      <div className="space-y-4">
         <div className="bg-white border rounded-xl p-4 shadow-sm flex flex-wrap gap-4 items-center">
           <input
             type="text"

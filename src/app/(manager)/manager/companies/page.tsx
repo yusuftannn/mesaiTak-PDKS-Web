@@ -172,7 +172,7 @@ export default function CompaniesPage() {
     <div className="p-6">
       <h2 className="text-lg font-semibold mb-6">Şirketler</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white border rounded-xl p-5 shadow-sm space-y-4 h-fit">
           <h3 className="text-sm font-semibold text-gray-700">Yeni Şirket</h3>
 

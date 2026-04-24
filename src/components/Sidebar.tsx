@@ -18,6 +18,7 @@ import {
   List,
   Map,
   MapPin,
+  Megaphone,
   Sparkles,
   Tags,
   UserCheck,
@@ -33,6 +34,7 @@ const nav = [
   { href: "/shifts", label: "Vardiya", icon: Clock },
   { href: "/leaves", label: "İzin Talepleri", icon: CalendarCheck },
   { href: "/suspicious", label: "Şüpheli İşlemler", icon: AlertTriangle },
+  { href: "/announcements", label: "Toplu Duyuru", icon: Megaphone },
 ];
 
 const reportItems = [
