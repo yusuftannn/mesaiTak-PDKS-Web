@@ -320,7 +320,7 @@ export default function ShiftsPage() {
         </div>
       </div>
 
-      <div className="overflow-auto border rounded-xl">
+      <div className="overflow-auto rounded-xl">
         <table className="min-w-full text-sm text-center border-collapse">
           <thead className="bg-gray-100 text-gray-700">
             <tr>
@@ -351,7 +351,7 @@ export default function ShiftsPage() {
               let total = 0;
 
               return (
-                <tr key={u.id} className="border-t hover:bg-blue-50 transition">
+                <tr key={u.id} className="hover:bg-blue-50 transition bg-white">
                   <td className="p-3">{index + 1}</td>
 
                   <td className="p-3 text-left font-medium">{u.name}</td>

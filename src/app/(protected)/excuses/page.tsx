@@ -82,7 +82,7 @@ export default function ExcusesPage() {
       {!loading && filtered.length === 0 && <p>Kayıt bulunamadı</p>}
 
       {!loading && filtered.length > 0 && (
-        <div className="border rounded-lg overflow-x-auto">
+        <div className="rounded-lg overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left">
               <tr>
@@ -96,7 +96,7 @@ export default function ExcusesPage() {
 
             <tbody>
               {filtered.map((e) => (
-                <tr key={e.id} className="border-t">
+                <tr key={e.id} className="bg-white">
                   <td className="p-3 font-medium">
                     {userMap.get(e.userId) || "Bilinmiyor"}
                   </td>

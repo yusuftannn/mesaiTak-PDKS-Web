@@ -175,7 +175,7 @@ export default function UsersPage() {
       </div>
 
       <div className="space-y-4">
-        <div className="bg-white border rounded-xl p-4 shadow-sm flex flex-wrap gap-4 items-center">
+        <div className="bg-white rounded-xl p-4 shadow-sm flex flex-wrap gap-4 items-center">
           <input
             type="text"
             placeholder="İsim veya email ara..."
@@ -241,7 +241,7 @@ export default function UsersPage() {
           </div>
         </div>
 
-        <div className="bg-white border rounded-xl shadow-sm overflow-auto">
+        <div className="bg-white rounded-xl shadow-sm overflow-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
@@ -256,7 +256,7 @@ export default function UsersPage() {
 
             <tbody>
               {filteredUsers.map((u) => (
-                <tr key={u.id} className="border-t hover:bg-gray-50">
+                <tr key={u.id} className=" hover:bg-gray-50">
                   <td className="p-3">
                     <div className="font-medium">{u.name}</div>
                     <div className="text-xs text-gray-500">{u.email}</div>

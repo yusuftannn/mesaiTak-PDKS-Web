@@ -40,7 +40,7 @@ export default function AssignGroupPage() {
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-6">Grup Etiketi Atama</h1>
 
-      <div className="bg-white border rounded-xl overflow-visible">
+      <div className="bg-white rounded-xl overflow-visible">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr className="text-left">
@@ -53,7 +53,7 @@ export default function AssignGroupPage() {
 
           <tbody>
             {users.map((user, i) => (
-              <tr key={user.id} className="border-t hover:bg-gray-50">
+              <tr key={user.id} className="hover:bg-gray-50">
                 <td className="p-3">{i + 1}</td>
 
                 <td>{user.name}</td>

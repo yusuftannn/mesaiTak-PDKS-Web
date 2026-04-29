@@ -84,7 +84,7 @@ export default function SuspiciousPage() {
       )}
 
       {!loading && (
-        <div className="overflow-x-auto border rounded-xl">
+        <div className="overflow-x-auto rounded-xl">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600">
               <tr>
@@ -108,7 +108,7 @@ export default function SuspiciousPage() {
                 </tr>
               ) : (
                 filteredLogs.map((log) => (
-                  <tr key={log.id} className="border-t hover:bg-gray-50">
+                  <tr key={log.id} className=" hover:bg-gray-50">
                     <td className="p-3 font-medium">{log.userName}</td>
 
                     <td className="p-3 text-gray-500">{log.branchName}</td>

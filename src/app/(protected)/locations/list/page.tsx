@@ -218,7 +218,7 @@ export default function LocationsListPage() {
         <div>Yükleniyor...</div>
       ) : (
         <>
-          <div className="hidden lg:block border rounded-2xl overflow-hidden">
+          <div className="hidden lg:block rounded-2xl overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr className="text-left">
@@ -248,7 +248,7 @@ export default function LocationsListPage() {
                     return (
                       <tr
                         key={x.id}
-                        className="border-t hover:bg-gray-50 transition"
+                        className="hover:bg-gray-50 transition"
                       >
                         <td className="p-3">{index + 1}</td>
 

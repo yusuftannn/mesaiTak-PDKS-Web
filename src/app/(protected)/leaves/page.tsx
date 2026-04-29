@@ -95,7 +95,7 @@ export default function LeavesPage() {
       </div>
 
       <div className="space-y-4">
-        <div className="bg-white border rounded-xl p-4 shadow-sm flex flex-wrap gap-4 items-center">
+        <div className="bg-white rounded-xl p-4 shadow-sm flex flex-wrap gap-4 items-center">
           <input
             type="text"
             placeholder="Çalışan ara..."
@@ -160,7 +160,7 @@ export default function LeavesPage() {
           </div>
         </div>
 
-        <div className="bg-white border rounded-xl shadow-sm overflow-auto">
+        <div className="bg-white rounded-xl shadow-sm overflow-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
@@ -174,7 +174,7 @@ export default function LeavesPage() {
 
             <tbody>
               {filteredLeaves.map((l) => (
-                <tr key={l.id} className="border-t hover:bg-gray-50 transition">
+                <tr key={l.id} className="hover:bg-gray-50 transition">
                   <td className="p-3">{getUserName(l.userId)}</td>
 
                   <td className="p-3 text-center font-medium">

@@ -96,7 +96,7 @@ const tips = [
 export default function GuidePage() {
   return (
     <div className="space-y-6 p-6">
-      <section className="rounded-2xl border bg-white p-6 shadow-sm">
+      <section className="rounded-2xl bg-white p-6 shadow-sm">
         <div className="flex items-start gap-4">
           <div className="rounded-2xl bg-black p-3 text-white">
             <BookOpenText size={24} />
@@ -115,7 +115,7 @@ export default function GuidePage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-2xl border bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-3">
             <ClipboardList className="text-gray-700" size={20} />
             <h2 className="text-lg font-semibold">Hızlı Başlangıç</h2>
@@ -136,7 +136,7 @@ export default function GuidePage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center gap-3">
             <CalendarCheck className="text-gray-700" size={20} />
             <h2 className="text-lg font-semibold">İyi Kullanım Notları</h2>
@@ -164,7 +164,7 @@ export default function GuidePage() {
           return (
             <article
               key={section.title}
-              className="rounded-2xl border bg-white p-5 shadow-sm"
+              className="rounded-2xl bg-white p-5 shadow-sm"
             >
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-gray-100 p-2 text-gray-800">

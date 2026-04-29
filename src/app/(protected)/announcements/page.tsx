@@ -179,7 +179,7 @@ export default function AnnouncementsPage() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
           <form
             onSubmit={handleSubmit}
-            className="space-y-5 rounded-2xl border bg-white p-6 shadow-sm"
+            className="space-y-5 rounded-2xl bg-white p-6 shadow-sm"
           >
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -256,12 +256,12 @@ export default function AnnouncementsPage() {
             </div>
           </form>
 
-          <div className="rounded-2xl border bg-gray-50 p-5 shadow-sm">
+          <div className="rounded-2xl bg-gray-50 p-5 shadow-sm">
             <div className="text-sm font-semibold text-gray-800">
               Anlık Önizleme
             </div>
 
-            <div className="mt-4 rounded-2xl border bg-white p-4">
+            <div className="mt-4 rounded-2xl bg-white p-4">
               <div className="text-xs uppercase tracking-wide text-gray-500">
                 Başlık
               </div>
@@ -279,7 +279,7 @@ export default function AnnouncementsPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white shadow-sm">
+        <div className="rounded-2xl bg-white shadow-sm">
           <div className="border-b px-6 py-4">
             <h2 className="text-sm font-semibold text-gray-800">
               Kaydedilen Duyurular

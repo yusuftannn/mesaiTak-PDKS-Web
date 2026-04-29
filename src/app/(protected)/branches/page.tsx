@@ -235,7 +235,7 @@ export default function BranchesPage() {
       <h2 className="text-lg font-semibold mb-6">Şubeler</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white border rounded-xl p-5 shadow-sm space-y-4 h-fit">
+        <div className="bg-white rounded-xl p-5 shadow-sm space-y-4 h-fit">
           <h3 className="text-sm font-semibold text-gray-700">Yeni Şube</h3>
           {branchLimit !== null && (
             <div className="text-xs text-gray-500">
@@ -269,7 +269,7 @@ export default function BranchesPage() {
         </div>
 
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white border rounded-xl p-4 shadow-sm flex items-center gap-4">
+          <div className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4">
             <input
               placeholder="Ara..."
               value={search}
@@ -307,7 +307,7 @@ export default function BranchesPage() {
               Eklenmiş Şube bulunmamaktadır.
             </div>
           ) : (
-            <div className="bg-white border rounded-xl divide-y">
+            <div className="bg-white rounded-xl divide-y">
               {filtered.map((b) => (
                 <div
                   key={b.branchId}

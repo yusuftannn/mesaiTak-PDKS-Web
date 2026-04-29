@@ -52,7 +52,7 @@ export default function GroupTagsPage() {
         </Button>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-xl border">
+      <div className="overflow-x-auto bg-white rounded-xl">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr className="text-left">
@@ -75,7 +75,7 @@ export default function GroupTagsPage() {
               </tr>
             ) : (
               tags.map((tag, i) => (
-                <tr key={tag.id} className="border-t">
+                <tr key={tag.id}>
                   <td className="p-3">{i + 1}</td>
 
                   <td>{tag.name}</td>
