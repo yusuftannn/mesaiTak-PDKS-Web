@@ -19,6 +19,7 @@ import {
   Map,
   MapPin,
   Megaphone,
+  FileQuestion,
   Sparkles,
   Tags,
   UserCheck,
@@ -35,6 +36,7 @@ const nav = [
   { href: "/leaves", label: "İzin Talepleri", icon: CalendarCheck },
   { href: "/suspicious", label: "Şüpheli İşlemler", icon: AlertTriangle },
   { href: "/announcements", label: "Toplu Duyuru", icon: Megaphone },
+  { href: "/excuses", label: "Mazeretler", icon: FileQuestion },
 ];
 
 const reportItems = [
