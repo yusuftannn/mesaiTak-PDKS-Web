@@ -244,11 +244,10 @@ export default function ShiftsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-lg font-semibold">Haftalık Vardiya Planı</h2>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="p-4 md:p-6 space-y-6">
+      <h2 className="text-lg font-semibold">Haftalık Vardiya Planı</h2>      
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="flex items-center justify-between md:justify-start gap-2 md:gap-4">
           <Button
             variant="secondary"
             size="sm"
@@ -256,7 +255,7 @@ export default function ShiftsPage() {
             onClick={() => setWeekStart((d) => addWeeks(d, -1))}
           />
 
-          <div className="font-medium">
+          <div className="font-medium text-sm md:text-base text-center md:text-left">
             {formatDate(weekRange.monday)} – {formatDate(weekRange.sunday)}
           </div>
 
@@ -268,8 +267,7 @@ export default function ShiftsPage() {
           />
         </div>
 
-        <div className="flex gap-2">
-          <div className="flex gap-2 flex-wrap"></div>
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
           <Button
             onClick={async () => {
               if (
@@ -300,7 +298,7 @@ export default function ShiftsPage() {
               setWeekStart((d) => addWeeks(d, 1));
             }}
           >
-            Üzerine yazarak kopyala
+            Üzerine yaz
           </Button>
 
           <Button
@@ -315,99 +313,154 @@ export default function ShiftsPage() {
               await load();
             }}
           >
-            Bu haftayı tamamen temizle
+            Temizle
           </Button>
         </div>
       </div>
+  
+      <div className="hidden md:block">
+        <div className="w-full overflow-x-auto rounded-xl border">
+          <table className="min-w-225 w-full text-sm text-center border-collapse">
+            <thead className="bg-gray-100 text-gray-700">
+              <tr>
+                <th className="p-3">#</th>
+                <th className="p-3 text-left">Ad Soyad</th>
 
-      <div className="overflow-auto rounded-xl">
-        <table className="min-w-full text-sm text-center border-collapse">
-          <thead className="bg-gray-100 text-gray-700">
-            <tr>
-              <th className="p-3">#</th>
-              <th className="p-3 text-left">Ad Soyad</th>
+                {DAYS.map((d) => {
+                  const date = getDateForDayKey(weekRange.monday, d.key);
 
-              {DAYS.map((d) => {
-                const date = getDateForDayKey(weekRange.monday, d.key);
+                  return (
+                    <th key={d.key} className="p-3">
+                      <div className="flex flex-col items-center leading-tight">
+                        <span>{d.label}</span>
+                        <span className="text-xs text-gray-500">
+                          {formatDate(date)}
+                        </span>
+                      </div>
+                    </th>
+                  );
+                })}
+
+                <th className="p-3">Toplam</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {users.map((u, index) => {
+                let total = 0;
 
                 return (
-                  <th key={d.key} className="p-3">
-                    <div className="flex flex-col items-center leading-tight">
-                      <span>{d.label}</span>
-                      <span className="text-xs text-gray-500">
-                        {formatDate(date)}
-                      </span>
-                    </div>
-                  </th>
+                  <tr
+                    key={u.id}
+                    className="hover:bg-blue-50 transition bg-white"
+                  >
+                    <td className="p-3">{index + 1}</td>
+                    <td className="p-3 text-left font-medium">{u.name}</td>
+
+                    {DAYS.map((d) => {
+                      const shift = shifts.find(
+                        (s) => s.userId === u.id && getDayKey(s.date) === d.key,
+                      );
+
+                      if (shift) {
+                        total += calcHours(shift.startTime, shift.endTime);
+                      }
+
+                      return (
+                        <td
+                          key={d.key}
+                          className={`p-3 cursor-pointer transition
+                      ${
+                        shift
+                          ? "bg-green-50 hover:bg-green-100 text-green-800 font-medium"
+                          : "bg-gray-50 hover:bg-gray-100 text-gray-400"
+                      }`}
+                          onClick={() =>
+                            setModal({
+                              userId: u.id,
+                              date:
+                                shift?.date ??
+                                getDateForDayKey(weekRange.monday, d.key),
+                              shift,
+                            })
+                          }
+                        >
+                          {shift ? (
+                            <>
+                              {shift.startTime} – {shift.endTime}
+                            </>
+                          ) : (
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-300 text-gray-400">
+                              +
+                            </span>
+                          )}
+                        </td>
+                      );
+                    })}
+
+                    <td className="p-3 font-bold text-indigo-700 bg-indigo-50">
+                      {total.toFixed(1)} sa
+                    </td>
+                  </tr>
                 );
               })}
-
-              <th className="p-3">Toplam</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {users.map((u, index) => {
-              let total = 0;
-
-              return (
-                <tr key={u.id} className="hover:bg-blue-50 transition bg-white">
-                  <td className="p-3">{index + 1}</td>
-
-                  <td className="p-3 text-left font-medium">{u.name}</td>
-
-                  {DAYS.map((d) => {
-                    const shift = shifts.find(
-                      (s) => s.userId === u.id && getDayKey(s.date) === d.key,
-                    );
-
-                    if (shift) {
-                      total += calcHours(shift.startTime, shift.endTime);
-                    }
-
-                    return (
-                      <td
-                        key={d.key}
-                        className={`p-3 cursor-pointer transition
-                          ${
-                            shift
-                              ? "bg-green-50 hover:bg-green-100 text-green-800 font-medium"
-                              : "bg-gray-50 hover:bg-gray-100 text-gray-400"
-                          }
-                        `}
-                        onClick={() =>
-                          setModal({
-                            userId: u.id,
-                            date:
-                              shift?.date ??
-                              getDateForDayKey(weekRange.monday, d.key),
-                            shift,
-                          })
-                        }
-                      >
-                        {shift ? (
-                          <>
-                            {shift.startTime} – {shift.endTime}
-                          </>
-                        ) : (
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-300 text-gray-400">
-                            +
-                          </span>
-                        )}
-                      </td>
-                    );
-                  })}
-
-                  <td className="p-3 font-bold text-indigo-700 bg-indigo-50">
-                    {total.toFixed(1)} sa
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
+      <div className="md:hidden space-y-4">
+        {users.map((u) => {
+          let total = 0;
 
+          return (
+            <div key={u.id} className="p-4 bg-white rounded-xl shadow">
+              <div className="font-semibold text-lg mb-2">{u.name}</div>
+
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                {DAYS.map((d) => {
+                  const shift = shifts.find(
+                    (s) => s.userId === u.id && getDayKey(s.date) === d.key,
+                  );
+
+                  if (shift) {
+                    total += calcHours(shift.startTime, shift.endTime);
+                  }
+
+                  return (
+                    <div
+                      key={d.key}
+                      className={`p-2 rounded-lg text-center cursor-pointer
+                  ${
+                    shift
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-100 text-gray-400"
+                  }`}
+                      onClick={() =>
+                        setModal({
+                          userId: u.id,
+                          date:
+                            shift?.date ??
+                            getDateForDayKey(weekRange.monday, d.key),
+                          shift,
+                        })
+                      }
+                    >
+                      <div className="text-xs">{d.label}</div>
+                      <div className="font-medium">
+                        {shift ? `${shift.startTime} - ${shift.endTime}` : "+"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-3 text-right font-bold text-indigo-600">
+                {total.toFixed(1)} saat
+              </div>
+            </div>
+          );
+        })}
+      </div>
       {modal && (
         <ShiftModal
           open
@@ -435,7 +488,7 @@ export default function ShiftsPage() {
                 startTime: start,
                 endTime: end,
                 type,
-                companyId: ""
+                companyId: "",
               });
             }
 
@@ -451,14 +504,13 @@ export default function ShiftsPage() {
           }
         />
       )}
-
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Button
           variant="success"
           icon={<FileDown size={16} />}
           onClick={handleExportPdf}
         >
-          PDF İndir
+          PDF
         </Button>
 
         <Button
@@ -466,7 +518,7 @@ export default function ShiftsPage() {
           icon={<FileDown size={16} />}
           onClick={handleExportExcel}
         >
-          Excel İndir
+          Excel
         </Button>
       </div>
     </div>

@@ -237,23 +237,27 @@ export default function BranchesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl p-5 shadow-sm space-y-4 h-fit">
           <h3 className="text-sm font-semibold text-gray-700">Yeni Şube</h3>
+
           {branchLimit !== null && (
             <div className="text-xs text-gray-500">
               {branches.length} / {branchLimit} şube kullanıldı
             </div>
           )}
+
           <input
             className="w-full border rounded-lg px-4 py-2 text-sm"
             placeholder="Şube adı"
             value={branchName}
             onChange={(e) => setBranchName(e.target.value)}
           />
+
           {selectedLocation && (
             <div className="text-xs text-green-600">
               Seçildi: {selectedLocation.lat.toFixed(5)},{" "}
               {selectedLocation.lng.toFixed(5)}
             </div>
           )}
+
           <Button
             variant="secondary"
             fullWidth
@@ -269,7 +273,7 @@ export default function BranchesPage() {
         </div>
 
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4">
+          <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 sm:items-center">
             <input
               placeholder="Ara..."
               value={search}
@@ -277,27 +281,31 @@ export default function BranchesPage() {
               className="border px-4 py-2 rounded-lg text-sm flex-1"
             />
 
-            <select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-              className="border px-4 py-2 rounded-lg text-sm"
-            >
-              <option value="asc">A → Z</option>
-              <option value="desc">Z → A</option>
-            </select>
+            <div className="flex gap-2">
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+                className="border px-4 py-2 rounded-lg text-sm"
+              >
+                <option value="asc">A → Z</option>
+                <option value="desc">Z → A</option>
+              </select>
 
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setSearch("");
-                setSortOrder("asc");
-              }}
-            >
-              Temizle
-            </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  setSearch("");
+                  setSortOrder("asc");
+                }}
+              >
+                Temizle
+              </Button>
+            </div>
 
-            <div className="text-xs text-gray-500">{filtered.length}</div>
+            <div className="text-xs text-gray-500 sm:ml-auto">
+              {filtered.length}
+            </div>
           </div>
 
           {loading ? (
@@ -311,59 +319,52 @@ export default function BranchesPage() {
               {filtered.map((b) => (
                 <div
                   key={b.branchId}
-                  className="p-4 flex justify-between items-center"
+                  className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                 >
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="flex-1">
-                      {editingId === b.branchId ? (
-                        <input
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          className="border px-3 py-1 rounded-lg text-sm w-full"
-                        />
-                      ) : (
-                        <div className="flex items-center gap-4">
-                          <QRCodeCanvas
-                            value={b.qrValue}
-                            size={32}
-                            ref={(el) => {
-                              qrRefs.current[b.branchId] = el;
-                            }}
-                          />
-                          <div className="font-medium">{b.name}</div>
-                        </div>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-3 flex-1">
+                    <QRCodeCanvas
+                      value={b.qrValue}
+                      size={32}
+                      ref={(el) => {
+                        qrRefs.current[b.branchId] = el;
+                      }}
+                    />
+
+                    {editingId === b.branchId ? (
+                      <input
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        className="border px-3 py-1 rounded-lg text-sm w-full"
+                      />
+                    ) : (
+                      <div className="font-medium">{b.name}</div>
+                    )}
                   </div>
 
-                  <div className="flex gap-2 items-center">
+                  <div className="flex flex-wrap gap-2 items-center">
                     <button
                       onClick={() =>
                         downloadQR(qrRefs.current[b.branchId], b.name)
                       }
                       className="p-2 rounded-lg hover:bg-gray-100"
-                      title="PNG indir"
                     >
                       <Image
                         src="/icons/png-icon.png"
                         alt="png"
                         width={20}
                         height={20}
-                        className="w-5 h-5"
                       />
                     </button>
 
                     <button
                       onClick={() => downloadQRPoster(b.qrValue, b.name)}
                       className="p-2 rounded-lg hover:bg-gray-100"
-                      title="PDF indir"
                     >
                       <Image
                         src="/icons/pdf-icon.png"
                         alt="pdf"
                         width={20}
                         height={20}
-                        className="w-5 h-5"
                       />
                     </button>
 
@@ -372,7 +373,6 @@ export default function BranchesPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-lg hover:bg-gray-100"
-                      title="Check-in sayfasına git"
                     >
                       <ExternalLink size={18} />
                     </a>
@@ -419,6 +419,7 @@ export default function BranchesPage() {
           )}
         </div>
       </div>
+
       <MapModal
         open={mapOpen}
         onClose={() => setMapOpen(false)}

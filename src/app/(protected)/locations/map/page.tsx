@@ -51,14 +51,15 @@ export default function LocationsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <h1 className="text-xl font-semibold">Harita Görünümü</h1>
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="border rounded-lg px-4 py-2 text-sm"
+            className="border rounded-lg px-4 py-2 text-sm w-full sm:w-auto"
           />
 
           <Button
@@ -66,6 +67,7 @@ export default function LocationsPage() {
             size="md"
             icon={<RotateCcw className="w-4 h-4" />}
             onClick={() => setDate(dayjs().format("YYYY-MM-DD"))}
+            className="w-full sm:w-auto"
           >
             Bugüne dön
           </Button>
@@ -76,7 +78,7 @@ export default function LocationsPage() {
         <div>Yükleniyor...</div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="border rounded-2xl p-4 max-h-150 overflow-auto">
+          <div className="border rounded-2xl p-4 max-h-150 lg:max-h-150 overflow-auto">
             <h2 className="font-semibold mb-3">Liste</h2>
 
             {data.length === 0 ? (
@@ -111,7 +113,7 @@ export default function LocationsPage() {
             )}
           </div>
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 h-[50vh] lg:h-auto">
             <AttendanceMap data={data} />
           </div>
         </div>
