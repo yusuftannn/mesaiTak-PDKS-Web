@@ -106,7 +106,7 @@ export async function createUser(params: CreateUserParams) {
 
   const activeUsersCount = usersSnap.docs.filter((d) => {
     const u = d.data() as UserDoc;
-    return u.status === "active" && u.role !== "manager";
+    return u.status === "active" && u.role !== "admin";
   }).length;
 
   await assertLimitNotExceeded(companyId, "users", activeUsersCount);

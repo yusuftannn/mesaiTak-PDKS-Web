@@ -15,6 +15,8 @@ import { listBranches } from "@/features/branches/branches.service";
 import { getCompanyId } from "@/lib/utils/company";
 import { confirm } from "@/components/ui/Confirm";
 import { getCompanyLimits } from "@/features/limits/limits.service";
+import { listGroupTags } from "@/features/group-tags/group-tags.service";
+import { GroupTag } from "@/features/group-tags/group-tags.types";
 
 import Button from "@/components/ui/Button";
 import CreateUserModal from "./CreateUserModal";
@@ -30,6 +32,7 @@ export default function UsersPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [search, setSearch] = useState("");
   const [editingUser, setEditingUser] = useState<AppUser | null>(null);
+  const [groupTags, setGroupTags] = useState<GroupTag[]>([]);
 
   const [filterRole, setFilterRole] = useState<"" | AppUser["role"]>("");
   const [filterStatus, setFilterStatus] = useState<"" | AppUser["status"]>("");
@@ -43,10 +46,11 @@ export default function UsersPage() {
     (async () => {
       setLoading(true);
 
-      const [u, c, b] = await Promise.all([
+      const [u, c, b, t] = await Promise.all([
         listUsers(),
         listCompanies(),
         listBranches(),
+        listGroupTags(),
       ]);
 
       if (!mounted) return;
@@ -56,6 +60,7 @@ export default function UsersPage() {
       setUsers(filteredUsers);
       setCompanies(c);
       setBranches(b);
+      setGroupTags(t);
 
       setLoading(false);
     })();
@@ -145,10 +150,11 @@ export default function UsersPage() {
   });
 
   const activeUsersCount = users.filter(
-    (u) => u.status === "active" && u.role !== "manager",
+    (u) => u.status === "active" && u.role !== "admin",
   ).length;
 
   const isLimitReached = userLimit !== null && activeUsersCount >= userLimit;
+  const tagMap = new Map(groupTags.map((t) => [t.id, t.name]));
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -249,6 +255,7 @@ export default function UsersPage() {
                 <th className="p-3 text-center">Rol</th>
                 <th className="p-3 text-center">Şirket</th>
                 <th className="p-3 text-center">Şube</th>
+                <th className="p-3 text-center">Gruplar</th>
                 <th className="p-3 text-center">Durum</th>
                 <th className="p-3 text-center">İşlem</th>
               </tr>
@@ -313,6 +320,19 @@ export default function UsersPage() {
                     >
                       {u.status}
                     </Button>
+                  </td>
+
+                  <td className="p-3 text-center">
+                    <div className="flex flex-wrap gap-1 justify-center">
+                      {(u.groupTagIds ?? []).map((tagId) => (
+                        <span
+                          key={tagId}
+                          className="text-[10px] px-2 py-1 rounded-full bg-blue-100 text-blue-700"
+                        >
+                          {tagMap.get(tagId) ?? "?"}
+                        </span>
+                      ))}
+                    </div>
                   </td>
 
                   <td className="p-3 text-center">

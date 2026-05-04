@@ -510,7 +510,7 @@ export default function ShiftsPage() {
           icon={<FileDown size={16} />}
           onClick={handleExportPdf}
         >
-          PDF
+          PDF İndir
         </Button>
 
         <Button
@@ -518,7 +518,7 @@ export default function ShiftsPage() {
           icon={<FileDown size={16} />}
           onClick={handleExportExcel}
         >
-          Excel
+          Excel İndir
         </Button>
       </div>
     </div>
