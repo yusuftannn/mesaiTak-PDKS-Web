@@ -13,7 +13,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const isManager = user?.role === "manager";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.10),transparent_28%),linear-gradient(180deg,#f8fafc_0%,#eef4ff_100%)]">
+    <div className="flex h-screen overflow-hidden bg-[radial-gradient(circle_at_top,color-mix(in_srgb,var(--palette-primary)_14%,transparent),transparent_28%),linear-gradient(180deg,var(--palette-background)_0%,color-mix(in_srgb,var(--palette-primary)_8%,var(--palette-background))_100%)]">
       {isManager ? (
         <ManagerSidebar />
       ) : (

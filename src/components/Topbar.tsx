@@ -9,10 +9,10 @@ import { auth } from "@/lib/firebase";
 import { confirm } from "@/components/ui/Confirm";
 
 function getStatusColor(status: string) {
-  if (status === "active") return "text-emerald-600";
-  if (status === "trial") return "text-sky-600";
-  if (status === "expired") return "text-rose-600";
-  return "text-slate-500";
+  if (status === "active") return "text-primary-dark";
+  if (status === "trial") return "text-primary";
+  if (status === "expired") return "text-accent";
+  return "text-text-secondary";
 }
 function getStatusLabel(status: string) {
   if (status === "active") return "Aktif";
@@ -59,26 +59,26 @@ export default function Topbar({ onOpenSidebar }: TopbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/70 bg-white/72 px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-6">
+    <header className="sticky top-0 z-20 border-b border-border/70 bg-white/72 px-3 py-3 backdrop-blur-xl sm:px-4 lg:px-6">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3 sm:items-center">
           {onOpenSidebar && (
             <button
               type="button"
               onClick={onOpenSidebar}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200/80 bg-white text-slate-600 shadow transition hover:text-slate-950 md:hidden"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-border/80 bg-white text-text-secondary shadow transition hover:text-secondary md:hidden"
             >
               <Menu size={18} />
             </button>
           )}
 
           <div>
-            <p className="text-lg font-semibold text-slate-950">
+            <p className="text-lg font-semibold text-secondary">
               Merhaba {user?.name || "Admin"}
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-text-secondary">
               Rol:{" "}
-              <span className="font-medium capitalize text-slate-700">
+              <span className="font-medium capitalize text-text-primary">
                 {user?.role || "admin"}
               </span>
             </p>
@@ -93,7 +93,7 @@ export default function Topbar({ onOpenSidebar }: TopbarProps) {
               );
 
               return (
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2">
+                <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 py-2">
                   <span
                     className={`text-xs font-semibold uppercase ${getStatusColor(
                       currentSubscription.status,
@@ -104,15 +104,15 @@ export default function Topbar({ onOpenSidebar }: TopbarProps) {
 
                   {remainingDays !== null &&
                     (remainingDays <= 0 ? (
-                      <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
+                      <span className="rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
                         Süresi doldu
                       </span>
                     ) : remainingDays <= 7 ? (
-                      <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-600">
+                      <span className="rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
                         {remainingDays} gün kaldı
                       </span>
                     ) : (
-                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
+                      <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-dark">
                         {remainingDays} gün
                       </span>
                     ))}

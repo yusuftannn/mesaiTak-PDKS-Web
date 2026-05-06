@@ -256,7 +256,7 @@ export default function UsersPage() {
                 <th className="p-3 text-center">Şirket</th>
                 <th className="p-3 text-center">Şube</th>
                 <th className="p-3 text-center">Gruplar</th>
-                <th className="p-3 text-center">Durum</th>
+                <th className="p-3 text-center">Etiket</th>
                 <th className="p-3 text-center">İşlem</th>
               </tr>
             </thead>

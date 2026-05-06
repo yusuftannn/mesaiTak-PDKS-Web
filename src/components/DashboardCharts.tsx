@@ -45,12 +45,12 @@ export default function DashboardCharts({ stats }: Props) {
   ];
 
   const colors = [
-    "#22c55e",
-    "#f97316",
-    "#3b82f6",
-    "#eab308",
-    "#ef4444",
-    "#a855f7",
+    "#14B8A6",
+    "#0F766E",
+    "#1E293B",
+    "#64748B",
+    "#EF4444",
+    "#0F172A",
   ];
 
   const pieData = {

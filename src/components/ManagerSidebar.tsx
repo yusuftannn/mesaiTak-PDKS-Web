@@ -42,9 +42,9 @@ export default function ManagerSidebar() {
   const path = usePathname();
 
   return (
-    <aside className="w-64 border-r p-4">
-      <div className="font-semibold text-lg">MesaiTak</div>
-      <div className="text-xs text-gray-500">Manager Panel</div>
+    <aside className="w-64 border-r border-border bg-white/72 p-4">
+      <div className="font-semibold text-lg text-secondary">MesaiTak</div>
+      <div className="text-xs text-text-secondary">Manager Panel</div>
 
       <nav className="mt-6 space-y-1">
         {nav.map((x) => {
@@ -57,8 +57,8 @@ export default function ManagerSidebar() {
               href={x.href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 transition ${
                 active
-                  ? "bg-black text-white"
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-primary text-white"
+                  : "text-text-primary hover:bg-primary/10"
               }`}
             >
               <Icon size={18} />

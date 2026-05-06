@@ -31,13 +31,13 @@ function FitBounds({ points }: { points: [number, number][] }) {
 }
 
 const startIcon = new L.DivIcon({
-  html: `<div style="width:14px;height:14px;border-radius:999px;background:#16a34a;border:2px solid white;"></div>`,
+  html: `<div style="width:14px;height:14px;border-radius:999px;background:#14B8A6;border:2px solid white;"></div>`,
   iconSize: [14, 14],
   iconAnchor: [7, 7],
 });
 
 const endIcon = new L.DivIcon({
-  html: `<div style="width:14px;height:14px;border-radius:999px;background:#dc2626;border:2px solid white;"></div>`,
+  html: `<div style="width:14px;height:14px;border-radius:999px;background:#EF4444;border:2px solid white;"></div>`,
   iconSize: [14, 14],
   iconAnchor: [7, 7],
 });

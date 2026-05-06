@@ -78,20 +78,20 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     clsx(
       "group flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium transition-colors duration-150",
       active
-        ? "bg-slate-950 text-white"
-        : "text-slate-600 bg-transparent hover:bg-slate-100",
+        ? "bg-primary text-white"
+        : "text-text-secondary bg-transparent hover:bg-primary/10 hover:text-text-primary",
     );
 
   const iconClass = (active: boolean) =>
     active
       ? "text-white"
-      : "text-slate-400 transition group-hover:text-slate-700";
+      : "text-text-secondary/70 transition group-hover:text-primary-dark";
 
   return (
     <>
       <div
         className={clsx(
-          "fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-[2px] transition-opacity md:hidden",
+          "fixed inset-0 z-30 bg-secondary/40 backdrop-blur-[2px] transition-opacity md:hidden",
           isOpen ? "opacity-100" : "pointer-events-none opacity-0",
         )}
         onClick={onClose}
@@ -99,21 +99,21 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
       <aside
         className={clsx(
-          "fixed inset-y-0 left-0 z-40 flex w-73 max-w-[86vw] flex-col border-r border-white/60 bg-white/82 px-4 py-4 shadow-[0_20px_80px_-28px_rgba(15,23,42,0.35)] backdrop-blur-2xl transition-transform duration-300 md:static md:z-auto md:w-70 md:translate-x-0 md:border-r-slate-200/80 md:bg-white/72",
+          "fixed inset-y-0 left-0 z-40 flex w-73 max-w-[86vw] flex-col border-r border-white/60 bg-white/82 px-4 py-4 shadow-[0_20px_80px_-28px_rgba(15,23,42,0.35)] backdrop-blur-2xl transition-transform duration-300 md:static md:z-auto md:w-70 md:translate-x-0 md:border-r-border/80 md:bg-white/72",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#0f172a_0%,#1e293b_45%,#0ea5e9_100%)] text-white shadow-[0_18px_34px_-20px_rgba(14,165,233,0.9)]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--palette-secondary)_0%,var(--palette-text-primary)_45%,var(--palette-primary)_100%)] text-white shadow-[0_18px_34px_-20px_rgba(20,184,166,0.9)]">
                 <Sparkles size={18} />
               </div>
               <div>
-                <div className="text-lg font-semibold tracking-tight text-slate-950">
+                <div className="text-lg font-semibold tracking-tight text-secondary">
                   MesaiTak
                 </div>
-                <div className="text-xs font-medium uppercase tracking-[0.22em] text-slate-400">
+                <div className="text-xs font-medium uppercase tracking-[0.22em] text-text-secondary">
                   ADMIN PANEL
                 </div>
               </div>
@@ -132,7 +132,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <button
             type="button"
             onClick={onClose}
-            className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:text-slate-950 md:hidden"
+            className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-white text-text-secondary shadow-sm transition hover:text-secondary md:hidden"
             aria-label="Menüyü kapat"
           >
             <X size={18} />
@@ -167,14 +167,16 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               className={clsx(
                 "rounded-2xl px-3.5 py-3 text-sm font-medium",
                 isLocationsRoute
-                  ? "bg-slate-950 text-white shadow-[0_18px_40px_-24px_rgba(15,23,42,0.95)]"
-                  : "text-slate-600 hover:bg-white/80 hover:text-slate-950",
+                  ? "bg-primary text-white shadow-[0_18px_40px_-24px_rgba(20,184,166,0.95)]"
+                  : "text-text-secondary hover:bg-primary/10 hover:text-text-primary",
               )}
             >
               <div className="flex items-center gap-3">
                 <MapPin
                   size={18}
-                  className={isLocationsRoute ? "text-white" : "text-slate-400"}
+                  className={
+                    isLocationsRoute ? "text-white" : "text-text-secondary/70"
+                  }
                 />
                 Konumlar
               </div>
@@ -186,7 +188,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             </Button>
 
             {openLocations && (
-              <div className="ml-3 mt-2 space-y-1 border-l border-slate-200/80 pl-3">
+              <div className="ml-3 mt-2 space-y-1 border-l border-border/80 pl-3">
                 {locationItems.map((item) => {
                   const active = path === item.href;
                   const Icon = item.icon;
@@ -217,14 +219,14 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               className={clsx(
                 "rounded-2xl px-3.5 py-3 text-sm font-medium",
                 isReportRoute
-                  ? "bg-slate-950 text-white shadow-[0_18px_40px_-24px_rgba(15,23,42,0.95)]"
-                  : "text-slate-600 hover:bg-white/80 hover:text-slate-950",
+                  ? "bg-primary text-white shadow-[0_18px_40px_-24px_rgba(20,184,166,0.95)]"
+                  : "text-text-secondary hover:bg-primary/10 hover:text-text-primary",
               )}
             >
               <div className="flex items-center gap-3">
                 <FileText
                   size={18}
-                  className={isReportRoute ? "text-white" : "text-slate-400"}
+                  className={isReportRoute ? "text-white" : "text-text-secondary/70"}
                 />
                 Raporlar
               </div>
@@ -236,7 +238,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             </Button>
 
             {openReports && (
-              <div className="ml-3 mt-2 space-y-1 border-l border-slate-200/80 pl-3">
+              <div className="ml-3 mt-2 space-y-1 border-l border-border/80 pl-3">
                 {reportItems.map((item) => {
                   const active = path === item.href;
                   const Icon = item.icon;
@@ -267,14 +269,16 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               className={clsx(
                 "rounded-2xl px-3.5 py-3 text-sm font-medium",
                 isGroupTagRoute
-                  ? "bg-slate-950 text-white shadow-[0_18px_40px_-24px_rgba(15,23,42,0.95)]"
-                  : "text-slate-600 hover:bg-white/80 hover:text-slate-950",
+                  ? "bg-primary text-white shadow-[0_18px_40px_-24px_rgba(20,184,166,0.95)]"
+                  : "text-text-secondary hover:bg-primary/10 hover:text-text-primary",
               )}
             >
               <div className="flex items-center gap-3">
                 <Tags
                   size={18}
-                  className={isGroupTagRoute ? "text-white" : "text-slate-400"}
+                  className={
+                    isGroupTagRoute ? "text-white" : "text-text-secondary/70"
+                  }
                 />
                 Grup Etiketleri
               </div>
@@ -286,7 +290,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             </Button>
 
             {openGroupTags && (
-              <div className="ml-3 mt-2 space-y-1 border-l border-slate-200/80 pl-3">
+              <div className="ml-3 mt-2 space-y-1 border-l border-border/80 pl-3">
                 {groupTagItems.map((item) => {
                   const active = path === item.href;
                   const Icon = item.icon;
@@ -307,7 +311,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             )}
           </div>
 
-          <div className="mt-5 border-t border-slate-200/80 pt-5">
+          <div className="mt-5 border-t border-border/80 pt-5">
             <Link
               href="/guide"
               className={linkClass(path.startsWith("/guide"))}
