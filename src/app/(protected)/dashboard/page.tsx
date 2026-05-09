@@ -72,6 +72,10 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Günlük Özet</h1>
           <p className="text-gray-500 mt-1 text-sm">
+            Personellerin günlük giriş, çalışma, mola ve devamsızlık durumlarını
+            anlık olarak takip edin.
+          </p>
+          <p className="text-gray-500 mt-1 text-sm">
             {new Date().toLocaleDateString("tr-TR", {
               weekday: "long",
               day: "numeric",

@@ -245,7 +245,13 @@ export default function ShiftsPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <h2 className="text-lg font-semibold">Haftalık Vardiya Planı</h2>      
+      <div>
+        <h2 className="text-lg font-semibold">Haftalık Vardiya Planı</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Personellerin haftalık çalışma saatlerini, vardiyalarını ve toplam
+          mesai sürelerini yönetin.
+        </p>
+      </div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center justify-between md:justify-start gap-2 md:gap-4">
           <Button
@@ -317,7 +323,7 @@ export default function ShiftsPage() {
           </Button>
         </div>
       </div>
-  
+
       <div className="hidden md:block">
         <div className="w-full overflow-x-auto rounded-xl border">
           <table className="min-w-225 w-full text-sm text-center border-collapse">

@@ -91,7 +91,13 @@ export default function LeavesPage() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold">İzin Talepleri</h2>
+        <div>
+          <h2 className="text-lg font-semibold">İzin Talepleri</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Personellerin izin başvurularını görüntüleyin, onaylayın ve
+            süreçleri yönetin.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-4">

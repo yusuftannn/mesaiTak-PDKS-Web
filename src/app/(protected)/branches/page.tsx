@@ -232,8 +232,13 @@ export default function BranchesPage() {
 
   return (
     <div className="p-6">
-      <h2 className="text-lg font-semibold mb-6">Şubeler</h2>
-
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold">Şubeler</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Şubelerinizi yönetin, konum bilgilerini belirleyin ve personel giriş
+          QR kodlarını oluşturun.
+        </p>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl p-5 shadow-sm space-y-4 h-fit">
           <h3 className="text-sm font-semibold text-gray-700">Yeni Şube</h3>

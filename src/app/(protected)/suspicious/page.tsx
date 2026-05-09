@@ -46,7 +46,14 @@ export default function SuspiciousPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-xl font-semibold">Şüpheli İşlem Kayıtları</h1>
+      <div>
+        <h1 className="text-xl font-semibold">Şüpheli İşlem Kayıtları</h1>
+
+        <p className="text-sm text-gray-500 mt-1">
+          Konum, mesafe ve güvenlik kurallarına uymayan personel hareketlerini
+          inceleyin.
+        </p>
+      </div>
 
       <div className="flex flex-wrap gap-3">
         <input

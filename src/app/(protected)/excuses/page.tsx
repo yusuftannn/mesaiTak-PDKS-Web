@@ -56,9 +56,14 @@ export default function ExcusesPage() {
 
   return (
     <div className="p-4 md:p-6">
-      <h1 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">
-        Mazeret Kayıtları
-      </h1>
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-lg md:text-xl font-semibold">Mazeret Kayıtları</h1>
+
+        <p className="text-sm text-gray-500 mt-1">
+          Personellerin geç kalma ve erken çıkış mazeretlerini görüntüleyin ve
+          takip edin.
+        </p>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-3 mb-4">
         <select
@@ -137,9 +142,7 @@ export default function ExcusesPage() {
 
                   <td className="p-3">{getTypeLabel(e.type)}</td>
 
-                  <td className="p-3 max-w-75 truncate">
-                    {e.description}
-                  </td>
+                  <td className="p-3 max-w-75 truncate">{e.description}</td>
 
                   <td className="p-3">{formatDate(e.date)}</td>
 

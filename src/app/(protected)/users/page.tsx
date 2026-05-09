@@ -160,6 +160,12 @@ export default function UsersPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold">Kullanıcılar</h2>
+
+          <p className="text-sm text-gray-500 mt-1">
+            Personelleri yönetin, rollerini düzenleyin ve şube atamalarını
+            kontrol edin.
+          </p>
+
           {userLimit !== null && (
             <div className="text-xs text-gray-500 mt-1">
               {activeUsersCount} / {userLimit} aktif kullanıcı
