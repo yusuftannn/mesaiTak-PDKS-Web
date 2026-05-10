@@ -52,8 +52,14 @@ export default function LocationsPage() {
   return (
     <div className="p-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-        <h1 className="text-xl font-semibold">Harita Görünümü</h1>
+        <div>
+          <h1 className="text-xl font-semibold">Harita Görünümü</h1>
 
+          <p className="text-sm text-gray-500 mt-1">
+            Personellerinizin giriş ve çıkış konumlarını harita üzerinden anlık
+            görüntüleyin ve geçmiş kayıtları kolayca takip edin.
+          </p>
+        </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <input
             type="date"

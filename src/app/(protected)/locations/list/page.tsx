@@ -155,62 +155,118 @@ export default function LocationsListPage() {
   if (!user) return null;
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-semibold">Liste Görünümü</h1>
-          <div className="text-sm text-gray-500 mt-1">
-            {summary.total} kayıt • Giriş: {summary.hasIn} • Çıkış:{" "}
-            {summary.hasOut} • Konum: {summary.withAnyLoc}
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col gap-5 mb-6">
+        {/* Header */}
+        <div className="flex flex-col gap-2">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Liste Görünümü
+            </h1>
+
+            <p className="text-sm text-gray-500 mt-1">
+              Personellerin günlük giriş, çıkış ve konum kayıtlarını liste
+              halinde görüntüleyin.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-500">
+            <span className="bg-gray-100 rounded-full px-3 py-1">
+              Toplam: {summary.total}
+            </span>
+
+            <span className="bg-green-100 text-green-700 rounded-full px-3 py-1">
+              Giriş: {summary.hasIn}
+            </span>
+
+            <span className="bg-red-100 text-red-700 rounded-full px-3 py-1">
+              Çıkış: {summary.hasOut}
+            </span>
+
+            <span className="bg-blue-100 text-blue-700 rounded-full px-3 py-1">
+              Konum: {summary.withAnyLoc}
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="border rounded-lg px-3 py-2"
-          />
+        {/* Filters */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+            {/* Date */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Tarih</label>
 
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Ara..."
-            className="border rounded-lg px-3 py-2 w-full sm:w-64"
-          />
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="h-11 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-black/5"
+              />
+            </div>
 
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border rounded-lg px-3 py-2"
-          >
-            <option value="all">Tüm Durumlar</option>
-            {availableStatuses.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            {/* Search */}
+            <div className="flex flex-col gap-1 sm:col-span-2 xl:col-span-1">
+              <label className="text-xs font-medium text-gray-500">Arama</label>
 
-          <select
-            value={sortKey}
-            onChange={(e) => setSortKey(e.target.value as SortKey)}
-            className="border rounded-lg px-3 py-2"
-          >
-            <option value="checkIn">Sırala: Giriş</option>
-            <option value="checkOut">Sırala: Çıkış</option>
-            <option value="name">Sırala: İsim</option>
-            <option value="status">Sırala: Durum</option>
-          </select>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="İsim veya UID ara..."
+                className="h-11 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-black/5"
+              />
+            </div>
 
-          <button
-            onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-            className="border rounded-lg px-3 py-2 hover:bg-gray-50"
-            title="Sıralama yönü"
-          >
-            {sortDir === "asc" ? "↑ Artan" : "↓ Azalan"}
-          </button>
+            {/* Status */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Durum</label>
+
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="h-11 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-black/5"
+              >
+                <option value="all">Tüm Durumlar</option>
+
+                {availableStatuses.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Sort */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">
+                Sıralama
+              </label>
+
+              <select
+                value={sortKey}
+                onChange={(e) => setSortKey(e.target.value as SortKey)}
+                className="h-11 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-black/5"
+              >
+                <option value="checkIn">Giriş Saati</option>
+                <option value="checkOut">Çıkış Saati</option>
+                <option value="name">İsim</option>
+                <option value="status">Durum</option>
+              </select>
+            </div>
+
+            {/* Sort Direction */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500">Yön</label>
+
+              <button
+                onClick={() =>
+                  setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+                }
+                className="h-11 rounded-xl border border-gray-200 px-4 text-sm font-medium hover:bg-gray-50 transition"
+              >
+                {sortDir === "asc" ? "↑ Artan" : "↓ Azalan"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -218,7 +274,7 @@ export default function LocationsListPage() {
         <div>Yükleniyor...</div>
       ) : (
         <>
-          <div className="hidden lg:block rounded-2xl overflow-hidden">
+          <div className="hidden lg:block rounded-2xl overflow-hidden border border-gray-200 bg-white">
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr className="text-left">
@@ -248,7 +304,7 @@ export default function LocationsListPage() {
                     return (
                       <tr
                         key={x.id}
-                        className="hover:bg-gray-50 transition"
+                        className="border-t border-gray-100 hover:bg-gray-50 transition"
                       >
                         <td className="p-3">{index + 1}</td>
 
@@ -269,15 +325,18 @@ export default function LocationsListPage() {
                         <td className="p-3" title={formatDateTime(x.checkInAt)}>
                           <div className="flex items-center gap-2">
                             <CheckCircle2 className="w-4 h-4 text-green-500" />
+
                             <span>{formatTime(x.checkInAt)}</span>
                           </div>
                         </td>
+
                         <td
                           className="p-3"
                           title={formatDateTime(x.checkOutAt)}
                         >
                           <div className="flex items-center gap-2">
                             <LogOut className="w-4 h-4 text-red-500" />
+
                             <span>{formatTime(x.checkOutAt)}</span>
                           </div>
                         </td>
@@ -298,9 +357,80 @@ export default function LocationsListPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Cards */}
+          <div className="grid gap-3 lg:hidden">
+            {filtered.length === 0 ? (
+              <div className="border border-gray-200 rounded-2xl p-6 text-center text-sm text-gray-500 bg-white">
+                Kayıt bulunamadı
+              </div>
+            ) : (
+              filtered.map((x) => {
+                const hasLoc = !!x.checkInLocation || !!x.checkOutLocation;
+
+                return (
+                  <div
+                    key={x.id}
+                    className="border border-gray-200 rounded-2xl p-4 bg-white shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-semibold text-sm">
+                          {x.userName}
+                        </div>
+
+                        <div className="text-xs text-gray-500 mt-1">
+                          UID: {x.uid}
+                        </div>
+                      </div>
+
+                      <span
+                        className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${getStatusBadge(
+                          x.status,
+                        )}`}
+                      >
+                        {x.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+                      <div>
+                        <div className="text-gray-500 text-xs mb-1">Giriş</div>
+
+                        <div className="font-medium">
+                          {formatTime(x.checkInAt)}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-gray-500 text-xs mb-1">Çıkış</div>
+
+                        <div className="font-medium">
+                          {formatTime(x.checkOutAt)}
+                        </div>
+                      </div>
+
+                      <div className="col-span-2">
+                        <div className="text-gray-500 text-xs mb-1">Konum</div>
+
+                        <div
+                          className={
+                            hasLoc
+                              ? "text-green-700 font-medium"
+                              : "text-gray-500"
+                          }
+                        >
+                          {hasLoc ? "Konum kaydı mevcut" : "Konum kaydı yok"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </>
       )}
     </div>
   );
 }
-

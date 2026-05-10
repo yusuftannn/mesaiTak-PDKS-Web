@@ -326,13 +326,20 @@ export default function MonthlyReportPage() {
     <div className="p-6">
       <div className="mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">
-            {date.toLocaleString("tr-TR", {
-              month: "long",
-              year: "numeric",
-            })}{" "}
-            Aylık Rapor
-          </h2>
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              {date.toLocaleString("tr-TR", {
+                month: "long",
+                year: "numeric",
+              })}{" "}
+              Aylık Rapor
+            </h2>
+
+            <p className="text-sm text-gray-500 mt-1">
+              Personellerin aylık çalışma, izin, tatil ve mesai durumlarını
+              detaylı olarak görüntüleyin.
+            </p>
+          </div>
 
           <div className="flex items-center gap-3">
             <Button
