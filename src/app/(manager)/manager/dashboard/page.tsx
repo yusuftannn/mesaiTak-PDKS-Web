@@ -88,7 +88,13 @@ export default function ManagerDashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Manager Dashboard</h1>
+      <div className="mb-3">
+        <h1 className="text-2xl font-bold">Genel Bakış</h1>
+        <p className="text-sm text-gray-500">
+          Şirketlerinizin abonelik durumlarını ve plan dağılımlarını buradan
+          takip edebilirsiniz.
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard title="Toplam Şirket" value={totalCompanies} />

@@ -170,7 +170,13 @@ export default function CompaniesPage() {
 
   return (
     <div className="p-6">
-      <h2 className="text-lg font-semibold mb-6">Şirketler</h2>
+      <div className="mb-3">
+        <h1 className="text-2xl font-bold">Şirketler</h1>
+        <p className="text-sm text-gray-500">
+          Aktif şirketleri yönetebilir, yeni şirket ekleyebilir veya mevcut
+          şirketleri düzenleyebilirsiniz.
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white border rounded-xl p-5 shadow-sm space-y-4 h-fit">

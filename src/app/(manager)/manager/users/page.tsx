@@ -142,10 +142,12 @@ export default function UsersPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3">
         <div>
-          <h2 className="text-lg font-semibold">Kullanıcılar</h2>
-          <div className="text-xs text-gray-500">{headerCompanyName}</div>
+          <h1 className="text-2xl font-bold">Kullanıcılar</h1>
+          <p className="text-sm text-gray-500">
+            Tüm kullanıcılar
+          </p>
         </div>
 
         <Button

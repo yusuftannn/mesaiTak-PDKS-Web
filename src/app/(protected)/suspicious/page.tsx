@@ -86,10 +86,6 @@ export default function SuspiciousPage() {
 
       {loading && <p>Yükleniyor...</p>}
 
-      {!loading && filteredLogs.length === 0 && (
-        <div className="text-gray-500 text-sm">Kayıt bulunamadı</div>
-      )}
-
       {!loading && (
         <div className="overflow-x-auto rounded-xl">
           <table className="w-full text-sm">
