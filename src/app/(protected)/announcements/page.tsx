@@ -33,6 +33,10 @@ export default function AnnouncementsPage() {
   const [loading, setLoading] = useState(true);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [createdByFilter, setCreatedByFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
+  const [onlyMine, setOnlyMine] = useState(false);
 
   const refreshAnnouncements = async () => {
     const data = await listAnnouncements();
@@ -63,6 +67,39 @@ export default function AnnouncementsPage() {
       mounted = false;
     };
   }, [showToast]);
+
+  const filteredAnnouncements = announcements
+    .filter((announcement) => {
+      const searchLower = search.toLowerCase();
+
+      const matchesSearch =
+        announcement.title.toLowerCase().includes(searchLower) ||
+        announcement.message.toLowerCase().includes(searchLower);
+
+      const matchesCreatedBy =
+        createdByFilter === "all" ||
+        (announcement.createdByName ?? "Sistem") === createdByFilter;
+
+      const matchesOnlyMine =
+        !onlyMine || announcement.createdByUid === currentUser?.uid;
+
+      return matchesSearch && matchesCreatedBy && matchesOnlyMine;
+    })
+    .sort((a, b) => {
+      const aTime = (a.updatedAt ?? a.createdAt ?? new Date()).getTime();
+
+      const bTime = (b.updatedAt ?? b.createdAt ?? new Date()).getTime();
+
+      return sortBy === "newest" ? bTime - aTime : aTime - bTime;
+    });
+
+  const creators = Array.from(
+    new Set(
+      announcements.map(
+        (announcement) => announcement.createdByName ?? "Sistem",
+      ),
+    ),
+  );
 
   const resetForm = () => {
     setTitle("");
@@ -284,17 +321,62 @@ export default function AnnouncementsPage() {
             <h2 className="text-sm font-semibold text-gray-800">
               Kaydedilen Duyurular
             </h2>
+            <div className="flex flex-col gap-3 md:flex-row">
+              <input
+                type="text"
+                placeholder="Duyuru ara..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="rounded-xl border px-3 py-2 text-sm outline-none focus:border-black"
+              />
+
+              <select
+                value={createdByFilter}
+                onChange={(e) => setCreatedByFilter(e.target.value)}
+                className="rounded-xl border px-3 py-2 text-sm outline-none focus:border-black"
+              >
+                <option value="all">Tüm Kullanıcılar</option>
+
+                {creators.map((creator) => (
+                  <option key={creator} value={creator}>
+                    {creator}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={sortBy}
+                onChange={(e) =>
+                  setSortBy(e.target.value as "newest" | "oldest")
+                }
+                className="rounded-xl border px-3 py-2 text-sm outline-none focus:border-black"
+              >
+                <option value="newest">En Yeni</option>
+                <option value="oldest">En Eski</option>
+              </select>
+
+              <label className="flex items-center gap-2 rounded-xl border px-3 py-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={onlyMine}
+                  onChange={(e) => setOnlyMine(e.target.checked)}
+                />
+                Sadece Benimkiler
+              </label>
+            </div>
           </div>
 
           {loading ? (
-            <div className="p-6 text-sm text-gray-500">Duyurular yükleniyor...</div>
-          ) : announcements.length === 0 ? (
+            <div className="p-6 text-sm text-gray-500">
+              Duyurular yükleniyor...
+            </div>
+          ) : filteredAnnouncements.length === 0 ? (
             <div className="p-6 text-sm text-gray-500">
               Henüz kaydedilmiş duyuru bulunmuyor.
             </div>
           ) : (
             <div className="divide-y">
-              {announcements.map((announcement) => (
+              {filteredAnnouncements.map((announcement) => (
                 <div key={announcement.id} className="space-y-3 px-6 py-5">
                   <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                     <div>
@@ -307,7 +389,9 @@ export default function AnnouncementsPage() {
                     </div>
 
                     <div className="text-xs text-gray-500">
-                      {formatDate(announcement.updatedAt ?? announcement.createdAt)}
+                      {formatDate(
+                        announcement.updatedAt ?? announcement.createdAt,
+                      )}
                     </div>
                   </div>
 

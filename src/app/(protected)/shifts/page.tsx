@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { listUsers } from "@/features/users/users.service";
 import { AppUser } from "@/features/users/users.types";
 import Button from "@/components/ui/Button";
+import { listGroupTags } from "@/features/group-tags/group-tags.service";
+import { GroupTag } from "@/features/group-tags/group-tags.types";
 import {
   listShiftsByDateRange,
   createShift,
@@ -47,6 +49,12 @@ export default function ShiftsPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [search, setSearch] = useState("");
+  const [selectedTag, setSelectedTag] = useState<string>("all");
+  const [tags, setTags] = useState<GroupTag[]>([]);
+  const [shiftFilter, setShiftFilter] = useState<
+    "all" | "hasShift" | "noShift"
+  >("all");
 
   const [modal, setModal] = useState<{
     userId: string;
@@ -61,38 +69,52 @@ export default function ShiftsPage() {
   const load = async (): Promise<void> => {
     setLoading(true);
 
-    const [u, s] = await Promise.all([
+    const [u, s, t] = await Promise.all([
       listUsers(),
       listShiftsByDateRange(weekRange.monday, weekRange.sunday),
+      listGroupTags(),
     ]);
 
     setUsers(u);
     setShifts(s);
+    setTags(t);
     setLoading(false);
   };
 
   useEffect(() => {
-    let active = true;
-
     const fetchData = async (): Promise<void> => {
-      const [u, s] = await Promise.all([
+      const [u, s, t] = await Promise.all([
         listUsers(),
         listShiftsByDateRange(weekRange.monday, weekRange.sunday),
+        listGroupTags(),
       ]);
-
-      if (!active) return;
 
       setUsers(u);
       setShifts(s);
+      setTags(t);
       setLoading(false);
     };
 
     fetchData();
-
-    return () => {
-      active = false;
-    };
   }, [weekRange.monday, weekRange.sunday]);
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const matchesSearch = u.name.toLowerCase().includes(search.toLowerCase());
+
+      const matchesTag =
+        selectedTag === "all" || u.groupTagIds?.includes(selectedTag);
+
+      const userHasShift = shifts.some((s) => s.userId === u.id);
+
+      const matchesShift =
+        shiftFilter === "all" ||
+        (shiftFilter === "hasShift" && userHasShift) ||
+        (shiftFilter === "noShift" && !userHasShift);
+
+      return matchesSearch && matchesTag && matchesShift;
+    });
+  }, [users, shifts, search, selectedTag, shiftFilter]);
 
   const handleExportPdf = async (): Promise<void> => {
     const pdfMakeInstance = await loadPdfMake();
@@ -247,80 +269,123 @@ export default function ShiftsPage() {
     <div className="p-4 md:p-6 space-y-6">
       <div>
         <h2 className="text-lg font-semibold">Haftalık Vardiya Planı</h2>
+
         <p className="text-sm text-gray-500 mt-1">
           Personellerin haftalık çalışma saatlerini, vardiyalarını ve toplam
           mesai sürelerini yönetin.
         </p>
       </div>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center justify-between md:justify-start gap-2 md:gap-4">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<ChevronLeft size={16} />}
-            onClick={() => setWeekStart((d) => addWeeks(d, -1))}
-          />
 
-          <div className="font-medium text-sm md:text-base text-center md:text-left">
-            {formatDate(weekRange.monday)} – {formatDate(weekRange.sunday)}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex items-center justify-between md:justify-start gap-2 md:gap-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<ChevronLeft size={16} />}
+              onClick={() => setWeekStart((d) => addWeeks(d, -1))}
+            />
+
+            <div className="font-medium text-sm md:text-base text-center md:text-left">
+              {formatDate(weekRange.monday)} – {formatDate(weekRange.sunday)}
+            </div>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<ChevronRight size={16} />}
+              onClick={() => setWeekStart((d) => addWeeks(d, 1))}
+            />
           </div>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<ChevronRight size={16} />}
-            onClick={() => setWeekStart((d) => addWeeks(d, 1))}
-          />
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <Button
+              onClick={async () => {
+                if (
+                  !confirm(
+                    "Bu haftadaki vardiyalar bir sonraki haftaya kopyalansın mı?",
+                  )
+                )
+                  return;
+
+                await copyWeekShifts(weekRange.monday);
+                setWeekStart((d) => addWeeks(d, 1));
+              }}
+            >
+              Kopyala
+            </Button>
+
+            <Button
+              variant="danger"
+              onClick={async () => {
+                if (
+                  !confirm(
+                    "Hedef haftadaki TÜM vardiyalar silinip, bu haftaki vardiyalar yazılacak. Emin misiniz?",
+                  )
+                )
+                  return;
+
+                await copyWeekShiftsOverwrite(weekRange.monday);
+                setWeekStart((d) => addWeeks(d, 1));
+              }}
+            >
+              Üzerine yaz
+            </Button>
+
+            <Button
+              variant="danger"
+              onClick={async () => {
+                if (
+                  !confirm(
+                    "Bu haftadaki tüm vardiyalar silinecek. Emin misiniz?",
+                  )
+                )
+                  return;
+
+                await clearWeekShifts(weekRange.monday);
+                await load();
+              }}
+            >
+              Temizle
+            </Button>
+          </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-          <Button
-            onClick={async () => {
-              if (
-                !confirm(
-                  "Bu haftadaki vardiyalar bir sonraki haftaya kopyalansın mı?",
-                )
-              )
-                return;
+        {/* FILTERS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <input
+            type="text"
+            placeholder="Personel ara..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          />
 
-              await copyWeekShifts(weekRange.monday);
-              setWeekStart((d) => addWeeks(d, 1));
-            }}
+          <select
+            value={selectedTag}
+            onChange={(e) => setSelectedTag(e.target.value)}
+            className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            Kopyala
-          </Button>
+            <option value="all">Tüm Gruplar</option>
 
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (
-                !confirm(
-                  "Hedef haftadaki TÜM vardiyalar silinip, bu haftaki vardiyalar yazılacak. Emin misiniz?",
-                )
-              )
-                return;
+            {tags.map((tag) => (
+              <option key={tag.id} value={tag.id}>
+                {tag.name}
+              </option>
+            ))}
+          </select>
 
-              await copyWeekShiftsOverwrite(weekRange.monday);
-              setWeekStart((d) => addWeeks(d, 1));
-            }}
+          <select
+            value={shiftFilter}
+            onChange={(e) =>
+              setShiftFilter(e.target.value as "all" | "hasShift" | "noShift")
+            }
+            className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            Üzerine yaz
-          </Button>
-
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (
-                !confirm("Bu haftadaki tüm vardiyalar silinecek. Emin misiniz?")
-              )
-                return;
-
-              await clearWeekShifts(weekRange.monday);
-              await load();
-            }}
-          >
-            Temizle
-          </Button>
+            <option value="all">Tüm Personeller</option>
+            <option value="hasShift">Vardiyası Olanlar</option>
+            <option value="noShift">Vardiyası Olmayanlar</option>
+          </select>
         </div>
       </div>
 
@@ -339,6 +404,7 @@ export default function ShiftsPage() {
                     <th key={d.key} className="p-3">
                       <div className="flex flex-col items-center leading-tight">
                         <span>{d.label}</span>
+
                         <span className="text-xs text-gray-500">
                           {formatDate(date)}
                         </span>
@@ -352,7 +418,7 @@ export default function ShiftsPage() {
             </thead>
 
             <tbody>
-              {users.map((u, index) => {
+              {filteredUsers.map((u, index) => {
                 let total = 0;
 
                 return (
@@ -361,6 +427,7 @@ export default function ShiftsPage() {
                     className="hover:bg-blue-50 transition bg-white"
                   >
                     <td className="p-3">{index + 1}</td>
+
                     <td className="p-3 text-left font-medium">{u.name}</td>
 
                     {DAYS.map((d) => {
@@ -376,11 +443,11 @@ export default function ShiftsPage() {
                         <td
                           key={d.key}
                           className={`p-3 cursor-pointer transition
-                      ${
-                        shift
-                          ? "bg-green-50 hover:bg-green-100 text-green-800 font-medium"
-                          : "bg-gray-50 hover:bg-gray-100 text-gray-400"
-                      }`}
+                        ${
+                          shift
+                            ? "bg-green-50 hover:bg-green-100 text-green-800 font-medium"
+                            : "bg-gray-50 hover:bg-gray-100 text-gray-400"
+                        }`}
                           onClick={() =>
                             setModal({
                               userId: u.id,
@@ -404,7 +471,16 @@ export default function ShiftsPage() {
                       );
                     })}
 
-                    <td className="p-3 font-bold text-indigo-700 bg-indigo-50">
+                    <td
+                      className={`p-3 font-bold
+                    ${
+                      total >= 60
+                        ? "text-red-700 bg-red-50"
+                        : total >= 45
+                          ? "text-orange-700 bg-orange-50"
+                          : "text-indigo-700 bg-indigo-50"
+                    }`}
+                    >
                       {total.toFixed(1)} sa
                     </td>
                   </tr>
@@ -414,8 +490,9 @@ export default function ShiftsPage() {
           </table>
         </div>
       </div>
+
       <div className="md:hidden space-y-4">
-        {users.map((u) => {
+        {filteredUsers.map((u) => {
           let total = 0;
 
           return (
@@ -436,11 +513,11 @@ export default function ShiftsPage() {
                     <div
                       key={d.key}
                       className={`p-2 rounded-lg text-center cursor-pointer
-                  ${
-                    shift
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-400"
-                  }`}
+                    ${
+                      shift
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-400"
+                    }`}
                       onClick={() =>
                         setModal({
                           userId: u.id,
@@ -452,6 +529,7 @@ export default function ShiftsPage() {
                       }
                     >
                       <div className="text-xs">{d.label}</div>
+
                       <div className="font-medium">
                         {shift ? `${shift.startTime} - ${shift.endTime}` : "+"}
                       </div>
@@ -460,13 +538,23 @@ export default function ShiftsPage() {
                 })}
               </div>
 
-              <div className="mt-3 text-right font-bold text-indigo-600">
+              <div
+                className={`mt-3 text-right font-bold
+              ${
+                total >= 60
+                  ? "text-red-600"
+                  : total >= 45
+                    ? "text-orange-600"
+                    : "text-indigo-600"
+              }`}
+              >
                 {total.toFixed(1)} saat
               </div>
             </div>
           );
         })}
       </div>
+
       {modal && (
         <ShiftModal
           open
@@ -510,6 +598,7 @@ export default function ShiftsPage() {
           }
         />
       )}
+
       <div className="flex flex-col sm:flex-row gap-2">
         <Button
           variant="success"
