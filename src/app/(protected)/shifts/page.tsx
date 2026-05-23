@@ -27,7 +27,7 @@ import {
 import { loadPdfMake } from "@/lib/utils/exportPdf";
 import ShiftModal from "./ShiftModal";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
-import { FileDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { FileDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 const DAYS: { key: DayKey; label: string }[] = [
   { key: "mon", label: "Pzt" },
@@ -352,40 +352,74 @@ export default function ShiftsPage() {
         </div>
 
         {/* FILTERS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <input
-            type="text"
-            placeholder="Personel ara..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+        {/* FILTER BAR */}
+        <div className="rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm p-4 shadow-sm">
+          <div className="flex flex-col xl:flex-row xl:items-center gap-3">
+            {/* SEARCH */}
+            <div className="flex-1">
+              <div className="relative">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
 
-          <select
-            value={selectedTag}
-            onChange={(e) => setSelectedTag(e.target.value)}
-            className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="all">Tüm Gruplar</option>
+                <input
+                  type="text"
+                  placeholder="Personel ara..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="
+            h-11 w-full rounded-xl border border-slate-200
+            bg-white pl-10 pr-3 text-sm
+            outline-none transition
+            focus:border-cyan-500
+            focus:ring-4 focus:ring-cyan-100
+          "
+                />
+              </div>
+            </div>
 
-            {tags.map((tag) => (
-              <option key={tag.id} value={tag.id}>
-                {tag.name}
-              </option>
-            ))}
-          </select>
+            {/* FILTERS */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <select
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
+                className="
+          h-11 min-w-45 rounded-xl border border-slate-200
+          bg-white px-3 text-sm outline-none transition
+          focus:border-cyan-500
+          focus:ring-4 focus:ring-cyan-100
+        "
+              >
+                <option value="all">Tüm Gruplar</option>
 
-          <select
-            value={shiftFilter}
-            onChange={(e) =>
-              setShiftFilter(e.target.value as "all" | "hasShift" | "noShift")
-            }
-            className="h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="all">Tüm Personeller</option>
-            <option value="hasShift">Vardiyası Olanlar</option>
-            <option value="noShift">Vardiyası Olmayanlar</option>
-          </select>
+                {tags.map((tag) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={shiftFilter}
+                onChange={(e) =>
+                  setShiftFilter(
+                    e.target.value as "all" | "hasShift" | "noShift",
+                  )
+                }
+                className="
+          h-11 min-w-55 rounded-xl border border-slate-200
+          bg-white px-3 text-sm outline-none transition
+          focus:border-cyan-500
+          focus:ring-4 focus:ring-cyan-100
+        "
+              >
+                <option value="all">Tüm Personeller</option>
+                <option value="hasShift">Vardiyası Olanlar</option>
+                <option value="noShift">Vardiyası Olmayanlar</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -10,6 +10,7 @@ import {
   query,
   serverTimestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import {
   Announcement,
@@ -17,6 +18,7 @@ import {
   CreateAnnouncementParams,
   UpdateAnnouncementParams,
 } from "./announcements.types";
+import { getCompanyId } from "@/lib/utils/company";
 
 function mapAnnouncement(docId: string, data: AnnouncementDoc): Announcement {
   return {
@@ -33,7 +35,9 @@ function mapAnnouncement(docId: string, data: AnnouncementDoc): Announcement {
 export async function createAnnouncement(
   params: CreateAnnouncementParams,
 ): Promise<string> {
+  const companyId = getCompanyId();
   const ref = await addDoc(collection(db, COLLECTIONS.ANNOUNCEMENTS), {
+    companyId,
     title: params.title,
     message: params.message,
     createdByUid: params.createdByUid,
@@ -46,8 +50,10 @@ export async function createAnnouncement(
 }
 
 export async function listAnnouncements(): Promise<Announcement[]> {
+  const companyId = getCompanyId(); 
   const q = query(
     collection(db, COLLECTIONS.ANNOUNCEMENTS),
+    where("companyId", "==", companyId),
     orderBy("createdAt", "desc"),
   );
 
@@ -69,6 +75,8 @@ export async function updateAnnouncement(
   });
 }
 
-export async function deleteAnnouncement(announcementId: string): Promise<void> {
+export async function deleteAnnouncement(
+  announcementId: string,
+): Promise<void> {
   await deleteDoc(doc(db, COLLECTIONS.ANNOUNCEMENTS, announcementId));
 }

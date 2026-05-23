@@ -9,6 +9,7 @@ import {
   Package,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 
 const nav = [
   {
@@ -43,9 +44,25 @@ export default function ManagerSidebar() {
 
   return (
     <aside className="w-64 border-r border-border bg-white/72 p-4">
-      <div className="font-semibold text-lg text-secondary">MesaiTak</div>
-      <div className="text-xs text-text-secondary">Manager Panel</div>
-
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--palette-secondary)_0%,var(--palette-text-primary)_45%,var(--palette-primary)_100%)] text-white shadow-[0_18px_34px_-20px_rgba(20,184,166,0.9)]">
+          <Image
+            src="/img/logo.png"
+            alt="MesaiTak Logo"
+            width={44}
+            height={44}
+            className="w-full rounded-2xl object-cover"
+          />
+        </div>
+        <div>
+          <div className="text-lg font-semibold tracking-tight text-secondary">
+            MesaiTak
+          </div>
+          <div className="text-xs font-medium uppercase tracking-[0.22em] text-text-secondary">
+            ADMIN PANEL
+          </div>
+        </div>
+      </div>
       <nav className="mt-6 space-y-1">
         {nav.map((x) => {
           const active = path.startsWith(x.href);

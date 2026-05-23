@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -20,7 +21,7 @@ import {
   MapPin,
   Megaphone,
   FileQuestion,
-  Sparkles,
+  // Sparkles,
   Tags,
   UserCheck,
   Users,
@@ -106,8 +107,17 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--palette-secondary)_0%,var(--palette-text-primary)_45%,var(--palette-primary)_100%)] text-white shadow-[0_18px_34px_-20px_rgba(20,184,166,0.9)]">
+              {/* <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--palette-secondary)_0%,var(--palette-text-primary)_45%,var(--palette-primary)_100%)] text-white shadow-[0_18px_34px_-20px_rgba(20,184,166,0.9)]">
                 <Sparkles size={18} />
+              </div> */}
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--palette-secondary)_0%,var(--palette-text-primary)_45%,var(--palette-primary)_100%)] text-white shadow-[0_18px_34px_-20px_rgba(20,184,166,0.9)]">
+                <Image
+                  src="/img/logo.png"
+                  alt="MesaiTak Logo"
+                  width={44}
+                  height={44}
+                  className="w-full rounded-2xl object-cover"
+                />
               </div>
               <div>
                 <div className="text-lg font-semibold tracking-tight text-secondary">
@@ -226,7 +236,9 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               <div className="flex items-center gap-3">
                 <FileText
                   size={18}
-                  className={isReportRoute ? "text-white" : "text-text-secondary/70"}
+                  className={
+                    isReportRoute ? "text-white" : "text-text-secondary/70"
+                  }
                 />
                 Raporlar
               </div>
