@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import { SuspiciousLog } from "./suspicious.service";
-import { listSuspiciousLogs } from "./suspicious.service";
+import { SuspiciousLog, listSuspiciousLogs } from "./suspicious.service";
 
 type State = {
   logs: SuspiciousLog[];

@@ -1,12 +1,12 @@
-# 📊 Mesai Tak - Çalışan Devam/Devamsızlık ve Vardiya Yönetim Sistemi
+# 📊 MesaiTak - Çalışan Devam/Devamsızlık ve Vardiya Yönetim Sistemi
 
-Mesai Tak, kuruluşların çalışan devam/devamsızlık izleme, vardiya yönetimi ve izin taleplerini verimli bir şekilde yönetmesine yardımcı olmak üzere tasarlanmış kapsamlı bir insan kaynakları yönetim platformudur. Gerçek zamanlı gözetleme, konum tabanlı izleme ve detaylı raporlama yetenekleri ile organizasyonlarının emek gücünü etkili bir şekilde yönetmesini sağlar.
+MesaiTak, kuruluşların çalışan devam/devamsızlık izleme, vardiya yönetimi ve izin taleplerini verimli bir şekilde yönetmesine yardımcı olmak üzere tasarlanmış kapsamlı bir insan kaynakları yönetim platformudur. Gerçek zamanlı gözetleme, konum tabanlı izleme ve detaylı raporlama yetenekleri ile organizasyonlarının emek gücünü etkili bir şekilde yönetmesini sağlar.
 
 ---
 
 ## 🎯 Proje Hakkında
 
-Mesai Tak, modern web teknolojileri kullanılarak geliştirilen, tamamen özelliklere sahip bir HR yönetim uygulamasıdır. İşletmelerin çalışan verilerini merkezi bir platformda yönetmesine, raporlama yeteneklerini artırmasına ve operasyonel verimlilik sağlamasına olanak tanır.
+MesaiTak, modern web teknolojileri kullanılarak geliştirilen, tamamen özelliklere sahip bir HR yönetim uygulamasıdır. İşletmelerin çalışan verilerini merkezi bir platformda yönetmesine, raporlama yeteneklerini artırmasına ve operasyonel verimlilik sağlamasına olanak tanır.
 
 ### Ana Hedefler
 
@@ -226,4 +226,16 @@ npm start
 ```
 ---
 
-## 🎉 Teşekkürler
+## 📄 Lisans
+
+Bu proje **MesaiTak Source Available License (MSAL) v1.0** kapsamında lisanslanmıştır.
+
+Kaynak kodu; öğrenme, inceleme, değerlendirme ve katkı sağlama amacıyla herkese açıktır.
+
+Yazılı izin alınmaksızın ticari kullanım, yeniden dağıtım, üretim ortamında kullanım, ticari amaçlı değiştirme veya bu projeden türetilmiş rakip ürünlerin geliştirilmesi **yasaktır**.
+
+Ticari lisanslama veya kurumsal kullanım talepleri için lütfen iletişime geçin:
+
+**E-posta:** yusuftan41@hotmail.com
+
+**Copyright © 2026 Yusuf Tan. Tüm hakları saklıdır.**

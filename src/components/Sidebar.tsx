@@ -8,6 +8,7 @@ import { useState } from "react";
 import {
   AlertTriangle,
   BookOpenText,
+  Bot,
   Calendar,
   CalendarCheck,
   ChevronDown,
@@ -41,6 +42,7 @@ const nav = [
 ];
 
 const reportItems = [
+  { href: "/reports", label: "AI Haftalık Özet", icon: Bot },
   { href: "/reports/monthly", label: "Aylık Rapor", icon: Calendar },
   { href: "/reports/puantaj", label: "Detaylı Puantaj", icon: ClipboardList },
 ];

@@ -6,11 +6,16 @@ export function calculateMonthly(
 
   const result: MonthlyCalculation = {
 
+    expectedWorkMinutes: 0,
+    expectedNormalMinutes: 0,
+
     totalWorkMinutes: 0,
     normalMinutes: 0,
     overtimeMinutes: 0,
     missingMinutes: 0,
 
+    expectedWorkDays: 0,
+    workedDays: 0,
     absentDays: 0,
     weekendDays: 0,
     holidayDays: 0,
@@ -23,11 +28,16 @@ export function calculateMonthly(
 
   days.forEach(day => {
 
+    result.expectedWorkMinutes += day.expectedMinutes
+    result.expectedNormalMinutes += day.expectedMinutes
+
     result.totalWorkMinutes += day.workedMinutes
     result.normalMinutes += day.normalMinutes
     result.overtimeMinutes += day.overtimeMinutes
     result.missingMinutes += day.missingMinutes
 
+    if (day.expectedWorkDay) result.expectedWorkDays++
+    if (day.workedDay) result.workedDays++
     if (day.isAbsent) result.absentDays++
     if (day.isWeekend) result.weekendDays++
     if (day.isHoliday) result.holidayDays++

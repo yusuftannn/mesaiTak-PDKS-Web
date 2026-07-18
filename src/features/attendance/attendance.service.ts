@@ -62,6 +62,8 @@ export async function checkSuspiciousAndLog(params: {
   branchLat: number;
   branchLng: number;
 }) {
+  const companyId = getCompanyId();
+  
   const distance = calculateDistanceMeters(
     params.userLat,
     params.userLng,
@@ -76,6 +78,7 @@ export async function checkSuspiciousAndLog(params: {
   const severity = distance > 1000 ? "high" : distance > 500 ? "medium" : "low";
 
   await addDoc(suspiciousRef, {
+    companyId,
     userId: params.userId,
     userName: params.userName,
     branchId: params.branchId,

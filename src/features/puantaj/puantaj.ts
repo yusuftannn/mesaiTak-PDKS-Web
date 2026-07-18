@@ -23,7 +23,13 @@ export async function buildMonthlyPuantaj(start: Date, end: Date) {
 
     const userLeaves = allLeaves.filter((l) => l.userId === user.uid);
 
-    const report = runPuantajEngine(userAttendance, userShifts, userLeaves);
+    const report = runPuantajEngine(
+      userAttendance,
+      userShifts,
+      userLeaves,
+      start,
+      end,
+    );
 
     result.push({
       sicilNo: user.uid,
