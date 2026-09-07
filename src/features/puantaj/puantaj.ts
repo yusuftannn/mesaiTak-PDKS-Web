@@ -6,7 +6,7 @@ import { listShiftsByDateRange } from "@/features/shifts/shifts.service";
 import { runPuantajEngine } from "@/features/puantaj/puantajEngine";
 
 export async function buildMonthlyPuantaj(start: Date, end: Date) {
-  const users = await listUsers();
+  const users = (await listUsers()).filter((user) => user.role !== "admin");
 
   const attendance = await listAttendanceByDate(start, end);
 

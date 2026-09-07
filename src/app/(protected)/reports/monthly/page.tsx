@@ -79,7 +79,7 @@ export default function MonthlyReportPage() {
 
       if (!active) return;
 
-      setUsers(u);
+      setUsers(u.filter((user) => user.role !== "admin"));
       setAttendance(report.attendance);
       setLeaves(report.leaves);
       setLoading(false);

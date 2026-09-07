@@ -100,6 +100,8 @@ export default function ShiftsPage() {
 
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
+      if (u.role === "admin") return false;
+
       const matchesSearch = u.name.toLowerCase().includes(search.toLowerCase());
 
       const matchesTag =

@@ -40,7 +40,10 @@ export default function DashboardPage() {
       setLoading(true);
 
       const users = await listUsers();
-      const usersWithShift = users.filter((u) => u.companyId && u.branchId);
+
+      const usersWithShift = users.filter(
+        (u) => u.role !== "admin" && u.companyId && u.branchId,
+      );
 
       unsubscribe = await subscribeTodayDashboard(usersWithShift, (data) => {
         if (mounted) {
