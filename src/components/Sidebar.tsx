@@ -42,7 +42,7 @@ const nav = [
 ];
 
 const reportItems = [
-  { href: "/reports", label: "AI Haftalık Özet", icon: Bot },
+  { href: "/reports", label: "Gemini Analizi", icon: Bot },
   { href: "/reports/monthly", label: "Aylık Rapor", icon: Calendar },
   { href: "/reports/puantaj", label: "Detaylı Puantaj", icon: ClipboardList },
 ];

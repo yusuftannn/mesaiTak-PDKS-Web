@@ -1,54 +1,20 @@
-import { COLLECTIONS } from "@/constants/collections";
-import { db } from "@/lib/firebase";
-import { getCompanyId } from "@/lib/utils/company";
-import {
-  collection,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
-import { WeeklyAiReport } from "./ai-reports.types";
+import { app } from "@/lib/firebase";
+import { connectFunctionsEmulator, getFunctions, httpsCallable } from "firebase/functions";
+import type { WeeklyAiReport } from "./ai-reports.types";
 
-export function subscribeLatestAiReport(params: {
-  onData: (report: WeeklyAiReport | null) => void;
-  onError: (error: Error) => void;
-}) {
-  const companyId = getCompanyId();
+const functions = getFunctions(app, "europe-west1");
 
-  const reportsRef = collection(
-    db,
-    COLLECTIONS.COMPANIES,
-    companyId,
-    "aiReports",
-  );
+if (process.env.NEXT_PUBLIC_USE_FUNCTIONS_EMULATOR === "true") {
+  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+}
 
-  const latestReportQuery = query(
-    reportsRef,
-    orderBy("createdAt", "desc"),
-    limit(1),
-  );
+const analyzeCompanyAttendance = httpsCallable<void, WeeklyAiReport>(
+  functions,
+  "analyzeCompanyAttendance",
+  { timeout: 95_000 },
+);
 
-  return onSnapshot(
-    latestReportQuery,
-    (snapshot) => {
-      if (snapshot.empty) {
-        params.onData(null);
-        return;
-      }
-
-      const docSnap = snapshot.docs[0];
-      const data = docSnap.data();
-
-      params.onData({
-        id: docSnap.id,
-        weekId: data.weekId ?? docSnap.id,
-        summary: data.summary ?? "",
-        riskAnalysis: data.riskAnalysis,
-        stats: data.stats,
-        createdAt: data.createdAt?.toDate?.() ?? null,
-      });
-    },
-    (error) => params.onError(error),
-  );
+export async function analyzeAttendance() {
+  const { data } = await analyzeCompanyAttendance();
+  return data;
 }
