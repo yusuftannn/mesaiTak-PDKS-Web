@@ -1,55 +1,103 @@
-import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { defineSecret } from "firebase-functions/params";
-import { logger } from "firebase-functions";
+import type { Firestore, Timestamp } from "firebase-admin/firestore";
+import type { WeeklyAiReport } from "@/features/reports/ai-reports.types";
 
-initializeApp();
+export class AttendanceAnalysisError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+  }
+}
 
-const db = getFirestore();
-const geminiApiKey = defineSecret("GEMINI_API_KEY");
-const geminiModel = process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite";
+const cacheDurationMs = 5 * 60_000;
+const quotaMessage = "Gemini ücretsiz kullanım kotası doldu. Daha sonra tekrar deneyin.";
+const cachedReports = new Map<string, { report: WeeklyAiReport; expiresAt: number }>();
+const pendingReports = new Map<string, Promise<WeeklyAiReport>>();
+let quotaRetryAt = 0;
+
+export async function analyzeCompanyAttendance(db: Firestore, uid: string): Promise<WeeklyAiReport> {
+  const profile = await db.collection("users").doc(uid).get();
+  const user = profile.data() as UserDoc | undefined;
+  if (user?.role !== "admin" || user.status !== "active" ||
+      typeof user.companyId !== "string" || !user.companyId.trim()) {
+    throw new AttendanceAnalysisError(403, "Analiz yalnızca şirket yöneticilerine açıktır.");
+  }
+
+  const now = Date.now();
+  const { start, end } = getPreviousIsoWeekRange(new Date(now));
+  const period = { start: toDateKey(start), end: toDateKey(end) };
+  const companyId = user.companyId;
+  const cacheKey = JSON.stringify([companyId, period.start]);
+  for (const [key, entry] of cachedReports) {
+    if (entry.expiresAt <= now) cachedReports.delete(key);
+  }
+
+  const cached = cachedReports.get(cacheKey);
+  if (cached) return cached.report;
+
+  const pending = pendingReports.get(cacheKey);
+  if (pending) return pending;
+
+  if (now < quotaRetryAt) throw new AttendanceAnalysisError(429, quotaMessage);
+
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) {
+    throw new AttendanceAnalysisError(503, "Gemini analizi henüz yapılandırılmadı.");
+  }
+
+  const reportPromise = generateReport(apiKey);
+  pendingReports.set(cacheKey, reportPromise);
+  try {
+    const report = await reportPromise;
+    cachedReports.set(cacheKey, { report, expiresAt: Date.now() + cacheDurationMs });
+    return report;
+  } catch (error) {
+    if (error instanceof AttendanceAnalysisError && error.status === 429) {
+      quotaRetryAt = Date.now() + 60_000;
+    }
+    throw error;
+  } finally {
+    pendingReports.delete(cacheKey);
+  }
+
+  async function generateReport(apiKey: string): Promise<WeeklyAiReport> {
+    const stats = await aggregateCompanyWeek(db, { companyId, start, end });
+    const { summary, riskAnalysis } = await createAiReport(apiKey, stats, period);
+    return {
+      ...period,
+      summary,
+      riskAnalysis,
+      stats: {
+        lateCount: stats.lateCount,
+        absentCount: stats.absentCount,
+        overtimeHours: stats.overtimeHours,
+        weeklyAttendanceRate: stats.weeklyAttendanceRate,
+      },
+    };
+  }
+}
 
 type UserDoc = {
   uid?: string;
   role?: string;
   status?: string;
   companyId?: string | null;
-  branchId?: string | null;
-};
-
-type BranchDoc = {
-  name?: string;
-  companyId?: string;
 };
 
 type AttendanceDoc = {
   uid?: string;
-  companyId?: string;
   date?: string;
   status?: string;
-  checkInAt?: FirebaseFirestore.Timestamp;
-  checkOutAt?: FirebaseFirestore.Timestamp;
+  checkInAt?: Timestamp;
+  checkOutAt?: Timestamp;
   shiftStart?: string;
   shiftEnd?: string;
 };
 
-type WeeklyStats = {
+type WeeklyStats = WeeklyAiReport["stats"] & {
   totalEmployees: number;
   activeEmployees: number;
-  lateCount: number;
-  absentCount: number;
-  overtimeHours: number;
   mostLateDay: string | null;
-  topBranch: string | null;
   repeatedLateEmployeeCount: number;
-  weeklyAttendanceRate: number;
-  previousWeek: {
-    lateCount: number;
-    absentCount: number;
-    overtimeHours: number;
-    weeklyAttendanceRate: number;
-  } | null;
+  previousWeek: WeeklyAiReport["stats"] | null;
 };
 
 type AiReportPayload = {
@@ -67,96 +115,41 @@ const DAY_NAMES = [
   "Saturday",
 ];
 
-export const analyzeCompanyAttendance = onCall(
-  {
-    region: "europe-west1",
-    timeoutSeconds: 90,
-    secrets: [geminiApiKey],
-  },
-  async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "Analiz için oturum açın.");
-    }
-
-    const profile = await db.collection("users").doc(request.auth.uid).get();
-    const user = profile.data() as UserDoc | undefined;
-    if (user?.role !== "admin" || user.status !== "active" || !user.companyId) {
-      throw new HttpsError("permission-denied", "Analiz yalnızca şirket yöneticilerine açıktır.");
-    }
-
-    const { start, end } = getPreviousIsoWeekRange(new Date());
-    const stats = await aggregateCompanyWeek({ companyId: user.companyId, start, end });
-    const period = { start: toDateKey(start), end: toDateKey(end) };
-    const { summary, riskAnalysis } = await createAiReport(stats, period);
-
-    return {
-      ...period,
-      summary,
-      riskAnalysis,
-      stats: {
-        lateCount: stats.lateCount,
-        absentCount: stats.absentCount,
-        overtimeHours: stats.overtimeHours,
-        weeklyAttendanceRate: stats.weeklyAttendanceRate,
-      },
-    };
-  },
-);
-
-async function aggregateCompanyWeek(params: {
+async function aggregateCompanyWeek(db: Firestore, params: {
   companyId: string;
   start: Date;
   end: Date;
 }): Promise<WeeklyStats> {
-  const [usersSnap, branchesSnap, currentAttendanceSnap, previousAttendanceSnap] =
-    await Promise.all([
-      db
-        .collection("users")
-        .where("companyId", "==", params.companyId)
-        .get(),
-      db
-        .collection("branches")
-        .where("companyId", "==", params.companyId)
-        .get(),
-      getAttendanceForRange(params.companyId, params.start, params.end),
-      getAttendanceForRange(
-        params.companyId,
-        addDays(params.start, -7),
-        addDays(params.end, -7),
-      ),
-    ]);
-
+  const currentAttendanceSnap = await getAttendanceForRange(db, params.companyId, params.start, params.end);
   if (currentAttendanceSnap.empty) {
-    throw new HttpsError("failed-precondition", "Son tamamlanan haftada analiz edilecek mesai kaydı bulunamadı.");
+    throw new AttendanceAnalysisError(422, "Son tamamlanan haftada analiz edilecek mesai kaydı bulunamadı.");
   }
 
+  const previousStart = addDays(params.start, -7);
+  const previousEnd = addDays(params.end, -7);
+  const [usersSnap, previousAttendanceSnap] = await Promise.all([
+    db.collection("users")
+      .where("companyId", "==", params.companyId)
+      .select("uid", "role", "status")
+      .get(),
+    getAttendanceForRange(db, params.companyId, previousStart, previousEnd),
+  ]);
   const employees = usersSnap.docs
     .map((doc) => ({ id: doc.id, ...(doc.data() as UserDoc) }))
     .filter((user) => user.role !== "manager");
   const activeEmployees = employees.filter((user) => user.status === "active");
-  const userById = new Map(employees.map((user) => [user.uid ?? user.id, user]));
-  const branchNameById = new Map(
-    branchesSnap.docs.map((doc) => {
-      const branch = doc.data() as BranchDoc;
-      return [doc.id, branch.name ?? "Bilinmeyen şube"];
-    }),
-  );
 
   const current = calculateAttendanceMetrics({
     attendance: currentAttendanceSnap.docs.map((doc) => doc.data() as AttendanceDoc),
     activeEmployees,
-    userById,
-    branchNameById,
     start: params.start,
     end: params.end,
   });
   const previous = calculateAttendanceMetrics({
     attendance: previousAttendanceSnap.docs.map((doc) => doc.data() as AttendanceDoc),
     activeEmployees,
-    userById,
-    branchNameById,
-    start: addDays(params.start, -7),
-    end: addDays(params.end, -7),
+    start: previousStart,
+    end: previousEnd,
   });
 
   return {
@@ -166,7 +159,6 @@ async function aggregateCompanyWeek(params: {
     absentCount: current.absentCount,
     overtimeHours: roundOne(current.overtimeHours),
     mostLateDay: current.mostLateDay,
-    topBranch: current.topBranch,
     repeatedLateEmployeeCount: current.repeatedLateEmployeeCount,
     weeklyAttendanceRate: current.weeklyAttendanceRate,
     previousWeek: previousAttendanceSnap.empty ? null : {
@@ -178,27 +170,25 @@ async function aggregateCompanyWeek(params: {
   };
 }
 
-async function getAttendanceForRange(companyId: string, start: Date, end: Date) {
+async function getAttendanceForRange(db: Firestore, companyId: string, start: Date, end: Date) {
   return db
     .collection("attendance")
     .where("companyId", "==", companyId)
     .where("date", ">=", toDateKey(start))
     .where("date", "<=", toDateKey(end))
+    .select("uid", "date", "status", "checkInAt", "checkOutAt", "shiftStart", "shiftEnd")
     .get();
 }
 
 function calculateAttendanceMetrics(params: {
   attendance: AttendanceDoc[];
   activeEmployees: Array<UserDoc & { id: string }>;
-  userById: Map<string, UserDoc & { id: string }>;
-  branchNameById: Map<string, string>;
   start: Date;
   end: Date;
 }) {
   const attendanceByUserDate = new Set<string>();
   const lateByUser = new Map<string, number>();
   const lateByDay = new Map<string, number>();
-  const branchAttendance = new Map<string, number>();
   let lateCount = 0;
   let explicitAbsentCount = 0;
   let overtimeHours = 0;
@@ -209,12 +199,6 @@ function calculateAttendanceMetrics(params: {
     attendanceByUserDate.add(`${item.uid}_${item.date}`);
 
     const status = normalize(item.status);
-    const user = params.userById.get(item.uid);
-    const branchName = user?.branchId
-      ? params.branchNameById.get(user.branchId) ?? "Bilinmeyen şube"
-      : "Şubesiz";
-    branchAttendance.set(branchName, (branchAttendance.get(branchName) ?? 0) + 1);
-
     if (isLateStatus(status)) {
       lateCount += 1;
       lateByUser.set(item.uid, (lateByUser.get(item.uid) ?? 0) + 1);
@@ -250,7 +234,6 @@ function calculateAttendanceMetrics(params: {
     absentCount,
     overtimeHours,
     mostLateDay: topEntry(lateByDay),
-    topBranch: topEntry(branchAttendance),
     repeatedLateEmployeeCount: [...lateByUser.values()].filter((count) => count >= 2).length,
     weeklyAttendanceRate:
       expectedAttendanceCount === 0
@@ -260,17 +243,18 @@ function calculateAttendanceMetrics(params: {
 }
 
 async function createAiReport(
+  apiKey: string,
   stats: WeeklyStats,
   period: { start: string; end: string },
 ): Promise<AiReportPayload> {
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent`,
       {
         method: "POST",
-        signal: AbortSignal.timeout(60_000),
+        signal: AbortSignal.timeout(45_000),
         headers: {
-          "x-goog-api-key": geminiApiKey.value(),
+          "x-goog-api-key": apiKey,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -303,6 +287,10 @@ async function createAiReport(
       },
     );
 
+    if (response.status === 429) {
+      throw new AttendanceAnalysisError(429, quotaMessage);
+    }
+
     if (!response.ok) {
       throw new Error(`Gemini HTTP ${response.status}`);
     }
@@ -316,10 +304,9 @@ async function createAiReport(
 
     return { summary, riskAnalysis };
   } catch (error) {
-    logger.warn("Gemini analysis failed", {
-      reason: error instanceof SyntaxError ? "Invalid JSON" : error instanceof Error ? error.message : "Unknown error",
-    });
-    throw new HttpsError("unavailable", "Gemini analizi tamamlanamadı. Lütfen tekrar deneyin.");
+    if (error instanceof AttendanceAnalysisError) throw error;
+    console.error("Gemini attendance analysis failed", error instanceof Error ? error.name : "Unknown error");
+    throw new AttendanceAnalysisError(502, "Gemini analizi tamamlanamadı. Lütfen tekrar deneyin.");
   }
 }
 

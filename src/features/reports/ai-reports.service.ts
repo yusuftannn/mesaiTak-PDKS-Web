@@ -1,20 +1,25 @@
-import { app } from "@/lib/firebase";
-import { connectFunctionsEmulator, getFunctions, httpsCallable } from "firebase/functions";
+import { auth } from "@/lib/firebase";
 import type { WeeklyAiReport } from "./ai-reports.types";
 
-const functions = getFunctions(app, "europe-west1");
+const fallbackMessage = "Analiz başlatılamadı. Lütfen tekrar deneyin.";
 
-if (process.env.NEXT_PUBLIC_USE_FUNCTIONS_EMULATOR === "true") {
-  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
-}
+export async function analyzeAttendance(): Promise<WeeklyAiReport> {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Analiz için tekrar oturum açın.");
 
-const analyzeCompanyAttendance = httpsCallable<void, WeeklyAiReport>(
-  functions,
-  "analyzeCompanyAttendance",
-  { timeout: 95_000 },
-);
+  const token = await user.getIdToken().catch(() => {
+    throw new Error("Oturum doğrulanamadı. Lütfen tekrar oturum açın.");
+  });
 
-export async function analyzeAttendance() {
-  const { data } = await analyzeCompanyAttendance();
-  return data;
+  const response = await fetch("/api/attendance/analyze", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => {
+    throw new Error(fallbackMessage);
+  });
+
+  if (response.ok) return response.json();
+
+  const body = await response.json().catch(() => null);
+  throw new Error(typeof body?.error === "string" ? body.error : fallbackMessage);
 }

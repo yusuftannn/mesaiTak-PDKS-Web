@@ -1,20 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Bot, LoaderCircle } from "lucide-react";
-import { FirebaseError } from "firebase/app";
 import AiWeeklySummaryCard from "./AiWeeklySummaryCard";
 import { useAuthStore } from "@/features/auth/auth.store";
 import { analyzeAttendance } from "@/features/reports/ai-reports.service";
 import type { WeeklyAiReport } from "@/features/reports/ai-reports.types";
-
-const analysisErrors: Record<string, string> = {
-  "functions/unauthenticated": "Analiz için tekrar oturum açın.",
-  "functions/permission-denied": "Analiz yalnızca şirket yöneticilerine açıktır.",
-  "functions/failed-precondition": "Son tamamlanan haftada analiz edilecek mesai kaydı bulunamadı.",
-  "functions/unavailable": "Gemini analizi şu anda kullanılamıyor. Lütfen tekrar deneyin.",
-  "functions/deadline-exceeded": "Analiz zaman aşımına uğradı. Lütfen tekrar deneyin.",
-};
 
 export default function ReportsPage() {
   const canAnalyze = useAuthStore((state) =>
@@ -23,10 +14,12 @@ export default function ReportsPage() {
   const [report, setReport] = useState<WeeklyAiReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const requestPending = useRef(false);
 
   async function handleAnalyze() {
-    if (!canAnalyze || loading) return;
+    if (!canAnalyze || requestPending.current) return;
 
+    requestPending.current = true;
     setLoading(true);
     setError(null);
     setReport(null);
@@ -34,9 +27,10 @@ export default function ReportsPage() {
     try {
       setReport(await analyzeAttendance());
     } catch (err) {
-      const message = err instanceof FirebaseError ? analysisErrors[err.code] : undefined;
+      const message = err instanceof Error ? err.message : undefined;
       setError(message ?? "Analiz başlatılamadı. Lütfen tekrar deneyin.");
     } finally {
+      requestPending.current = false;
       setLoading(false);
     }
   }
